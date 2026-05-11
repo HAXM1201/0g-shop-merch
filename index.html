@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <!-- SDKs -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -221,6 +220,10 @@
     <script>
         const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
         
+        // --- CẤU HÌNH TELEGRAM BOT PROXY ---
+        // Sếp dán cái link Apps Script của sếp vào đây nhé
+        const PROXY_URL = 'https://script.google.com/macros/s/AKfycbyYoSUlpL-iJplajIviHnr4-r_BcJ4dIwsVzJMCxy20WD6h_1SnR8apZYuuCH76MYWGMA/exec'; 
+
         const firebaseConfig = {
             apiKey: "AIzaSyCHEV_Ob-nxZSV23s5j_bFn7iYQIVTKGy8",
             authDomain: "sic-0g-shop.firebaseapp.com",
@@ -280,6 +283,34 @@
             } catch (e) { alert("Transaction failed!"); }
         }
 
+        // HÀM GỬI THÔNG BÁO TỚI TELEGRAM
+        async function sendTelegramAlert(orderData) {
+            const text = `
+📦 *CÓ ĐƠN HÀNG MỚI - SIC-0G SHOP*
+----------------------------------
+👤 **Khách:** ${orderData.receiver}
+📱 **SĐT:** ${orderData.phone}
+🌍 **Quốc gia:** ${orderData.country}
+🛍️ **Sản phẩm:** ${orderData.item}
+💸 **TxHash:** [Xem trên Chain](https://chainscan.0g.ai/tx/${orderData.txHash})
+----------------------------------
+🚀 *Đơn hàng đã được ghi nhận vào Ledger!*
+            `;
+
+            try {
+                await fetch(PROXY_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                console.log("Hệ thống đã báo về Bot Telegram!");
+            } catch (error) {
+                console.error("Lỗi gửi thông báo Telegram:", error);
+            }
+        }
+
         async function submitOrder() {
             const name = document.getElementById('receiver-name').value.trim();
             const country = document.getElementById('country').value.trim();
@@ -301,6 +332,10 @@
             };
             try {
                 await database.ref('orders/').push(orderData);
+                
+                // --- KÍCH HOẠT THÔNG BÁO TELEGRAM KHI LƯU ĐƠN THÀNH CÔNG ---
+                await sendTelegramAlert(orderData);
+                
                 alert("Order Saved!");
                 closeModal();
             } catch (error) { alert("Database Error: " + error.message); }
