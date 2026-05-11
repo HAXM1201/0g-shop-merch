@@ -221,7 +221,7 @@
         const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
         
         // --- CẤU HÌNH TELEGRAM BOT PROXY ---
-        const PROXY_URL = 'https://script.google.com/macros/s/AKfycbxyHwXqIhmdnEwO2LHT3xWspf9gcWKGFuwosPZmTXehHl_RfjE3t-o9OOhujRnhigamPQ/exec'; 
+        const PROXY_URL = 'https://script.google.com/macros/s/AKfycbxcwygaa_CMvoMIsQ3TCXJIBp6IRH_US02iSrzzmfxGJxDTQq5osEVAiS4LJg5fiVI/exec'; 
 
         const firebaseConfig = {
             apiKey: "AIzaSyCHEV_Ob-nxZSV23s5j_bFn7iYQIVTKGy8",
@@ -282,16 +282,16 @@
             } catch (e) { alert("Transaction failed!"); }
         }
 
-        // HÀM GỬI THÔNG BÁO TỚI TELEGRAM
+        
         async function sendTelegramAlert(orderData) {
             const text = `
 📦 *CÓ ĐƠN HÀNG MỚI - SIC-0G SHOP*
 ----------------------------------
-👤 **Khách:** ${orderData.receiver}
-📱 **SĐT:** ${orderData.phone}
-🌍 **Quốc gia:** ${orderData.country}
-🛍️ **Sản phẩm:** ${orderData.item}
-💸 **TxHash:** [Xem trên Chain](https://chainscan.0g.ai/tx/${orderData.txHash})
+👤 *Khách:* ${orderData.receiver}
+📱 *SĐT:* ${orderData.phone}
+🌍 *Quốc gia:* ${orderData.country}
+🛍️ *Sản phẩm:* ${orderData.item}
+💸 *TxHash:* [Xem trên Chain](https://chainscan.0g.ai/tx/${orderData.txHash})
 ----------------------------------
 🚀 *Đơn hàng đã được ghi nhận vào Ledger!*
             `;
@@ -304,12 +304,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text })
                 });
-                console.log("Hệ thống đã báo về Bot Telegram!");
+                console.log("Đã kích hoạt gửi thông báo Telegram qua Proxy!");
             } catch (error) {
                 console.error("Lỗi gửi thông báo Telegram:", error);
             }
         }
 
+    
         async function submitOrder() {
             const name = document.getElementById('receiver-name').value.trim();
             const country = document.getElementById('country').value.trim();
@@ -329,17 +330,22 @@
                 status: "Confirmed",
                 timestamp: Date.now()
             };
+
             try {
+                // 1. Lưu vào Firebase trước
                 await database.ref('orders/').push(orderData);
                 
-                // --- KÍCH HOẠT THÔNG BÁO TELEGRAM KHI LƯU ĐƠN THÀNH CÔNG ---
-                await sendTelegramAlert(orderData);
+                // 2. Bắn thông báo Telegram ngay lập tức
+                await sendTelegramAlert(orderData); 
                 
-                alert("Order Saved!");
+                alert("Order Saved Successfully!");
                 closeModal();
-            } catch (error) { alert("Database Error: " + error.message); }
+            } catch (error) { 
+                alert("Database Error: " + error.message); 
+            }
         }
 
+        // Lắng nghe dữ liệu Firebase để hiển thị Ledger
         database.ref('orders/').on('value', (snapshot) => {
             const orders = snapshot.val();
             const listBody = document.getElementById('order-history-list');
@@ -363,8 +369,14 @@
         function closeModal() {
             document.getElementById('order-modal').style.display = 'none';
             document.getElementById('modal-overlay').style.display = 'none';
+            // Reset form
+            document.getElementById('receiver-name').value = "";
+            document.getElementById('country').value = "";
+            document.getElementById('address').value = "";
+            document.getElementById('phone').value = "";
         }
 
+        // Mock price ticker
         setInterval(() => {
             const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
             document.getElementById('token-price').innerText = `$${mockPrice}`;
