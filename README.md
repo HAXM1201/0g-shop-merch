@@ -10,7 +10,6 @@
 ## 🚀 Key Features
 * **0G Native Payments:** Near-instant transactions using 0G tokens.
 * **Real-time Ledger:** Powered by Firebase for transparent order tracking.
-* **Mobile-First Design:** Fully optimized for flagship devices like the **Samsung S23 Ultra**.
 * **Decentralized Trust:** Bridging the gap between the 0G ecosystem and physical utility.
 
 ## 🛠 Tech Stack
