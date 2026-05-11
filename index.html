@@ -282,35 +282,34 @@
             } catch (e) { alert("Transaction failed!"); }
         }
 
-        
+        // HÀM GỬI THÔNG BÁO TỚI TELEGRAM - SỬ DỤNG MẸO THẺ ẢNH (IMAGE BEACON)
         async function sendTelegramAlert(orderData) {
             const text = `
-📦 *CÓ ĐƠN HÀNG MỚI - SIC-0G SHOP*
+📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*
 ----------------------------------
 👤 *Khách:* ${orderData.receiver}
 📱 *SĐT:* ${orderData.phone}
 🌍 *Quốc gia:* ${orderData.country}
 🛍️ *Sản phẩm:* ${orderData.item}
-💸 *TxHash:* [Xem trên Chain](https://chainscan.0g.ai/tx/${orderData.txHash})
+💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})
 ----------------------------------
-🚀 *Đơn hàng đã được ghi nhận vào Ledger!*
+🚀 *Vận hành bởi SIC Community*
             `;
 
             try {
-                await fetch(PROXY_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text })
-                });
-                console.log("Đã kích hoạt gửi thông báo Telegram qua Proxy!");
+                // Tạo URL với tham số message để gửi qua phương thức GET
+                const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
+                
+                // Sử dụng Image object để kích hoạt lệnh gửi đi mà không bị chặn bởi CORS
+                const img = new Image();
+                img.src = finalUrl; 
+                
+                console.log("Đã kích hoạt lệnh gửi thông báo Telegram...");
             } catch (error) {
                 console.error("Lỗi gửi thông báo Telegram:", error);
             }
         }
 
-    
         async function submitOrder() {
             const name = document.getElementById('receiver-name').value.trim();
             const country = document.getElementById('country').value.trim();
@@ -345,7 +344,6 @@
             }
         }
 
-        // Lắng nghe dữ liệu Firebase để hiển thị Ledger
         database.ref('orders/').on('value', (snapshot) => {
             const orders = snapshot.val();
             const listBody = document.getElementById('order-history-list');
@@ -369,14 +367,12 @@
         function closeModal() {
             document.getElementById('order-modal').style.display = 'none';
             document.getElementById('modal-overlay').style.display = 'none';
-            // Reset form
             document.getElementById('receiver-name').value = "";
             document.getElementById('country').value = "";
             document.getElementById('address').value = "";
             document.getElementById('phone').value = "";
         }
 
-        // Mock price ticker
         setInterval(() => {
             const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
             document.getElementById('token-price').innerText = `$${mockPrice}`;
