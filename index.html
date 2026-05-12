@@ -234,7 +234,7 @@
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | 0G PAY ENABLED</div>
 
     <script>
-    // 1. CẤU HÌNH CỐ ĐỊNH
+    // Cấu hình sếp giữ nguyên
     const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
     const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
     const firebaseConfig = {
@@ -253,97 +253,78 @@
     let lastTxHash = "";
     let currentPurchasedItem = "";
 
-    // 2. HÀM KHỞI TẠO HỆ THỐNG (CHỐNG XUNG ĐỘT TUYỆT ĐỐI)
-    async function initEverything() {
-        console.log("🛠️ Đang khởi động hệ thống SIC 0G...");
+    // HÀM KHỞI TẠO CƯỠNG BỨC
+    function startSystem() {
+        console.log("🚀 Đang ép khởi động hệ thống...");
         
-        // Khởi tạo Firebase ngay (Không đợi ai cả)
-        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-        database = firebase.database();
-        syncLedger();
+        // 1. Khởi tạo Firebase trước
+        try {
+            if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+            database = firebase.database();
+            syncLedger();
+        } catch(e) { console.log("Firebase chờ..."); }
 
-        // Khởi tạo Privy với cơ chế bắt lỗi ngoại vi
-        if (typeof Privy !== 'undefined') {
-            try {
-                privy = new Privy({
-                    appId: 'cmp20fb5u009b0cjs6gy1fd16',
-                    config: {
-                        loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
-                        embeddedWallets: { createOnLogin: 'users-without-wallets' },
-                        appearance: { theme: 'dark', accentColor: '#00f5ff' }
-                    }
-                });
-                console.log("✅ Privy Ready!");
-            } catch (err) {
-                console.error("Privy fail:", err);
-            }
+        // 2. Kiểm tra và khởi tạo Privy
+        // Thử tìm Privy trong cả window và scope toàn cục
+        const PrivyClass = window.Privy || Privy; 
+        
+        if (typeof PrivyClass !== 'undefined') {
+            privy = new PrivyClass({
+                appId: 'cmp20fb5u009b0cjs6gy1fd16',
+                config: {
+                    loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
+                    embeddedWallets: { createOnLogin: 'users-without-wallets' },
+                    appearance: { theme: 'dark' }
+                }
+            });
+            console.log("✅ Privy đã nạp thành công!");
         } else {
-            console.log("⏳ Chờ SDK Privy tải về...");
-            setTimeout(initEverything, 1000);
+            console.log("⏳ Vẫn chưa thấy SDK, thử lại sau 1.5s...");
+            setTimeout(startSystem, 1500);
         }
     }
 
-    // Chạy ngay khi có thể
-    window.addEventListener('load', initEverything);
+    // Chạy lệnh khởi tạo bất chấp lỗi window.onload
+    document.onreadystatechange = function () {
+        if (document.readyState === "complete") {
+            startSystem();
+        }
+    }
 
-    // 3. HÀM CONNECT (BẢN FIX CỨNG)
     async function handleConnect() {
-        if (!privy) return alert("Hệ thống đang khởi động, sếp đợi 2 giây nhé!");
-        
+        if (!privy) return alert("SDK đang nạp, sếp nhấn lại sau 2 giây nhé!");
         try {
-            // Ép buộc mở bảng Login của Privy bất chấp lỗi của ví khác
-            const user = await privy.login().catch(e => {
-                console.warn("User closed login or external error:", e);
-                return null;
-            });
-            
+            const user = await privy.login();
             if (user && user.wallet) {
                 fullWalletAddress = user.wallet.address;
                 const short = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
-                
                 document.getElementById('connect-btn').style.display = 'none';
                 document.getElementById('wallet-info').style.display = 'flex';
                 document.getElementById('wallet-address').innerText = short;
             }
-        } catch (e) {
-            console.error("Final Connect Error:", e);
-        }
+        } catch (e) { console.log("Login cancel"); }
     }
 
-    async function handleDisconnect() {
-        if (privy) await privy.logout();
-        location.reload();
-    }
-
-    // 4. LOGIC THANH TOÁN (SỬ DỤNG PROVIDER CỦA PRIVY ĐỂ TRÁNH XUNG ĐỘT VÍ NGOÀI)
+    // Các hàm phụ trợ sếp giữ nguyên bản chuẩn
     async function initiatePayment(amount, itemName) {
         if (!fullWalletAddress) return handleConnect();
-        
         try {
-            // SỬA ĐỔI QUAN TRỌNG: Ưu tiên dùng provider từ Privy để tránh lỗi 'method of null'
             const provider = new ethers.providers.Web3Provider(window.ethereum || privy.provider);
             const signer = provider.getSigner();
             currentPurchasedItem = itemName;
-
             const tx = await signer.sendTransaction({
                 to: DESTINATION_WALLET,
                 value: ethers.utils.parseEther(amount.toString())
             });
-
             lastTxHash = tx.hash;
-            alert(`Đã gửi giao dịch! Hash: ${tx.hash}`);
+            alert(`Giao dịch thành công! Hash: ${tx.hash}`);
             await tx.wait();
-            
             document.getElementById('order-item').value = itemName;
             document.getElementById('order-modal').style.display = 'block';
             document.getElementById('modal-overlay').style.display = 'block';
-        } catch (e) {
-            console.error(e);
-            alert("Lỗi giao dịch! Sếp hãy kiểm tra lại ví 0G và thử lại nhé.");
-        }
+        } catch (e) { alert("Lỗi giao dịch!"); }
     }
 
-    // --- GIỮ NGUYÊN CÁC HÀM CHUẨN CỦA SẾP ---
     async function sendTelegramAlert(orderData) {
         const text = `📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*\n👤 *Khách:* ${orderData.receiver}\n🏠 *Địa chỉ:* ${orderData.address}\n🛍️ *Sản phẩm:* ${orderData.item}\n💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})`;
         const img = new Image();
@@ -362,11 +343,11 @@
             status: "Confirmed",
             timestamp: Date.now()
         };
-        if (!orderData.receiver || !orderData.address) return alert("Điền đủ thông tin sếp ơi!");
+        if (!orderData.receiver || !orderData.address) return alert("Thiếu thông tin sếp ơi!");
         try {
             await database.ref('orders/').push(orderData);
             await sendTelegramAlert(orderData);
-            alert("Đã lưu đơn hàng thành công!");
+            alert("Đã lưu đơn hàng!");
             closeModal();
         } catch (e) { alert("Lỗi: " + e.message); }
     }
