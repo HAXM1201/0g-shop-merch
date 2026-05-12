@@ -42,14 +42,13 @@
 
         .logo-text { font-weight: 900; color: var(--0g-cyan); font-size: 1.6rem; text-shadow: var(--neon-glow); }
 
-        /* Nút Connect Hybrid */
-        .btn-connect {
+        #connect-btn {
             background: transparent; border: 1.5px solid var(--0g-cyan); color: var(--0g-cyan);
             padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer;
             transition: 0.3s;
         }
 
-        .btn-connect:hover { background: var(--0g-cyan); color: #000; box-shadow: var(--neon-glow); }
+        #connect-btn:hover { background: var(--0g-cyan); color: #000; box-shadow: var(--neon-glow); }
 
         .main-title { 
             color: var(--0g-cyan); font-size: 4rem; letter-spacing: 5px;
@@ -57,7 +56,6 @@
             text-shadow: 3px 3px 0px #ff00ff, -3px -3px 0px #00ffff;
         }
 
-        /* Nút 0G Pay Gateway */
         .btn-0g-pay {
             background: #ffffff; color: #000; border: none; padding: 10px 25px;
             border-radius: 12px; font-weight: bold; cursor: pointer;
@@ -131,7 +129,7 @@
     <header>
         <div class="logo-text">SIC-0G MERCH</div>
         <div id="wallet-container" style="display: flex; align-items: center; gap: 10px;">
-            <button id="connect-btn" class="btn-connect" onclick="handleConnect()">CONNECT / SIGN IN</button>
+            <button id="connect-btn" onclick="handleConnect()">CONNECT / SIGN IN</button>
             <div id="wallet-info" style="display:none; align-items: center; gap: 10px;">
                 <div id="wallet-address" style="color: #39d353; border: 1px solid #39d353; padding: 8px 20px; border-radius: 50px; font-family: monospace;"></div>
                 <button id="disconnect-btn" onclick="handleDisconnect()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s;">LOGOUT</button>
@@ -230,7 +228,7 @@
         <textarea id="address" placeholder="Full Address (Street, City, State)"></textarea>
         <input type="text" id="phone" placeholder="Phone Number">
         <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
-        <button onclick="closeModal()" style="width:100%; background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
+        <button onclick="closeModal()" style="background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
     </div>
 
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | 0G PAY ENABLED</div>
@@ -250,15 +248,22 @@
             databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
-        // Khai báo biến toàn cục
         let privy;
         let database;
-        let currentPurchasedItem = "";
-        let lastTxHash = "";
         let fullWalletAddress = ""; 
+        let lastTxHash = "";
+        let currentPurchasedItem = "";
 
-        // Khởi tạo hệ thống khi load trang để tránh lỗi "Privy is not defined"
-        window.onload = function() {
+        // KHỞI TẠO HỆ THỐNG
+        function init() {
+            // 1. Khởi tạo Firebase trước để hiện Ledger ngay lập tức
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            database = firebase.database();
+            syncLedger();
+
+            // 2. Khởi tạo Privy
             if (typeof Privy !== 'undefined') {
                 privy = new Privy({
                     appId: 'cmp20fb5u009b0cjs6gy1fd16',
@@ -267,33 +272,32 @@
                         embeddedWallets: { createOnLogin: 'users-without-wallets' }
                     }
                 });
-                console.log("Privy Ready!");
+                console.log("Privy x SIC Ready!");
+            } else {
+                // Thử lại sau 1s nếu SDK chưa tải xong
+                setTimeout(init, 1000);
             }
+        }
 
-            // Khởi tạo Firebase
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            database = firebase.database();
-            
-            // Chạy Ledger ngay khi load
-            syncLedger();
-        };
+        // Chạy khi trang web đã nạp xong cấu trúc
+        window.addEventListener('DOMContentLoaded', init);
 
         async function handleConnect() {
-            if (!privy) return alert("Hệ thống đang khởi tạo, sếp đợi xíu nhé!");
+            if (!privy) {
+                return alert("Hệ thống đang khởi tạo, sếp vui lòng đợi xíu nhé!");
+            }
             try {
                 const user = await privy.login();
-                fullWalletAddress = user.wallet.address;
-                const shortenedAddress = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
-                
-                document.getElementById('connect-btn').style.display = 'none';
-                document.getElementById('wallet-info').style.display = 'flex';
-                document.getElementById('wallet-address').innerText = shortenedAddress;
-                return true;
+                if (user && user.wallet) {
+                    fullWalletAddress = user.wallet.address;
+                    const short = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
+                    
+                    document.getElementById('connect-btn').style.display = 'none';
+                    document.getElementById('wallet-info').style.display = 'flex';
+                    document.getElementById('wallet-address').innerText = short;
+                }
             } catch (e) { 
-                console.error("Privy Error:", e);
-                return false; 
+                console.error("Lỗi đăng nhập:", e);
             }
         }
 
@@ -304,8 +308,8 @@
 
         async function initiatePayment(amount, itemName) {
             if (!fullWalletAddress) {
-                const connected = await handleConnect();
-                if (!connected) return;
+                await handleConnect();
+                return;
             }
             try {
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -321,7 +325,9 @@
                 document.getElementById('order-item').value = itemName;
                 document.getElementById('order-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
-            } catch (e) { alert("Transaction failed! Make sure you have enough 0G."); }
+            } catch (e) { 
+                alert("Transaction failed! Make sure you have enough 0G."); 
+            }
         }
 
         async function sendTelegramAlert(orderData) {
