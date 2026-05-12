@@ -56,13 +56,13 @@
             text-shadow: 3px 3px 0px #ff00ff, -3px -3px 0px #00ffff;
         }
 
+        /* Nút 0G Pay mới */
         .btn-0g-pay {
             background: #ffffff; color: #000; border: none; padding: 10px 25px;
             border-radius: 12px; font-weight: bold; cursor: pointer;
             display: inline-flex; align-items: center; gap: 10px; margin: 20px 0;
             transition: 0.3s; box-shadow: 0 4px 15px rgba(255,255,255,0.2);
         }
-
         .btn-0g-pay:hover { background: var(--0g-yellow); transform: scale(1.05); }
 
         .live-price-box {
@@ -248,22 +248,23 @@
             databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
+        // Khai báo biến
         let privy;
         let database;
-        let fullWalletAddress = ""; 
-        let lastTxHash = "";
         let currentPurchasedItem = "";
+        let lastTxHash = "";
+        let fullWalletAddress = ""; 
 
-        // KHỞI TẠO HỆ THỐNG
-        function init() {
-            // 1. Khởi tạo Firebase trước để hiện Ledger ngay lập tức
+        // HÀM KHỞI TẠO (Đồng bộ mọi tính năng)
+        function initShop() {
+            // 1. Khởi tạo Firebase Ledger (Logic cũ sếp yêu cầu giữ)
             if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
             }
             database = firebase.database();
             syncLedger();
 
-            // 2. Khởi tạo Privy
+            // 2. Khởi tạo Privy (API chuẩn của sếp)
             if (typeof Privy !== 'undefined') {
                 privy = new Privy({
                     appId: 'cmp20fb5u009b0cjs6gy1fd16',
@@ -272,32 +273,31 @@
                         embeddedWallets: { createOnLogin: 'users-without-wallets' }
                     }
                 });
-                console.log("Privy x SIC Ready!");
+                console.log("🚀 Privy Ready!");
             } else {
-                // Thử lại sau 1s nếu SDK chưa tải xong
-                setTimeout(init, 1000);
+                setTimeout(initShop, 1000); // Thử lại nếu load chậm
             }
         }
 
-        // Chạy khi trang web đã nạp xong cấu trúc
-        window.addEventListener('DOMContentLoaded', init);
+        window.addEventListener('DOMContentLoaded', initShop);
 
+        // HÀM CONNECT HYBRID (Dùng Privy)
         async function handleConnect() {
-            if (!privy) {
-                return alert("Hệ thống đang khởi tạo, sếp vui lòng đợi xíu nhé!");
-            }
+            if (!privy) return alert("Hệ thống đang khởi tạo, sếp đợi xíu nhé!");
             try {
                 const user = await privy.login();
                 if (user && user.wallet) {
                     fullWalletAddress = user.wallet.address;
-                    const short = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
+                    const shortenedAddress = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
                     
                     document.getElementById('connect-btn').style.display = 'none';
                     document.getElementById('wallet-info').style.display = 'flex';
-                    document.getElementById('wallet-address').innerText = short;
+                    document.getElementById('wallet-address').innerText = shortenedAddress;
+                    return true;
                 }
             } catch (e) { 
-                console.error("Lỗi đăng nhập:", e);
+                console.error("Privy Error:", e);
+                return false; 
             }
         }
 
@@ -308,11 +308,11 @@
 
         async function initiatePayment(amount, itemName) {
             if (!fullWalletAddress) {
-                await handleConnect();
-                return;
+                const connected = await handleConnect();
+                if (!connected) return;
             }
             try {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const provider = new ethers.providers.Web3Provider(window.ethereum || window.privy.provider);
                 const signer = provider.getSigner();
                 currentPurchasedItem = itemName;
                 const tx = await signer.sendTransaction({
@@ -322,14 +322,14 @@
                 lastTxHash = tx.hash;
                 alert(`Transaction sent! Hash: ${tx.hash}`);
                 await tx.wait();
+                
                 document.getElementById('order-item').value = itemName;
                 document.getElementById('order-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
-            } catch (e) { 
-                alert("Transaction failed! Make sure you have enough 0G."); 
-            }
+            } catch (e) { alert("Transaction failed! Check your balance."); }
         }
 
+        // --- ĐÃ ĐỒNG BỘ TELEGRAM CHUẨN ---
         async function sendTelegramAlert(orderData) {
             const text = `
 📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*
@@ -346,6 +346,7 @@
             const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
             const img = new Image();
             img.src = finalUrl; 
+            console.log("Đã bắn Telegram đầy đủ địa chỉ!");
         }
 
         async function submitOrder() {
@@ -370,7 +371,7 @@
 
             try {
                 await database.ref('orders/').push(orderData);
-                await sendTelegramAlert(orderData); 
+                await sendTelegramAlert(orderData); // Gọi hàm Telegram chuẩn
                 alert("Order Saved Successfully!");
                 closeModal();
             } catch (error) { 
