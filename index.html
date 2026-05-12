@@ -225,57 +225,61 @@
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | SMART INVESTOR COMMUNITY</div>
 
     <script>
-    // --- KHAI BÁO BIẾN ---
+    // --- 1. KHỞI TẠO HỆ THỐNG ---
     let privy;
-    let fullWalletAddress = "";
+    let fullWalletAddress = ""; 
 
-    // --- HÀM KHỞI TẠO (Đây là linh hồn của Version 1) ---
-    function startPrivy() {
-        const TargetPrivy = window.Privy || window.PrivyWidget;
+    function startSIC0G() {
+        console.log("🛠️ Hệ thống SIC-0G đang nạp dữ liệu...");
         
-        if (TargetPrivy) {
-            privy = new TargetPrivy({
-                appId: 'cmp20fb5u009b0cjs6gy1fd16', // Sếp kiểm tra lại App ID này trong Dashboard nhé
+        // Lấy SDK từ widget đã nạp ở thẻ <head>
+        const PrivySDK = window.Privy || window.PrivyWidget;
+        
+        if (PrivySDK) {
+            privy = new PrivySDK({
+                appId: 'cmp20fb5u009b0cjs6gy1fd16', // ID từ ảnh image_fe8010.png
                 config: {
-                    loginMethods: ['email', 'google'], // Tập trung vào Gmail theo ý sếp
+                    loginMethods: ['google', 'email', 'wallet'], 
                     embeddedWallets: {
-                        createOnLogin: 'users-without-wallets',
-                        noPromptOnSignature: true
+                        createOnLogin: 'users-without-wallets', // Tự tạo ví cho sếp
+                        noPromptOnSignature: true 
                     },
-                    appearance: { theme: 'dark', accentColor: '#00f5ff' }
+                    appearance: {
+                        theme: 'dark',
+                        accentColor: '#00f5ff',
+                        showWalletLoginFirst: false
+                    }
                 }
             });
-            console.log("✅ Privy đã sẵn sàng!");
+            console.log("🚀 Version 1: ĐÃ SẴN SÀNG!");
         } else {
-            // Nếu chưa thấy SDK, đợi 1 giây rồi tìm lại
-            setTimeout(startPrivy, 1000);
+            // Đợi 1 giây nếu mạng chậm rồi thử lại
+            setTimeout(startSIC0G, 1000);
         }
     }
 
-    // Gọi khởi tạo ngay khi trang nạp xong
-    window.onload = startPrivy;
+    // Tự động chạy khi trang web nạp xong
+    window.onload = startSIC0G;
 
-    // --- HÀM CONNECT KHI BẤM NÚT ---
+    // --- 2. HÀM CONNECT KHI BẤM NÚT ---
     async function handleConnect() {
-        if (!privy) return alert("Hệ thống đang nạp, sếp đợi xíu!");
+        if (!privy) return alert("Hệ thống bảo mật đang nạp, sếp đợi xíu nhé!");
         try {
             const user = await privy.login();
             if (user && user.wallet) {
                 fullWalletAddress = user.wallet.address;
                 const short = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
                 
-                // Cập nhật giao diện của sếp
+                // Cập nhật giao diện Neon của sếp Xuân
                 document.getElementById('connect-btn').style.display = 'none';
                 document.getElementById('wallet-info').style.display = 'flex';
                 document.getElementById('wallet-address').innerText = short;
                 console.log("Đã kết nối ví:", fullWalletAddress);
             }
         } catch (e) {
-            console.log("Người dùng hủy đăng nhập");
+            console.log("Sếp đã đóng bảng đăng nhập.");
         }
     }
-
-    // Giữ nguyên các hàm handleDisconnect, initiatePayment... của sếp ở dưới
 </script>
 </body>
 </html>
