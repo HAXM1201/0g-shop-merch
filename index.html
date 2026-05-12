@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>0G Shop - Premium DeAI Merch Hub</title>
-    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- CSP MASTER -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self' https://*.privy.io https://*.google.com; 
+                   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://auth.privy.io https://*.privy.io https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebasedatabase.app https://apis.google.com https://identitytoolkit.googleapis.com; 
+                   style-src 'self' 'unsafe-inline' https://*.privy.io https://fonts.googleapis.com; 
+                   img-src 'self' data: https://script.google.com https://*.privy.io https://www.gstatic.com https://*.googleusercontent.com; 
+                   connect-src 'self' https://auth.privy.io https://*.privy.io https://*.firebasedatabase.app wss://*.firebasedatabase.app wss://*.privy.io https://www.gstatic.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;">
+
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
         :root {
             --0g-cyan: #00f5ff;
