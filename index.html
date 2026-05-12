@@ -6,15 +6,14 @@
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
 
-    <!-- THẺ META CSP TỐI ƯU CHO 0GSHOP.ONLINE - FIX LỖI EVAL & CONNECT -->
+    <!-- THẺ META CSP TỐI ƯU - ĐÃ LOẠI BỎ 'unsafe-eval' ĐỂ TĂNG BẢO MẬT -->
     <meta http-equiv="Content-Security-Policy" 
           content="default-src 'self' https://*.privy.io; 
-                   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://auth.privy.io https://*.privy.io https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebasedatabase.app; 
+                   script-src 'self' 'unsafe-inline' https://auth.privy.io https://*.privy.io https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebasedatabase.app; 
                    style-src 'self' 'unsafe-inline' https://*.privy.io; 
                    img-src 'self' data: https://script.google.com https://*.privy.io; 
                    connect-src 'self' https://auth.privy.io https://*.privy.io https://*.firebasedatabase.app wss://*.firebasedatabase.app wss://*.privy.io https://www.gstatic.com;">
 
-    <!-- Nạp thư viện -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -137,10 +136,10 @@
     <header>
         <div class="logo-text">SIC-0G MERCH</div>
         <div id="wallet-container" style="display: flex; align-items: center; gap: 10px;">
-            <button id="connect-btn" onclick="handleConnect()">CONNECT WALLET</button>
+            <button id="connect-btn">CONNECT WALLET</button>
             <div id="wallet-info" style="display:none; align-items: center; gap: 10px;">
                 <div id="wallet-address" style="color: #39d353; border: 1px solid #39d353; padding: 8px 20px; border-radius: 50px; font-family: monospace;"></div>
-                <button id="disconnect-btn" onclick="handleDisconnect()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s;">DISCONNECT</button>
+                <button id="disconnect-btn" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s;">DISCONNECT</button>
             </div>
         </div>
     </header>
@@ -158,53 +157,54 @@
     </div>
 
     <div class="product-grid">
+        <!-- Mỗi nút thêm data-amount và data-item để gán sự kiện an toàn -->
         <div class="product-card">
             <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
             <h3>0G PANDA T-SHIRT</h3>
             <div class="price">0.04 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.04, '0G PANDA T-SHIRT')">MINT NOW</button>
+            <button class="btn-buy" data-amount="0.04" data-item="0G PANDA T-SHIRT">MINT NOW</button>
         </div>
         <div class="product-card">
             <img src="mu-0g.jpg" class="product-img" alt="Snapback">
             <h3>0G SNAPBACK</h3>
             <div class="price">0.03 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.03, '0G SNAPBACK')">MINT NOW</button>
+            <button class="btn-buy" data-amount="0.03" data-item="0G SNAPBACK">MINT NOW</button>
         </div>
         <div class="product-card">
             <img src="lot-chuot-0g.jpg" class="product-img" alt="Deskmat">
             <h3>0G DEAI DESKMAT</h3>
             <div class="price">0.02 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.02, '0G DEAI DESKMAT')">MINT NOW</button>
+            <button class="btn-buy" data-amount="0.02" data-item="0G DEAI DESKMAT">MINT NOW</button>
         </div>
         <div class="product-card">
             <img src="binh-nuoc.jpg" class="product-img" alt="Tumbler">
             <h3>0G TUMBLER</h3>
             <div class="price">0.05 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.05, '0G TUMBLER')">MINT NOW</button>
+            <button class="btn-buy" data-amount="0.05" data-item="0G TUMBLER">MINT NOW</button>
         </div>
         <div class="product-card">
             <img src="sotay.jpg" class="product-img" alt="Notebook">
             <h3>0G NOTEBOOK</h3>
             <div class="price">0.01 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.01, '0G NOTEBOOK')">MINT NOW</button>
+            <button class="btn-buy" data-amount="0.01" data-item="0G NOTEBOOK">MINT NOW</button>
         </div>
         <div class="product-card">
             <img src="panda.jpg" class="product-img" alt="Panda Neon">
             <h3>0G PANDA NEON</h3>
             <div class="price">0.03 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.03, '0G PANDA NEON')">MINT NOW</button>
+            <button class="btn-buy" data-amount="0.03" data-item="0G PANDA NEON">MINT NOW</button>
         </div>
         <div class="product-card">
             <img src="hoodie.jpg" class="product-img" alt="Hoodie">
             <h3>0G HOODIE</h3>
             <div class="price">0.05 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.05, '0G HOODIE')">MINT NOW</button>
+            <button class="btn-buy" data-amount="0.05" data-item="0G HOODIE">MINT NOW</button>
         </div>
         <div class="product-card">
             <img src="0gcombo.jpg" class="product-img" alt="Combo">
             <h3>COMBO 0G FAN</h3>
             <div class="price">0.1 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.1, 'COMBO 0G FAN')">MINT NOW</button>
+            <button class="btn-buy" data-amount="0.1" data-item="COMBO 0G FAN">MINT NOW</button>
         </div>
     </div>
 
@@ -227,13 +227,13 @@
     <div id="modal-overlay"></div>
     <div id="order-modal">
         <h2 style="color:var(--0g-cyan); margin-top:0;">📦 SHIPPING INFO</h2>
-        <input type="text" id="order-item" readonly style="color:var(--0g-yellow); font-weight:bold;">
+        <input type="text" id="order-item" readonly style="color:var(--0g-yellow); font-weight:bold;" autocomplete="off">
         <input type="text" id="receiver-name" placeholder="Receiver Name" autocomplete="name">
         <input type="text" id="country" placeholder="Country" autocomplete="country-name">
         <textarea id="address" placeholder="Full Address" autocomplete="street-address"></textarea>
         <input type="text" id="phone" placeholder="Phone Number" autocomplete="tel">
-        <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
-        <button onclick="closeModal()" style="width:100%; background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
+        <button id="submit-order-btn" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
+        <button id="close-modal-btn" style="width:100%; background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
     </div>
 
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | SMART INVESTOR COMMUNITY</div>
@@ -257,6 +257,26 @@
         
         let privy, fullWalletAddress = "", currentPurchasedItem = "", lastTxHash = "", allOrders = [], currentPage = 1, ordersPerPage = 20;
 
+        // --- KHỞI TẠO SỰ KIỆN SAU KHI DOM LOAD (FIX CSP) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('connect-btn').addEventListener('click', handleConnect);
+            document.getElementById('disconnect-btn').addEventListener('click', handleDisconnect);
+            document.getElementById('submit-order-btn').addEventListener('click', submitOrder);
+            document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+
+            // Gán sự kiện cho các nút mua hàng
+            const buyButtons = document.querySelectorAll('.btn-buy');
+            buyButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const amount = btn.getAttribute('data-amount');
+                    const item = btn.getAttribute('data-item');
+                    initiatePayment(amount, item);
+                });
+            });
+
+            initPrivy();
+        });
+
         function initPrivy() {
             if (window.PrivyWidget) {
                 privy = new PrivyWidget({
@@ -271,7 +291,6 @@
                 setTimeout(initPrivy, 1000);
             }
         }
-        window.onload = initPrivy;
 
         async function handleConnect() {
             if (!privy) return;
@@ -386,6 +405,7 @@
             document.getElementById('modal-overlay').style.display = 'none';
         }
 
+        // --- CẬP NHẬT GIÁ (DÙNG FUNCTION REFERENCE ĐỂ FIX CSP) ---
         setInterval(() => {
             const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
             const priceEl = document.getElementById('token-price');
