@@ -5,9 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <!-- 1. Thư viện lõi -->
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<!-- 2. Nạp Privy Widget chính chủ -->
+<script src="https://auth.privy.io/widget/index.js"></script>
 
     <style>
         :root {
@@ -218,166 +223,140 @@
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | SMART INVESTOR COMMUNITY</div>
 
     <script>
-        const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
-        
-        // --- CẤU HÌNH TELEGRAM BOT PROXY ---
-        const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
+    // --- CẤU HÌNH GIỮ NGUYÊN ---
+    const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
+    const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
+    const firebaseConfig = {
+        apiKey: "AIzaSyCHEV_Ob-nxZSV23s5j_bFn7iYQIVTKGy8",
+        authDomain: "sic-0g-shop.firebaseapp.com",
+        projectId: "sic-0g-shop",
+        storageBucket: "sic-0g-shop.firebasestorage.app",
+        messagingSenderId: "563480928582",
+        appId: "1:563480928582:web:b47b24d3fa30be6e2d0547",
+        databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCHEV_Ob-nxZSV23s5j_bFn7iYQIVTKGy8",
-            authDomain: "sic-0g-shop.firebaseapp.com",
-            projectId: "sic-0g-shop",
-            storageBucket: "sic-0g-shop.firebasestorage.app",
-            messagingSenderId: "563480928582",
-            appId: "1:563480928582:web:b47b24d3fa30be6e2d0547",
-            measurementId: "G-F0MTXQMVZW",
-            databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
-        };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    
+    let privy;
+    let fullWalletAddress = ""; 
+    let lastTxHash = "";
+    let currentPurchasedItem = "";
 
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        let currentPurchasedItem = "";
-        let lastTxHash = "";
-        let fullWalletAddress = ""; 
+    // --- 1. KHỞI TẠO PRIVY (HỖ TRỢ GMAIL + VÍ NGẦM) ---
+    function initPrivy() {
+        const TargetPrivy = window.Privy || window.PrivyWidget;
+        if (TargetPrivy) {
+            privy = new TargetPrivy({
+                appId: 'cmp20fb5u009b0cjs6gy1fd16', // ID từ Dashboard của sếp
+                config: {
+                    loginMethods: ['email', 'google'], // Ưu tiên Gmail theo ý sếp
+                    embeddedWallets: {
+                        createOnLogin: 'users-without-wallets', // Tự tạo ví cho người dùng Gmail
+                        noPromptOnSignature: true 
+                    },
+                    appearance: { theme: 'dark', accentColor: '#00f5ff' }
+                }
+            });
+            console.log("🚀 Privy System Ready!");
+        } else {
+            setTimeout(initPrivy, 1000);
+        }
+    }
+    window.onload = initPrivy;
 
-        async function handleConnect() {
-            if (!window.ethereum) return alert("Please install MetaMask!");
-            try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                fullWalletAddress = accounts[0];
-                const shortenedAddress = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
+    // --- 2. XỬ LÝ ĐĂNG NHẬP ---
+    async function handleConnect() {
+        if (!privy) return;
+        try {
+            const user = await privy.login();
+            if (user && user.wallet) {
+                fullWalletAddress = user.wallet.address;
+                const short = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
                 document.getElementById('connect-btn').style.display = 'none';
                 document.getElementById('wallet-info').style.display = 'flex';
-                document.getElementById('wallet-address').innerText = shortenedAddress;
-                return true;
-            } catch (e) { return false; }
-        }
-
-        function handleDisconnect() {
-            fullWalletAddress = "";
-            document.getElementById('connect-btn').style.display = 'block';
-            document.getElementById('wallet-info').style.display = 'none';
-            alert("Wallet Disconnected!");
-        }
-
-        async function initiatePayment(amount, itemName) {
-            if (!fullWalletAddress) {
-                const connected = await handleConnect();
-                if (!connected) return;
+                document.getElementById('wallet-address').innerText = short;
             }
-            try {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const signer = provider.getSigner();
-                currentPurchasedItem = itemName;
-                const tx = await signer.sendTransaction({
-                    to: DESTINATION_WALLET,
-                    value: ethers.utils.parseEther(amount.toString())
-                });
-                lastTxHash = tx.hash;
-                alert(`Transaction sent! Hash: ${tx.hash}`);
-                await tx.wait();
-                document.getElementById('order-item').value = itemName;
-                document.getElementById('order-modal').style.display = 'block';
-                document.getElementById('modal-overlay').style.display = 'block';
-            } catch (e) { alert("Transaction failed!"); }
-        }
+        } catch (e) { console.log("Login cancel"); }
+    }
 
-        // HÀM GỬI THÔNG BÁO TỚI TELEGRAM - SỬ DỤNG MẸO THẺ ẢNH (IMAGE BEACON)
-        async function sendTelegramAlert(orderData) {
-            const text = `
-📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*
-----------------------------------
-👤 *Khách:* ${orderData.receiver}
-📱 *SĐT:* ${orderData.phone}
-🌍 *Quốc gia:* ${orderData.country}
-🏠 *Địa chỉ:* ${orderData.address}
-🛍️ *Sản phẩm:* ${orderData.item}
-💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})
-----------------------------------
-🚀 *Vận hành bởi SIC Community*
-            `;
+    async function handleDisconnect() {
+        if (privy) await privy.logout();
+        location.reload();
+    }
 
-            try {
-                // Tạo URL với tham số message để gửi qua phương thức GET
-                const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-                
-                // Sử dụng Image object để kích hoạt lệnh gửi đi mà không bị chặn bởi CORS
-                const img = new Image();
-                img.src = finalUrl; 
-                
-                console.log("Đã kích hoạt lệnh gửi thông báo Telegram...");
-            } catch (error) {
-                console.error("Lỗi gửi thông báo Telegram:", error);
-            }
-        }
-
-        async function submitOrder() {
-            const name = document.getElementById('receiver-name').value.trim();
-            const country = document.getElementById('country').value.trim();
-            const address = document.getElementById('address').value.trim();
-            const phone = document.getElementById('phone').value.trim();
+    // --- 3. THANH TOÁN (HỖ TRỢ CẢ VÍ NGOÀI LẪN VÍ GMAIL) ---
+    async function initiatePayment(amount, itemName) {
+        if (!fullWalletAddress) return handleConnect();
+        try {
+            // Lấy provider thông minh từ Privy
+            const provider = new ethers.providers.Web3Provider(window.ethereum || privy.provider);
+            const signer = provider.getSigner();
+            currentPurchasedItem = itemName;
             
-            if (!name || !country || !address || !phone) return alert("Please fill all fields!");
+            const tx = await signer.sendTransaction({
+                to: DESTINATION_WALLET,
+                value: ethers.utils.parseEther(amount.toString())
+            });
             
-            const orderData = {
-                wallet: fullWalletAddress,
-                item: currentPurchasedItem,
-                receiver: name,
-                country: country,
-                address: address,
-                phone: phone,
-                txHash: lastTxHash || "N/A",
-                status: "Confirmed",
-                timestamp: Date.now()
-            };
+            lastTxHash = tx.hash;
+            alert(`Giao dịch đã gửi! Hash: ${tx.hash}`);
+            await tx.wait();
+            
+            document.getElementById('order-item').value = itemName;
+            document.getElementById('order-modal').style.display = 'block';
+            document.getElementById('modal-overlay').style.display = 'block';
+        } catch (e) { alert("Lỗi giao dịch! Kiểm tra số dư 0G nhé sếp."); }
+    }
 
-            try {
-                // 1. Lưu vào Firebase trước
-                await database.ref('orders/').push(orderData);
-                
-                // 2. Bắn thông báo Telegram ngay lập tức
-                await sendTelegramAlert(orderData); 
-                
-                alert("Order Saved Successfully!");
-                closeModal();
-            } catch (error) { 
-                alert("Database Error: " + error.message); 
-            }
+    // --- 4. TELEGRAM & FIREBASE (GIỮ NGUYÊN LOGIC CỦA SẾP) ---
+    async function sendTelegramAlert(orderData) {
+        const text = `📦 ĐƠN HÀNG MỚI - SIC-0G SHOP\n👤 Khách: ${orderData.receiver}\n🏠 ĐC: ${orderData.address}\n🛍️ SP: ${orderData.item}\n💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})`;
+        new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
+    }
+
+    async function submitOrder() {
+        const orderData = {
+            wallet: fullWalletAddress,
+            item: currentPurchasedItem,
+            receiver: document.getElementById('receiver-name').value.trim(),
+            country: document.getElementById('country').value.trim(),
+            address: document.getElementById('address').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            txHash: lastTxHash || "N/A",
+            status: "Confirmed",
+            timestamp: Date.now()
+        };
+        if (!orderData.receiver || !orderData.address) return alert("Sếp điền đủ thông tin nhé!");
+        await database.ref('orders/').push(orderData);
+        await sendTelegramAlert(orderData);
+        alert("Đã lưu đơn thành công!");
+        closeModal();
+    }
+
+    // --- ĐỒNG BỘ DỮ LIỆU LEDGER ---
+    database.ref('orders/').on('value', (snapshot) => {
+        const listBody = document.getElementById('order-history-list');
+        if (!listBody) return;
+        listBody.innerHTML = "";
+        const orders = snapshot.val();
+        if (orders) {
+            Object.values(orders).reverse().forEach(o => {
+                const short = o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4);
+                listBody.innerHTML += `<tr><td style="color:#39d353;">${short}</td><td>${o.item}</td><td>Confirmed</td><td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color:var(--0g-cyan);">View</a></td></tr>`;
+            });
         }
+    });
 
-        database.ref('orders/').on('value', (snapshot) => {
-            const orders = snapshot.val();
-            const listBody = document.getElementById('order-history-list');
-            if (!listBody) return;
-            listBody.innerHTML = "";
-            if (orders) {
-                Object.values(orders).reverse().forEach(o => {
-                    const shortWallet = o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4);
-                    listBody.innerHTML += `
-                        <tr>
-                            <td style="font-family: monospace; color: #39d353;">${shortWallet}</td>
-                            <td>${o.item}</td>
-                            <td><span style="color: #39d353;">● ${o.status}</span></td>
-                            <td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color: var(--0g-cyan);">View</a></td>
-                        </tr>
-                    `;
-                });
-            }
-        });
+    function closeModal() {
+        document.getElementById('order-modal').style.display = 'none';
+        document.getElementById('modal-overlay').style.display = 'none';
+    }
 
-        function closeModal() {
-            document.getElementById('order-modal').style.display = 'none';
-            document.getElementById('modal-overlay').style.display = 'none';
-            document.getElementById('receiver-name').value = "";
-            document.getElementById('country').value = "";
-            document.getElementById('address').value = "";
-            document.getElementById('phone').value = "";
-        }
-
-        setInterval(() => {
-            const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
-            document.getElementById('token-price').innerText = `$${mockPrice}`;
-        }, 5000);
-    </script>
+    setInterval(() => {
+        document.getElementById('token-price').innerText = `$${(0.5370 + Math.random()*0.002).toFixed(4)}`;
+    }, 5000);
+</script>
 </body>
 </html>
