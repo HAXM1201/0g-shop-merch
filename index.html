@@ -6,7 +6,7 @@
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
     
-    <!-- 1. NẠP THƯ VIỆN CHUẨN (Fix lỗi undefined) -->
+    <!-- 1. NẠP THƯ VIỆN CHUẨN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -140,7 +140,6 @@
     </div>
 
     <div class="product-grid">
-        <!-- Các sản phẩm giữ nguyên như cũ -->
         <div class="product-card">
             <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
             <h3>0G PANDA T-SHIRT</h3>
@@ -234,7 +233,6 @@
             databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
-        // Khởi tạo Firebase phiên bản 8 compat
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -242,18 +240,31 @@
         let lastTxHash = "";
         let fullWalletAddress = ""; 
 
-        // 1. Hàm kết nối ví chuẩn
+        // --- FIXED: AUTO-CHECK LOGIN KHI LOAD TRANG ---
+        window.addEventListener('load', async () => {
+            if (window.ethereum) {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length > 0) {
+                    updateWalletUI(accounts[0]);
+                }
+            }
+        });
+
         async function handleConnect() {
             if (typeof window.ethereum === 'undefined') return alert("Sếp cài MetaMask giúp em nhé!");
             try {
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                fullWalletAddress = accounts[0];
-                const short = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
-                document.getElementById('connect-btn').style.display = 'none';
-                document.getElementById('wallet-info').style.display = 'flex';
-                document.getElementById('wallet-address').innerText = short;
+                updateWalletUI(accounts[0]);
                 return true;
             } catch (e) { return false; }
+        }
+
+        function updateWalletUI(address) {
+            fullWalletAddress = address;
+            const short = address.substring(0, 6) + "..." + address.substring(address.length - 4);
+            document.getElementById('connect-btn').style.display = 'none';
+            document.getElementById('wallet-info').style.display = 'flex';
+            document.getElementById('wallet-address').innerText = short;
         }
 
         function handleDisconnect() {
@@ -262,17 +273,21 @@
             document.getElementById('wallet-info').style.display = 'none';
         }
 
-        // 2. Hàm thanh toán (Fixed Ethers.js)
         async function initiatePayment(amount, itemName) {
             if (!fullWalletAddress) {
                 const connected = await handleConnect();
                 if (!connected) return;
             }
             try {
-                // Đảm bảo dùng ethers từ thư viện đã nạp
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 const signer = provider.getSigner();
                 currentPurchasedItem = itemName;
+
+                // Kiểm tra số dư (Optional nhưng chuyên nghiệp)
+                const balance = await provider.getBalance(fullWalletAddress);
+                if (balance.lt(ethers.utils.parseEther(amount.toString()))) {
+                    return alert("Ví sếp không đủ 0G rồi!");
+                }
 
                 const tx = await signer.sendTransaction({
                     to: DESTINATION_WALLET,
@@ -280,20 +295,18 @@
                 });
 
                 lastTxHash = tx.hash;
-                alert(`Giao dịch đã gửi! Hash: ${tx.hash}`);
+                alert(`Giao dịch đang xử lý... Hash: ${tx.hash}`);
                 
-                await tx.wait(); // Chờ xác thực on-chain
+                await tx.wait(); 
                 
                 document.getElementById('order-item').value = itemName;
                 document.getElementById('order-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
             } catch (e) { 
-                console.error(e);
-                alert("Giao dịch thất bại hoặc sếp đã từ chối!"); 
+                alert("Giao dịch gặp lỗi hoặc sếp đã hủy."); 
             }
         }
 
-        // 3. Gửi Telegram (Image Beacon trick)
         function sendTelegramAlert(orderData) {
             const text = `📦 ĐƠN HÀNG MỚI\n👤 Khách: ${orderData.receiver}\n📱 SĐT: ${orderData.phone}\n🛍️ SP: ${orderData.item}\n💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})`;
             const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
@@ -301,7 +314,6 @@
             img.src = finalUrl; 
         }
 
-        // 4. Lưu đơn hàng
         async function submitOrder() {
             const name = document.getElementById('receiver-name').value.trim();
             const address = document.getElementById('address').value.trim();
@@ -331,7 +343,6 @@
             }
         }
 
-        // 5. Đồng bộ Ledger thời gian thực
         database.ref('orders/').on('value', (snapshot) => {
             const orders = snapshot.val();
             const listBody = document.getElementById('order-history-list');
@@ -356,7 +367,6 @@
             document.getElementById('modal-overlay').style.display = 'none';
         }
 
-        // Giá Token ảo cho sinh động
         setInterval(() => {
             const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
             const priceEl = document.getElementById('token-price');
