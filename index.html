@@ -5,9 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
+    
+    <!-- THẺ META CSP THÔNG CHỐT LỖI EVAL & FIREBASE -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self' https://*.privy.io; 
+                   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://auth.privy.io https://*.privy.io https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebasedatabase.app; 
+                   style-src 'self' 'unsafe-inline' https://*.privy.io; 
+                   img-src 'self' data: https://script.google.com https://*.privy.io; 
+                   connect-src 'self' https://auth.privy.io https://*.privy.io https://*.firebasedatabase.app wss://*.firebasedatabase.app wss://*.privy.io https://www.gstatic.com;">
+
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
         :root {
@@ -39,12 +49,13 @@
 
         .logo-text { font-weight: 900; color: var(--0g-cyan); font-size: 1.6rem; text-shadow: var(--neon-glow); }
 
-        #connect-btn {
-            background: transparent; border: 1.5px solid var(--0g-cyan); color: var(--0g-cyan);
+        #connect-btn, #google-login-btn {
             padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer;
             transition: 0.3s;
         }
 
+        #google-login-btn { background:#4285F4; color:white; border:none; display:flex; align-items:center; gap:8px; }
+        #connect-btn { background: transparent; border: 1.5px solid var(--0g-cyan); color: var(--0g-cyan); }
         #connect-btn:hover { background: var(--0g-cyan); color: #000; box-shadow: var(--neon-glow); }
 
         .main-title { 
@@ -54,8 +65,7 @@
         }
 
         .live-price-box {
-            background: rgba(0, 245, 255, 0.05);
-            border: 1px solid rgba(0, 245, 255, 0.3);
+            background: rgba(0, 245, 255, 0.05); border: 1px solid rgba(0, 245, 255, 0.3);
             display: inline-flex; align-items: center; padding: 8px 25px;
             border-radius: 100px; margin: 15px 0; backdrop-filter: blur(5px);
         }
@@ -89,7 +99,6 @@
         .btn-buy { background: var(--0g-cyan); color: #000; border: none; padding: 12px 0; border-radius: 12px; font-weight: 900; cursor: pointer; transition: 0.3s; }
         .btn-buy:hover { background: #fff; box-shadow: var(--neon-glow); }
 
-        /* LEDGER & PAGINATION */
         .ledger-container {
             max-width: 1200px; margin: 50px auto; padding: 20px; 
             background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(0, 245, 255, 0.1); 
@@ -99,15 +108,9 @@
         th { color: var(--0g-yellow); padding: 15px; border-bottom: 1px solid rgba(0, 245, 255, 0.2); }
         td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 
-        .pagination-controls {
-            margin-top: 20px; display: flex; justify-content: center; gap: 8px; padding-bottom: 10px;
-        }
-        .page-btn {
-            background: transparent; border: 1px solid var(--0g-cyan); color: var(--0g-cyan);
-            padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: bold;
-        }
+        .pagination-controls { margin-top: 20px; display: flex; justify-content: center; gap: 8px; padding-bottom: 10px; }
+        .page-btn { background: transparent; border: 1px solid var(--0g-cyan); color: var(--0g-cyan); padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         .page-btn.active { background: var(--0g-cyan); color: #000; }
-        .page-btn:disabled { border-color: #333; color: #333; cursor: not-allowed; }
 
         #order-modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -115,11 +118,9 @@
             border-radius: 20px; z-index: 2000; width: 90%; max-width: 400px; box-shadow: var(--neon-glow);
         }
         #order-modal input, #order-modal textarea {
-            width: 100%; margin-bottom: 12px; background: #1a1f2e; border: 1px solid #333; 
-            color: #fff; padding: 10px; border-radius: 8px; box-sizing: border-box;
+            width: 100%; margin-bottom: 12px; background: #1a1f2e; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; box-sizing: border-box;
         }
         #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1999; }
-        
         .footer-bar { position: fixed; bottom: 0; width: 100%; background: rgba(0, 0, 0, 0.9); padding: 12px 0; color: rgba(0, 245, 255, 0.6); font-family: monospace; font-size: 0.75rem; border-top: 1px solid rgba(0, 245, 255, 0.2); z-index: 99; }
     </style>
 </head>
@@ -128,10 +129,15 @@
     <header>
         <div class="logo-text">SIC-0G MERCH</div>
         <div id="wallet-container" style="display: flex; align-items: center; gap: 10px;">
-            <button id="connect-btn" onclick="handleConnect()">CONNECT WALLET</button>
+            <button id="google-login-btn">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18" height="18" alt="G">
+                Gmail Login
+            </button>
+            <button id="connect-btn" onclick="handleConnect()">META MASK</button>
+            
             <div id="wallet-info" style="display:none; align-items: center; gap: 10px;">
                 <div id="wallet-address" style="color: #39d353; border: 1px solid #39d353; padding: 8px 20px; border-radius: 50px; font-family: monospace;"></div>
-                <button id="disconnect-btn" onclick="handleDisconnect()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s;">DISCONNECT</button>
+                <button onclick="logout()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold;">EXIT</button>
             </div>
         </div>
     </header>
@@ -145,71 +151,25 @@
     </div>
 
     <div class="node-ticker">
-        <div class="ticker-content">This project is a blockchain technology experiment dedicated to the SIC community. ● VALIDATOR: SIC ● NETWORK: 0G MAINNET ● LIMITLESS DEAI SCALABILITY</div>
+        <div class="ticker-content">VALIDATOR: SIC ● NETWORK: 0G MAINNET ● LIMITLESS DEAI SCALABILITY</div>
     </div>
 
     <div class="product-grid">
-        <div class="product-card">
-            <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
-            <h3>0G PANDA T-SHIRT</h3>
-            <div class="price">0.04 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.04, '0G PANDA T-SHIRT')">MINT NOW</button>
-        </div>
-        <div class="product-card">
-            <img src="mu-0g.jpg" class="product-img" alt="Snapback">
-            <h3>0G SNAPBACK</h3>
-            <div class="price">0.03 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.03, '0G SNAPBACK')">MINT NOW</button>
-        </div>
-        <div class="product-card">
-            <img src="lot-chuot-0g.jpg" class="product-img" alt="Deskmat">
-            <h3>0G DEAI DESKMAT</h3>
-            <div class="price">0.02 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.02, '0G DEAI DESKMAT')">MINT NOW</button>
-        </div>
-        <div class="product-card">
-            <img src="binh-nuoc.jpg" class="product-img" alt="Tumbler">
-            <h3>0G TUMBLER</h3>
-            <div class="price">0.05 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.05, '0G TUMBLER')">MINT NOW</button>
-        </div>
-        <div class="product-card">
-            <img src="sotay.jpg" class="product-img" alt="Notebook">
-            <h3>0G NOTEBOOK</h3>
-            <div class="price">0.01 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.01, '0G NOTEBOOK')">MINT NOW</button>
-        </div>
-        <div class="product-card">
-            <img src="panda.jpg" class="product-img" alt="Panda Neon">
-            <h3>0G PANDA NEON</h3>
-            <div class="price">0.03 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.03, '0G PANDA NEON')">MINT NOW</button>
-        </div>
-        <div class="product-card">
-            <img src="hoodie.jpg" class="product-img" alt="Hoodie">
-            <h3>0G HOODIE</h3>
-            <div class="price">0.05 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.05, '0G HOODIE')">MINT NOW</button>
-        </div>
-        <div class="product-card">
-            <img src="0gcombo.jpg" class="product-img" alt="Combo">
-            <h3>COMBO 0G FANS</h3>
-            <div class="price">0.1 0G</div>
-            <button class="btn-buy" onclick="initiatePayment(0.1, 'COMBO 0G FANS')">MINT NOW</button>
-        </div>
+        <!-- 8 Sản phẩm chuẩn Version 1 -->
+        <div class="product-card"><img src="ao-0g.jpg" class="product-img"><h3>0G PANDA T-SHIRT</h3><div class="price">0.04 0G</div><button class="btn-buy" onclick="initiatePayment(0.04, '0G PANDA T-SHIRT')">MINT NOW</button></div>
+        <div class="product-card"><img src="mu-0g.jpg" class="product-img"><h3>0G SNAPBACK</h3><div class="price">0.03 0G</div><button class="btn-buy" onclick="initiatePayment(0.03, '0G SNAPBACK')">MINT NOW</button></div>
+        <div class="product-card"><img src="lot-chuot-0g.jpg" class="product-img"><h3>0G DEAI DESKMAT</h3><div class="price">0.02 0G</div><button class="btn-buy" onclick="initiatePayment(0.02, '0G DEAI DESKMAT')">MINT NOW</button></div>
+        <div class="product-card"><img src="binh-nuoc.jpg" class="product-img"><h3>0G TUMBLER</h3><div class="price">0.05 0G</div><button class="btn-buy" onclick="initiatePayment(0.05, '0G TUMBLER')">MINT NOW</button></div>
+        <div class="product-card"><img src="sotay.jpg" class="product-img"><h3>0G NOTEBOOK</h3><div class="price">0.01 0G</div><button class="btn-buy" onclick="initiatePayment(0.01, '0G NOTEBOOK')">MINT NOW</button></div>
+        <div class="product-card"><img src="panda.jpg" class="product-img"><h3>0G PANDA NEON</h3><div class="price">0.03 0G</div><button class="btn-buy" onclick="initiatePayment(0.03, '0G PANDA NEON')">MINT NOW</button></div>
+        <div class="product-card"><img src="hoodie.jpg" class="product-img"><h3>0G HOODIE</h3><div class="price">0.05 0G</div><button class="btn-buy" onclick="initiatePayment(0.05, '0G HOODIE')">MINT NOW</button></div>
+        <div class="product-card"><img src="0gcombo.jpg" class="product-img"><h3>COMBO 0G FANS</h3><div class="price">0.1 0G</div><button class="btn-buy" onclick="initiatePayment(0.1, 'COMBO 0G FANS')">MINT NOW</button></div>
     </div>
 
     <div class="ledger-container">
         <h2 style="color: var(--0g-cyan);">📜 ON-CHAIN ORDER LEDGER</h2>
         <table>
-            <thead>
-                <tr>
-                    <th>Customer Wallet</th>
-                    <th>Product</th>
-                    <th>Status</th>
-                    <th>Explorer</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Wallet</th><th>Product</th><th>Status</th><th>Explorer</th></tr></thead>
             <tbody id="order-history-list"></tbody>
         </table>
         <div id="pagination" class="pagination-controls"></div>
@@ -220,8 +180,8 @@
         <h2 style="color:var(--0g-cyan); margin-top:0;">📦 SHIPPING INFO</h2>
         <input type="text" id="order-item" readonly style="color:var(--0g-yellow); font-weight:bold;">
         <input type="text" id="receiver-name" placeholder="Receiver Name">
-        <input type="text" id="country" placeholder="Country">
-        <textarea id="address" placeholder="Full Address (Street, City, State)"></textarea>
+        <input type="text" id="country" placeholder="Country" value="Vietnam">
+        <textarea id="address" placeholder="Full Address"></textarea>
         <input type="text" id="phone" placeholder="Phone Number">
         <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
         <button onclick="closeModal()" style="width:100%; background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
@@ -240,180 +200,126 @@
             storageBucket: "sic-0g-shop.firebasestorage.app",
             messagingSenderId: "563480928582",
             appId: "1:563480928582:web:b47b24d3fa30be6e2d0547",
-            measurementId: "G-F0MTXQMVZW",
             databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        let currentPurchasedItem = "";
-        let lastTxHash = "";
-        let fullWalletAddress = ""; 
+        const auth = firebase.auth();
 
-        // --- LOGIC PHÂN TRANG ---
-        let allOrders = [];
-        let currentPage = 1;
+        let currentUser = null, hiddenWallet = null, fullWalletAddress = "", currentPurchasedItem = "", lastTxHash = "", allOrders = [], currentPage = 1;
         const ordersPerPage = 15;
 
-        async function handleConnect() {
-            if (!window.ethereum) return alert("Please install MetaMask!");
+        // --- GOOGLE LOGIN & HIDDEN WALLET ---
+        document.getElementById('google-login-btn').addEventListener('click', async () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
             try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                fullWalletAddress = accounts[0];
-                const shortenedAddress = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
-                document.getElementById('connect-btn').style.display = 'none';
-                document.getElementById('wallet-info').style.display = 'flex';
-                document.getElementById('wallet-address').innerText = shortenedAddress;
-                return true;
-            } catch (e) { return false; }
+                const result = await auth.signInWithPopup(provider);
+                currentUser = result.user;
+                showPasswordSetupModal(currentUser.email);
+            } catch (error) { alert("Login failed!"); }
+        });
+
+        function showPasswordSetupModal(email) {
+            const modalHTML = `<div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:2px solid #00f5ff;padding:30px;border-radius:20px;z-index:3000;width:90%;max-width:400px;box-shadow:0 0 20px #00f5ff66;">
+                <h3 style="color:#00f5ff;margin-top:0;">🔐 Setup Hidden Wallet</h3>
+                <p style="font-size:0.9rem;">Email: ${email}</p>
+                <input type="password" id="u-pw" placeholder="Password (min 8 chars)" style="width:100%;padding:10px;margin:10px 0;border-radius:8px;background:#1a1f2e;border:1px solid #333;color:white;">
+                <input type="password" id="u-pw-c" placeholder="Confirm Password" style="width:100%;padding:10px;margin-bottom:15px;border-radius:8px;background:#1a1f2e;border:1px solid #333;color:white;">
+                <button onclick="createHiddenWallet()" style="width:100%;padding:12px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;cursor:pointer;">CREATE VIRTUAL WALLET</button>
+            </div><div id="pw-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:2999;"></div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
 
-        function handleDisconnect() {
-            fullWalletAddress = "";
-            document.getElementById('connect-btn').style.display = 'block';
-            document.getElementById('wallet-info').style.display = 'none';
-            alert("Wallet Disconnected!");
+        window.createHiddenWallet = async function() {
+            const pw = document.getElementById('u-pw').value;
+            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return alert("Check password!");
+            const seed = currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-SECURE-V1";
+            hiddenWallet = new ethers.Wallet(ethers.utils.id(seed));
+            fullWalletAddress = hiddenWallet.address;
+            
+            await database.ref('users/' + currentUser.uid).set({ email: currentUser.email, wallet: fullWalletAddress, createdAt: Date.now() });
+            document.getElementById('pw-modal').remove(); document.getElementById('pw-overlay').remove();
+            updateUIAfterLogin();
+        };
+
+        function updateUIAfterLogin() {
+            const short = fullWalletAddress.substring(0,6) + "..." + fullWalletAddress.slice(-4);
+            document.getElementById('google-login-btn').style.display = 'none';
+            document.getElementById('connect-btn').style.display = 'none';
+            document.getElementById('wallet-address').innerText = short;
+            document.getElementById('wallet-info').style.display = 'flex';
+        }
+
+        window.logout = () => { auth.signOut(); location.reload(); };
+
+        // --- BLOCKCHAIN CONNECT ---
+        async function handleConnect() {
+            if (!window.ethereum) return alert("Install Metamask!");
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            fullWalletAddress = accounts[0];
+            updateUIAfterLogin();
         }
 
         async function initiatePayment(amount, itemName) {
-            if (!fullWalletAddress) {
-                const connected = await handleConnect();
-                if (!connected) return;
-            }
+            if (!fullWalletAddress) return alert("Login first!");
             try {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const signer = provider.getSigner();
+                if (window.ethereum && !hiddenWallet) {
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    const tx = await provider.getSigner().sendTransaction({ to: DESTINATION_WALLET, value: ethers.utils.parseEther(amount.toString()) });
+                    lastTxHash = tx.hash; await tx.wait();
+                } else { alert("Payment from virtual wallet via QR coming soon. Use Metamask for now!"); return; }
                 currentPurchasedItem = itemName;
-                const tx = await signer.sendTransaction({
-                    to: DESTINATION_WALLET,
-                    value: ethers.utils.parseEther(amount.toString())
-                });
-                lastTxHash = tx.hash;
-                alert(`Transaction sent! Hash: ${tx.hash}`);
-                await tx.wait();
                 document.getElementById('order-item').value = itemName;
                 document.getElementById('order-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
-            } catch (e) { alert("Transaction failed!"); }
-        }
-
-        async function sendTelegramAlert(orderData) {
-            const text = `
-📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*
-----------------------------------
-👤 *Khách:* ${orderData.receiver}
-📱 *SĐT:* ${orderData.phone}
-🌍 *Quốc gia:* ${orderData.country}
-🏠 *Địa chỉ:* ${orderData.address}
-🛍️ *Sản phẩm:* ${orderData.item}
-💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})
-----------------------------------
-🚀 *Vận hành bởi SIC Community*`;
-
-            try {
-                const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-                const img = new Image();
-                img.src = finalUrl; 
-            } catch (error) { console.error("Telegram error:", error); }
+            } catch (e) { alert("Payment Failed!"); }
         }
 
         async function submitOrder() {
-            const name = document.getElementById('receiver-name').value.trim();
-            const country = document.getElementById('country').value.trim();
-            const address = document.getElementById('address').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            
-            if (!name || !country || !address || !phone) return alert("Please fill all fields!");
-            
             const orderData = {
-                wallet: fullWalletAddress,
-                item: currentPurchasedItem,
-                receiver: name,
-                country: country,
-                address: address,
-                phone: phone,
-                txHash: lastTxHash || "N/A",
-                status: "Confirmed",
-                timestamp: Date.now()
+                wallet: fullWalletAddress, item: currentPurchasedItem,
+                receiver: document.getElementById('receiver-name').value,
+                country: document.getElementById('country').value,
+                address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value,
+                txHash: lastTxHash || "VIRTUAL-PENDING", status: "Paid", timestamp: Date.now()
             };
-
-            try {
-                await database.ref('orders/').push(orderData);
-                await sendTelegramAlert(orderData); 
-                alert("Order Saved Successfully!");
-                closeModal();
-            } catch (error) { alert("Database Error: " + error.message); }
+            await database.ref('orders/').push(orderData);
+            const msg = `📦 ĐƠN MỚI: ${orderData.item}\n👤 ${orderData.receiver}\n📞 ${orderData.phone}\n🔗 Tx: ${orderData.txHash}`;
+            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
+            alert("Order Saved!"); closeModal();
         }
 
-        // --- CẬP NHẬT LEDGER VỚI PHÂN TRANG ---
-        database.ref('orders/').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                allOrders = Object.values(data).reverse();
-                renderTable();
-            }
+        // --- LEDGER & PAGINATION ---
+        database.ref('orders/').on('value', (snap) => {
+            const data = snap.val();
+            if (data) { allOrders = Object.values(data).reverse(); renderTable(); }
         });
 
         function renderTable() {
             const listBody = document.getElementById('order-history-list');
-            if (!listBody) return;
             listBody.innerHTML = "";
-
-            const startIndex = (currentPage - 1) * ordersPerPage;
-            const endIndex = startIndex + ordersPerPage;
-            const paginatedItems = allOrders.slice(startIndex, endIndex);
-
-            paginatedItems.forEach(o => {
-                const shortWallet = o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4);
-                listBody.innerHTML += `
-                    <tr>
-                        <td style="font-family: monospace; color: #39d353;">${shortWallet}</td>
-                        <td>${o.item}</td>
-                        <td><span style="color: #39d353;">● ${o.status}</span></td>
-                        <td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color: var(--0g-cyan);">View</a></td>
-                    </tr>`;
+            const paginated = allOrders.slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage);
+            paginated.forEach(o => {
+                const short = o.wallet.substring(0,6) + "..." + o.wallet.slice(-4);
+                listBody.innerHTML += `<tr><td style="color:#39d353;">${short}</td><td>${o.item}</td><td>Confirmed</td><td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color:var(--0g-cyan);">View</a></td></tr>`;
             });
             renderPagination();
         }
 
         function renderPagination() {
-            const pagination = document.getElementById('pagination');
-            const totalPages = Math.ceil(allOrders.length / ordersPerPage);
-            pagination.innerHTML = "";
-            if (totalPages <= 1) return;
-
-            const prevBtn = document.createElement('button');
-            prevBtn.innerText = "«";
-            prevBtn.className = "page-btn";
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => { currentPage--; renderTable(); };
-            pagination.appendChild(prevBtn);
-
-            for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
-                btn.innerText = i;
-                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-                btn.onclick = () => { currentPage = i; renderTable(); };
-                pagination.appendChild(btn);
+            const container = document.getElementById('pagination');
+            const total = Math.ceil(allOrders.length / ordersPerPage);
+            container.innerHTML = ""; if (total <= 1) return;
+            for (let i = 1; i <= total; i++) {
+                const btn = document.createElement('button'); btn.innerText = i; btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.onclick = () => { currentPage = i; renderTable(); }; container.appendChild(btn);
             }
-
-            const nextBtn = document.createElement('button');
-            nextBtn.innerText = "»";
-            nextBtn.className = "page-btn";
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => { currentPage++; renderTable(); };
-            pagination.appendChild(nextBtn);
         }
 
-        function closeModal() {
-            document.getElementById('order-modal').style.display = 'none';
-            document.getElementById('modal-overlay').style.display = 'none';
-        }
-
-        setInterval(() => {
-            const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
-            document.getElementById('token-price').innerText = `$${mockPrice}`;
-        }, 5000);
+        function closeModal() { document.getElementById('order-modal').style.display = 'none'; document.getElementById('modal-overlay').style.display = 'none'; }
+        setInterval(() => { document.getElementById('token-price').innerText = `$${(0.5370 + Math.random()*0.002).toFixed(4)}`; }, 5000);
     </script>
 </body>
 </html>
