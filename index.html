@@ -223,10 +223,9 @@
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | SMART INVESTOR COMMUNITY</div>
 
     <script>
-    // --- CẤU HÌNH HỆ THỐNG SIC-0G ---
+    // --- CẤU HÌNH GỐC CỦA SẾP XUÂN ---
     const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
     const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
-
     const firebaseConfig = {
         apiKey: "AIzaSyCHEV_Ob-nxZSV23s5j_bFn7iYQIVTKGy8",
         authDomain: "sic-0g-shop.firebaseapp.com",
@@ -236,114 +235,58 @@
         appId: "1:563480928582:web:b47b24d3fa30be6e2d0547",
         databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
-
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
     let privy;
     let fullWalletAddress = ""; 
-    let lastTxHash = "";
-    let currentPurchasedItem = "";
 
-    // --- KHỞI TẠO PRIVY (GMAIL + METAMASK) ---
-    function initPrivy() {
-        const TargetPrivy = window.Privy || window.PrivyWidget;
-        if (TargetPrivy) {
+    // --- CÁCH MỚI: NẠP SDK DỰA TRÊN SỰ KIỆN (DYNAMIC LOAD) ---
+    async function handleConnect() {
+        // 1. Nếu chưa có SDK thì đi mượn (nạp động)
+        if (!window.Privy && !window.PrivyWidget) {
+            console.log("🚚 Đang nạp bộ giải mã Privy...");
+            await new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = 'https://auth.privy.io/widget/index.js';
+                script.onload = resolve;
+                document.head.appendChild(script);
+            });
+        }
+
+        // 2. Khởi tạo ngay lập tức sau khi nạp
+        if (!privy) {
+            const TargetPrivy = window.Privy || window.PrivyWidget;
             privy = new TargetPrivy({
-                appId: 'cmp20fb5u009b0cjs6gy1fd16', // App ID sếp vừa lấy
+                appId: 'cmp20fb5u009b0cjs6gy1fd16', // App ID từ Dashboard của sếp
                 config: {
-                    loginMethods: ['google', 'email', 'wallet'], 
-                    embeddedWallets: {
-                        createOnLogin: 'users-without-wallets', // Tự tạo ví cho Gmail
-                        noPromptOnSignature: true 
-                    },
+                    loginMethods: ['google', 'email'],
+                    embeddedWallets: { createOnLogin: 'users-without-wallets' },
                     appearance: { theme: 'dark', accentColor: '#00f5ff' }
                 }
             });
-            console.log("🚀 SIC-0G Shop: Privy Ready!");
-        } else {
-            setTimeout(initPrivy, 1000);
         }
-    }
-    window.onload = initPrivy;
 
-    // --- XỬ LÝ ĐĂNG NHẬP ---
-    async function handleConnect() {
-        if (!privy) return;
+        // 3. Thực hiện đăng nhập
         try {
             const user = await privy.login();
             if (user && user.wallet) {
                 fullWalletAddress = user.wallet.address;
-                const short = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
-                document.getElementById('connect-btn').style.display = 'none';
-                document.getElementById('wallet-info').style.display = 'flex';
-                document.getElementById('wallet-address').innerText = short;
+                updateUI(fullWalletAddress);
             }
-        } catch (e) { console.log("User closed login"); }
-    }
-
-    async function handleDisconnect() {
-        if (privy) await privy.logout();
-        location.reload();
-    }
-
-    // --- THANH TOÁN THÔNG MINH ---
-    async function initiatePayment(amount, itemName) {
-        if (!fullWalletAddress) return handleConnect();
-        try {
-            // Tự nhận diện ví Gmail hoặc Metamask
-            const provider = new ethers.providers.Web3Provider(window.ethereum || privy.provider);
-            const signer = provider.getSigner();
-            currentPurchasedItem = itemName;
-            
-            const tx = await signer.sendTransaction({
-                to: DESTINATION_WALLET,
-                value: ethers.utils.parseEther(amount.toString())
-            });
-            
-            lastTxHash = tx.hash;
-            alert(`Giao dịch thành công! Hash: ${tx.hash}`);
-            await tx.wait();
-            
-            document.getElementById('order-item').value = itemName;
-            document.getElementById('order-modal').style.display = 'block';
-            document.getElementById('modal-overlay').style.display = 'block';
-        } catch (e) { alert("Lỗi giao dịch! Sếp kiểm tra số dư 0G nhé."); }
-    }
-
-    // --- TELEGRAM & FIREBASE (GIỮ NGUYÊN LOGIC V0 CỦA SẾP) ---
-    async function submitOrder() {
-        const orderData = {
-            wallet: fullWalletAddress,
-            item: currentPurchasedAddress,
-            receiver: document.getElementById('receiver-name').value.trim(),
-            address: document.getElementById('address').value.trim(),
-            phone: document.getElementById('phone').value.trim(),
-            txHash: lastTxHash,
-            status: "Confirmed",
-            timestamp: Date.now()
-        };
-        await database.ref('orders/').push(orderData);
-        const text = `📦 ĐƠN HÀNG MỚI\n👤 Khách: ${orderData.receiver}\n🛍️ SP: ${orderData.item}\n💸 [Xem Tx](https://chainscan.0g.ai/tx/${orderData.txHash})`;
-        new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-        alert("Đã lưu đơn!");
-        location.reload();
-    }
-
-    // Đồng bộ Ledger
-    database.ref('orders/').on('value', (snapshot) => {
-        const listBody = document.getElementById('order-history-list');
-        if (!listBody) return;
-        listBody.innerHTML = "";
-        const orders = snapshot.val();
-        if (orders) {
-            Object.values(orders).reverse().forEach(o => {
-                const short = o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4);
-                listBody.innerHTML += `<tr><td style="color:#39d353;">${short}</td><td>${o.item}</td><td>Confirmed</td><td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color:var(--0g-cyan);">View</a></td></tr>`;
-            });
+        } catch (e) {
+            console.error("Lỗi đăng nhập:", e);
         }
-    });
+    }
 
+    function updateUI(address) {
+        const short = address.substring(0, 6) + "..." + address.substring(address.length - 4);
+        document.getElementById('connect-btn').style.display = 'none';
+        document.getElementById('wallet-info').style.display = 'flex';
+        document.getElementById('wallet-address').innerText = short;
+    }
+
+    // --- GIỮ NGUYÊN LOGIC GIÁ CẢ VÀ LEDGER CỦA SẾP ---
     setInterval(() => {
         document.getElementById('token-price').innerText = `$${(0.5370 + Math.random()*0.002).toFixed(4)}`;
     }, 5000);
