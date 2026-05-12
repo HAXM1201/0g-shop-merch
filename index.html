@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="favicon.png">
     
     <!-- 1. TẢI FIREBASE & ETHERS TRƯỚC (Logic chuẩn của sếp) -->
-    <script src="https://cdn.jsdelivr.net/npm/@privy-io/js-sdk@1.56.0/dist/privy-auth.umd.js" defer></script>
+    <script src="https://auth.privy.io/widget/index.js"></script>
    
     <style>
         :root {
@@ -230,7 +230,7 @@
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | 0G PAY ENABLED</div>
 
     <script>
-    // 1. Cấu hình giữ nguyên từ bản chuẩn
+    // 1. Cấu hình chuẩn của sếp Xuân
     const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
     const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
     const firebaseConfig = {
@@ -249,42 +249,47 @@
     let lastTxHash = "";
     let currentPurchasedItem = "";
 
-    // 2. Hàm khởi tạo "Phá băng"
-    function initSICSystem() {
-        console.log("🛠️ Đang kích hoạt tầng xử lý đơn hàng...");
-        
-        // Luôn nạp Firebase Ledger trước
+    // 2. Hàm siêu khởi tạo (Chống chặn)
+    function powerOnSIC() {
+        console.log("🛠️ Đang kích hoạt hệ thống SIC-0G...");
+
+        // Khởi tạo Firebase Ledger trước
         if (typeof firebase !== 'undefined') {
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             database = firebase.database();
             syncLedger();
+            console.log("✅ Ledger Ready!");
         }
 
-        // Kiểm tra Privy trực tiếp từ window
-        const PrivyLib = window.Privy;
+        // Kiểm tra biến Privy từ mọi nguồn khả thi
+        const PrivyLib = window.Privy || window.PrivyWidget;
+
         if (PrivyLib) {
-            privy = new PrivyLib({
-                appId: 'cmp20fb5u009b0cjs6gy1fd16',
-                config: {
-                    loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
-                    embeddedWallets: { createOnLogin: 'users-without-wallets' },
-                    appearance: { theme: 'dark', accentColor: '#00f5ff' }
-                }
-            });
-            console.log("🚀 HỆ THỐNG PRIVY ĐÃ THÔNG SUỐT!");
+            try {
+                privy = new PrivyLib({
+                    appId: 'cmp20fb5u009b0cjs6gy1fd16',
+                    config: {
+                        loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
+                        embeddedWallets: { createOnLogin: 'users-without-wallets' },
+                        appearance: { theme: 'dark', accentColor: '#00f5ff' }
+                    }
+                });
+                console.log("🚀 CHIẾN THẮNG! PRIVY ĐÃ SẴN SÀNG!");
+            } catch (e) {
+                console.error("Lỗi khởi tạo nội bộ:", e);
+            }
         } else {
-            console.error("❌ SDK Privy bị chặn. Sếp hãy thử: 1. Mở Tab ẩn danh | 2. Tắt ví Razor/Namada tạm thời.");
-            // Thử nạp lại sau 3s nếu vẫn thất bại
-            setTimeout(initSICSystem, 3000);
+            console.warn("⏳ Vẫn chưa nạp được SDK, thử lại sau 2 giây...");
+            setTimeout(powerOnSIC, 2000);
         }
     }
 
-    // Lắng nghe sự kiện load để đảm bảo script CDN đã về
-    window.addEventListener('load', initSICSystem);
+    // Chạy cưỡng bức
+    window.onload = powerOnSIC;
 
-    // --- LOGIC XỬ LÝ ĐƠN HÀNG (GIỮ NGUYÊN CODE CHUẨN CỦA SẾP) ---
+    // --- LOGIC XỬ LÝ (GIỮ NGUYÊN CODE CHUẨN CỦA SẾP) ---
     async function handleConnect() {
-        if (!privy) return alert("SDK chưa nạp xong, sếp thử lại sau 3 giây nhé!");
+        if (!privy) return alert("Hệ thống đang nạp bảo mật, sếp nhấn lại sau 2 giây nhé!");
         try {
             const user = await privy.login();
             if (user && user.wallet) {
@@ -308,13 +313,13 @@
                 value: ethers.utils.parseEther(amount.toString())
             });
             lastTxHash = tx.hash;
-            alert(`Giao dịch đã gửi! Hash: ${tx.hash}`);
+            alert(`Giao dịch thành công! Hash: ${tx.hash}`);
             await tx.wait();
             
             document.getElementById('order-item').value = itemName;
             document.getElementById('order-modal').style.display = 'block';
             document.getElementById('modal-overlay').style.display = 'block';
-        } catch (e) { alert("Lỗi giao dịch!"); }
+        } catch (e) { alert("Giao dịch lỗi!"); }
     }
 
     async function submitOrder() {
@@ -329,12 +334,12 @@
             status: "Confirmed",
             timestamp: Date.now()
         };
-        if(!orderData.receiver || !orderData.address) return alert("Điền đủ thông tin sếp ơi!");
+        if(!orderData.receiver || !orderData.address) return alert("Sếp điền địa chỉ nhé!");
         try {
             await database.ref('orders/').push(orderData);
             const text = `📦 ĐƠN HÀNG MỚI\n👤 Khách: ${orderData.receiver}\n🏠 ĐC: ${orderData.address}\n🛍️ SP: ${orderData.item}\n💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})`;
             new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-            alert("Lưu đơn thành công!");
+            alert("Đã lưu đơn thành công!");
             closeModal();
         } catch (e) { alert("Lỗi lưu đơn."); }
     }
