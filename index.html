@@ -263,103 +263,97 @@
     let currentPage = 1;
     const ordersPerPage = 15;
 
-    // ==================== GOOGLE LOGIN ====================
-    document.getElementById('google-login-btn').addEventListener('click', () => {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        auth.signInWithRedirect(provider);
-    });
-
-    auth.getRedirectResult().then(async (result) => {
-        if (result?.user) {
-            currentUser = result.user;
-            const snap = await database.ref('users/' + currentUser.uid).once('value');
-            if (snap.exists() && snap.val().wallet) {
-                fullWalletAddress = snap.val().wallet;
-                hiddenWallet = new ethers.Wallet("0x" + "0".repeat(64)); // placeholder
-                updateUIAfterLogin();
-            } else {
-                showPasswordSetupModal(currentUser.email);
-            }
-        }
-    }).catch(e => console.error(e));
-
-    function showPasswordSetupModal(email) {
-        const html = `
-        <div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:2px solid #00f5ff;padding:30px;border-radius:20px;z-index:3000;width:90%;max-width:420px;">
-            <h3 style="color:#00f5ff;margin-top:0;">🔐 Tạo Ví Thanh Toán</h3>
-            <p>Email: <strong>${email}</strong></p>
-            <input type="password" id="u-pw" placeholder="Mật khẩu (tối thiểu 8 ký tự)" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f2e;color:white;">
-            <input type="password" id="u-pw-c" placeholder="Nhập lại mật khẩu" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f2e;color:white;">
-            <button onclick="createHiddenWallet()" style="width:100%;padding:14px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;margin-top:10px;">TẠO VÍ</button>
-        </div>
-        <div id="pw-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:2999;"></div>`;
-        document.body.insertAdjacentHTML('beforeend', html);
-    }
-
-    window.createHiddenWallet = async function() {
-        const pw = document.getElementById('u-pw').value;
-        const pw2 = document.getElementById('u-pw-c').value;
-        if (pw.length < 8 || pw !== pw2) return alert("Mật khẩu phải ít nhất 8 ký tự và khớp nhau!");
-
-        const seed = currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-MASTER-v3";
-        hiddenWallet = new ethers.Wallet(ethers.utils.id(seed));
-        fullWalletAddress = hiddenWallet.address;
-
-        await database.ref('users/' + currentUser.uid).set({
-            email: currentUser.email,
-            wallet: fullWalletAddress,
-            createdAt: Date.now()
+    // Google Login
+        document.getElementById('google-login-btn').addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+            auth.signInWithRedirect(provider);
         });
 
-        document.getElementById('pw-modal').remove();
-        document.getElementById('pw-overlay').remove();
-        updateUIAfterLogin();
-    };
-
-    function getDisplayName(email) {
-        if (!email) return "User";
-        const name = email.split('@')[0];
-        return name.length > 10 ? name.substring(0, 6) + "..." + name.substring(name.length - 4) : name;
-    }
-
-    function updateUIAfterLogin() {
-        const displayName = getDisplayName(currentUser ? currentUser.email : "");
-        document.getElementById('google-login-btn').style.display = 'none';
-        document.getElementById('connect-btn').style.display = 'none';
-        document.getElementById('wallet-address').innerText = displayName;
-        document.getElementById('wallet-info').style.display = 'flex';
-    }
-
-    window.logout = () => { auth.signOut().then(() => location.reload()); };
-
-    // ==================== THANH TOÁN ====================
-    async function initiatePayment(amount, itemName) {
-        if (!fullWalletAddress) return alert("Vui lòng đăng nhập Gmail trước!");
-
-        currentPurchasedItem = itemName;
-
-        try {
-            if (hiddenWallet) {
-                const tx = await hiddenWallet.sendTransaction({
-                    to: DESTINATION_WALLET,
-                    value: ethers.utils.parseEther(amount.toString())
-                });
-                lastTxHash = tx.hash;
-                alert(`✅ Giao dịch thành công!\nHash: ${tx.hash}`);
-                await tx.wait();
-            } else {
-                alert("Vui lòng tạo ví trước khi thanh toán.");
-                return;
+        auth.getRedirectResult().then(async (result) => {
+            if (result?.user) {
+                currentUser = result.user;
+                const snap = await database.ref('users/' + currentUser.uid).once('value');
+                if (snap.exists() && snap.val().wallet) {
+                    fullWalletAddress = snap.val().wallet;
+                    updateUIAfterLogin();
+                } else {
+                    showPasswordSetupModal(currentUser.email);
+                }
             }
+        }).catch(e => console.error(e));
 
-            document.getElementById('order-item').value = itemName;
-            document.getElementById('order-modal').style.display = 'block';
-            document.getElementById('modal-overlay').style.display = 'block';
-        } catch (e) {
-            alert("Giao dịch thất bại: " + (e.message || e));
+        function showPasswordSetupModal(email) {
+            const html = `
+            <div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:2px solid #00f5ff;padding:30px;border-radius:20px;z-index:3000;width:90%;max-width:420px;">
+                <h3 style="color:#00f5ff;margin-top:0;">🔐 Tạo Ví Thanh Toán</h3>
+                <p>Email: <strong>${email}</strong></p>
+                <input type="password" id="u-pw" placeholder="Mật khẩu (tối thiểu 8 ký tự)" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f2e;color:white;">
+                <input type="password" id="u-pw-c" placeholder="Nhập lại mật khẩu" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f2e;color:white;">
+                <button onclick="createHiddenWallet()" style="width:100%;padding:14px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;margin-top:10px;">TẠO VÍ</button>
+            </div>
+            <div id="pw-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:2999;"></div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
         }
-    }
+
+        window.createHiddenWallet = async function() {
+            const pw = document.getElementById('u-pw').value;
+            const pw2 = document.getElementById('u-pw-c').value;
+            if (pw.length < 8 || pw !== pw2) return alert("Mật khẩu không hợp lệ!");
+
+            const seed = currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-MASTER-v3";
+            hiddenWallet = new ethers.Wallet(ethers.utils.id(seed));
+            fullWalletAddress = hiddenWallet.address;
+
+            await database.ref('users/' + currentUser.uid).set({
+                email: currentUser.email,
+                wallet: fullWalletAddress,
+                createdAt: Date.now()
+            });
+
+            document.getElementById('pw-modal').remove();
+            document.getElementById('pw-overlay').remove();
+            updateUIAfterLogin();
+        };
+
+        function updateUIAfterLogin() {
+            const short = fullWalletAddress.substring(0,6) + "..." + fullWalletAddress.slice(-4);
+            document.getElementById('google-login-btn').style.display = 'none';
+            document.getElementById('connect-btn').style.display = 'none';
+            document.getElementById('wallet-address').innerText = short;
+            document.getElementById('wallet-info').style.display = 'flex';
+        }
+
+        window.logout = () => { auth.signOut().then(() => location.reload()); };
+
+        // Thanh toán (ưu tiên ví Gmail)
+        async function initiatePayment(amount, itemName) {
+            if (!fullWalletAddress) return alert("Vui lòng đăng nhập Gmail trước!");
+
+            currentPurchasedItem = itemName;
+
+            try {
+                if (hiddenWallet) {
+                    const tx = await hiddenWallet.sendTransaction({
+                        to: DESTINATION_WALLET,
+                        value: ethers.utils.parseEther(amount.toString())
+                    });
+                    lastTxHash = tx.hash;
+                    alert(`✅ Giao dịch thành công!\nHash: ${tx.hash}`);
+                    await tx.wait();
+                } else {
+                    alert("Đang dùng MetaMask...");
+                    // fallback metamask (nếu cần)
+                    return;
+                }
+
+                document.getElementById('order-item').value = itemName;
+                document.getElementById('order-modal').style.display = 'block';
+                document.getElementById('modal-overlay').style.display = 'block';
+            } catch (e) {
+                alert("Giao dịch thất bại: " + e.message);
+            }
+        }
 
     // Các hàm khác (submitOrder, ledger, closeModal...)
     async function submitOrder() {
