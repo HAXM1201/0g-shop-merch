@@ -26,31 +26,101 @@
             --bg-dark: #0b0e11;
             --neon-glow: 0 0 15px rgba(0, 245, 255, 0.4);
         }
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0b0e11 0%, #1a1f2e 50%, #120a1d 100%); background-size: 400% 400%; animation: gradientBG 15s ease infinite; color: #eaecef; margin: 0; text-align: center; overflow-x: hidden; }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0, 245, 255, 0.2); }
+
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: linear-gradient(135deg, #0b0e11 0%, #1a1f2e 50%, #120a1d 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #eaecef; margin: 0; text-align: center; overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 50px; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px);
+            position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+        }
+
         .logo-text { font-weight: 900; color: var(--0g-cyan); font-size: 1.6rem; text-shadow: var(--neon-glow); }
-        #connect-btn, #google-login-btn { padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        #google-login-btn { background:#4285F4; color:white; border:none; display:flex; align-items:center; gap:8px; margin-right: 10px;}
+
+        #google-login-btn, #connect-btn {
+            padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer;
+            transition: 0.3s; margin-left: 8px;
+        }
+
+        #google-login-btn { background:#4285F4; color:white; border:none; display:flex; align-items:center; gap:8px; }
         #connect-btn { background: transparent; border: 1.5px solid var(--0g-cyan); color: var(--0g-cyan); }
-        .main-title { color: var(--0g-cyan); font-size: 4rem; letter-spacing: 5px; margin-top: 50px; font-weight: 900; text-shadow: 3px 3px 0px #ff00ff, -3px -3px 0px #00ffff; }
-        .live-price-box { background: rgba(0, 245, 255, 0.05); border: 1px solid rgba(0, 245, 255, 0.3); display: inline-flex; align-items: center; padding: 8px 25px; border-radius: 100px; margin: 15px 0; }
-        .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; max-width: 1400px; margin: 0 auto; padding: 30px 50px 120px 50px; }
+        #connect-btn:hover { background: var(--0g-cyan); color: #000; box-shadow: var(--neon-glow); }
+
+        .main-title { 
+            color: var(--0g-cyan); font-size: 4rem; letter-spacing: 5px;
+            margin-top: 50px; font-weight: 900;
+            text-shadow: 3px 3px 0px #ff00ff, -3px -3px 0px #00ffff;
+        }
+
+        .live-price-box {
+            background: rgba(0, 245, 255, 0.05); border: 1px solid rgba(0, 245, 255, 0.3);
+            display: inline-flex; align-items: center; padding: 8px 25px;
+            border-radius: 100px; margin: 15px 0; backdrop-filter: blur(5px);
+        }
+
+        .node-ticker {
+            background: rgba(0, 0, 0, 0.4); padding: 8px 0;
+            border-top: 1px solid rgba(0, 245, 255, 0.1); border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+            margin: 15px 0; overflow: hidden; white-space: nowrap;
+        }
+
+        .ticker-content { display: inline-block; animation: ticker 40s linear infinite; color: rgba(0, 245, 255, 0.7); font-family: monospace; }
+        @keyframes ticker { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+
+        .product-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 25px; max-width: 1400px; margin: 0 auto; padding: 30px 50px 120px 50px;
+        }
+
         @media (max-width: 1200px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .main-title { font-size: 2.2rem; } }
-        .product-card { border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 25px; padding: 20px; background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); transition: 0.5s; display: flex; flex-direction: column; }
+
+        .product-card { 
+            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 25px; 
+            padding: 20px; background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px); transition: 0.5s; display: flex; flex-direction: column;
+        }
+
         .product-card:hover { transform: translateY(-10px); border-color: var(--0g-cyan); }
-        .product-img { width: 100%; height: 220px; object-fit: cover; border-radius: 18px; margin-bottom: 15px; }
+        .product-img { width: 100%; height: 220px; object-fit: cover; border-radius: 18px; margin-bottom: 15px; background: #222; }
         .price { font-size: 24px; color: var(--0g-yellow); font-weight: 800; margin: 10px 0; }
-        .btn-buy { background: var(--0g-cyan); color: #000; border: none; padding: 12px 0; border-radius: 12px; font-weight: 900; cursor: pointer; }
-        .ledger-container { max-width: 1200px; margin: 50px auto; padding: 20px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(0, 245, 255, 0.1); border-radius: 20px; }
+        .btn-buy { background: var(--0g-cyan); color: #000; border: none; padding: 12px 0; border-radius: 12px; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .btn-buy:hover { background: #fff; box-shadow: var(--neon-glow); }
+
+        .ledger-container {
+            max-width: 1200px; margin: 50px auto; padding: 20px; 
+            background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(0, 245, 255, 0.1); 
+            border-radius: 20px; backdrop-filter: blur(10px);
+        }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { color: var(--0g-yellow); padding: 15px; border-bottom: 1px solid rgba(0, 245, 255, 0.2); }
         td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+
         .pagination-controls { margin-top: 20px; display: flex; justify-content: center; gap: 8px; padding-bottom: 10px; }
-        .page-btn { background: transparent; border: 1px solid var(--0g-cyan); color: var(--0g-cyan); padding: 5px 12px; border-radius: 6px; cursor: pointer; }
+        .page-btn { background: transparent; border: 1px solid var(--0g-cyan); color: var(--0g-cyan); padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         .page-btn.active { background: var(--0g-cyan); color: #000; }
-        #order-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0b0e11; border: 2px solid var(--0g-cyan); padding: 25px; border-radius: 20px; z-index: 2000; width: 90%; max-width: 400px; box-shadow: var(--neon-glow); }
+        .page-btn:disabled { border-color: #333; color: #333; cursor: not-allowed; }
+
+        #order-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #0b0e11; border: 2px solid var(--0g-cyan); padding: 25px; 
+            border-radius: 20px; z-index: 2000; width: 90%; max-width: 400px; box-shadow: var(--neon-glow);
+        }
+        #order-modal input, #order-modal textarea {
+            width: 100%; margin-bottom: 12px; background: #1a1f2e; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; box-sizing: border-box;
+        }
         #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1999; }
         .footer-bar { position: fixed; bottom: 0; width: 100%; background: rgba(0, 0, 0, 0.9); padding: 12px 0; color: rgba(0, 245, 255, 0.6); font-family: monospace; font-size: 0.75rem; border-top: 1px solid rgba(0, 245, 255, 0.2); z-index: 99; }
     </style>
@@ -59,11 +129,12 @@
 
     <header>
         <div class="logo-text">SIC-0G MERCH</div>
-        <div id="wallet-container" style="display: flex; align-items: center;">
+        <div id="wallet-container" style="display: flex; align-items: center; gap: 10px;">
             <button id="google-login-btn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18"> Gmail Login
             </button>
             <button id="connect-btn" onclick="handleConnect()">META MASK</button>
+            
             <div id="wallet-info" style="display:none; align-items: center; gap: 10px;">
                 <div id="wallet-address" style="color: #39d353; border: 1px solid #39d353; padding: 8px 20px; border-radius: 50px; font-family: monospace;"></div>
                 <button onclick="logout()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold;">EXIT</button>
@@ -76,9 +147,15 @@
     <div class="live-price-box">
         <span style="color: #848e9c; font-size: 0.8rem; margin-right: 10px;">LIVE 0G/USDT</span>
         <span id="token-price" style="font-weight: bold; font-family: monospace;">$0.5370</span>
+        <span id="price-change" style="color: #39d353; margin-left: 10px;">+1.32%</span>
+    </div>
+
+    <div class="node-ticker">
+        <div class="ticker-content">This project is a blockchain technology experiment dedicated to the SIC community. ● VALIDATOR: SIC ● NETWORK: 0G MAINNET ● LIMITLESS DEAI SCALABILITY</div>
     </div>
 
     <div class="product-grid">
+        <!-- Đầy đủ 8 Sản phẩm chuẩn Version 1 -->
         <div class="product-card"><img src="ao-0g.jpg" class="product-img"><h3>0G PANDA T-SHIRT</h3><div class="price">0.04 0G</div><button class="btn-buy" onclick="initiatePayment(0.04, '0G PANDA T-SHIRT')">MINT NOW</button></div>
         <div class="product-card"><img src="mu-0g.jpg" class="product-img"><h3>0G SNAPBACK</h3><div class="price">0.03 0G</div><button class="btn-buy" onclick="initiatePayment(0.03, '0G SNAPBACK')">MINT NOW</button></div>
         <div class="product-card"><img src="lot-chuot-0g.jpg" class="product-img"><h3>0G DEAI DESKMAT</h3><div class="price">0.02 0G</div><button class="btn-buy" onclick="initiatePayment(0.02, '0G DEAI DESKMAT')">MINT NOW</button></div>
@@ -101,11 +178,11 @@
     <div id="modal-overlay"></div>
     <div id="order-modal">
         <h2 style="color:var(--0g-cyan); margin-top:0;">📦 SHIPPING INFO</h2>
-        <input type="text" id="order-item" readonly style="width:100%; padding:10px; margin-bottom:10px; background:#1a1f2e; border:1px solid #333; color:var(--0g-yellow); font-weight:bold;">
-        <input type="text" id="receiver-name" placeholder="Receiver Name" style="width:100%; padding:10px; margin-bottom:10px; background:#1a1f2e; border:1px solid #333; color:white;">
-        <input type="text" id="country" placeholder="Country" value="Vietnam" style="width:100%; padding:10px; margin-bottom:10px; background:#1a1f2e; border:1px solid #333; color:white;">
-        <textarea id="address" placeholder="Full Address" style="width:100%; padding:10px; margin-bottom:10px; background:#1a1f2e; border:1px solid #333; color:white;"></textarea>
-        <input type="text" id="phone" placeholder="Phone Number" style="width:100%; padding:10px; margin-bottom:10px; background:#1a1f2e; border:1px solid #333; color:white;">
+        <input type="text" id="order-item" readonly style="color:var(--0g-yellow); font-weight:bold;">
+        <input type="text" id="receiver-name" placeholder="Receiver Name">
+        <input type="text" id="country" placeholder="Country" value="Vietnam">
+        <textarea id="address" placeholder="Full Address"></textarea>
+        <input type="text" id="phone" placeholder="Phone Number">
         <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
         <button onclick="closeModal()" style="width:100%; background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
     </div>
@@ -133,34 +210,32 @@
         let currentUser = null, hiddenWallet = null, fullWalletAddress = "", currentPurchasedItem = "", lastTxHash = "", allOrders = [], currentPage = 1;
         const ordersPerPage = 15;
 
-        // ==================== ĐĂNG NHẬP GOOGLE (REDIRECT) ====================
+        // ==================== GOOGLE LOGIN (REDIRECT MODE) ====================
         document.getElementById('google-login-btn').addEventListener('click', () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
-            auth.signInWithRedirect(provider).catch(e => alert("Error: " + e.message));
+            auth.signInWithRedirect(provider).catch(e => alert("Auth Error: " + e.message));
         });
 
-        // Kiểm tra kết quả sau khi redirect quay lại trang
         auth.getRedirectResult().then(async (result) => {
             if (result && result.user) {
                 currentUser = result.user;
-                // Kiểm tra xem user này đã có ví ẩn chưa
-                const snapshot = await database.ref('users/' + currentUser.uid).once('value');
-                if (snapshot.exists()) {
-                    fullWalletAddress = snapshot.val().wallet;
+                const snap = await database.ref('users/' + currentUser.uid).once('value');
+                if (snap.exists()) {
+                    fullWalletAddress = snap.val().wallet;
                     updateUIAfterLogin();
                 } else {
                     showPasswordSetupModal(currentUser.email);
                 }
             }
-        }).catch(e => console.error("Redirect Error:", e));
+        }).catch(e => console.error("Redirect Result Error:", e));
 
         function showPasswordSetupModal(email) {
             const modalHTML = `<div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:2px solid #00f5ff;padding:30px;border-radius:20px;z-index:3000;width:90%;max-width:400px;box-shadow:0 0 20px #00f5ff66;">
                 <h3 style="color:#00f5ff;margin-top:0;">🔐 Setup Virtual Wallet</h3>
                 <p style="font-size:0.9rem;">Email: ${email}</p>
-                <input type="password" id="u-pw" placeholder="Password (min 8 chars)" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f2e;border:1px solid #333;color:white;">
-                <input type="password" id="u-pw-c" placeholder="Confirm Password" style="width:100%;padding:12px;margin-bottom:15px;border-radius:8px;background:#1a1f2e;border:1px solid #333;color:white;">
+                <input type="password" id="u-pw" placeholder="Password (min 8 chars)" style="width:100%;padding:10px;margin:10px 0;border-radius:8px;background:#1a1f2e;border:1px solid #333;color:white;">
+                <input type="password" id="u-pw-c" placeholder="Confirm Password" style="width:100%;padding:10px;margin-bottom:15px;border-radius:8px;background:#1a1f2e;border:1px solid #333;color:white;">
                 <button onclick="createHiddenWallet()" style="width:100%;padding:14px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;cursor:pointer;">CREATE VIRTUAL WALLET</button>
             </div><div id="pw-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:2999;"></div>`;
             document.body.insertAdjacentHTML('beforeend', modalHTML);
@@ -187,6 +262,7 @@
 
         window.logout = () => { auth.signOut(); location.reload(); };
 
+        // ==================== WALLET CONNECT (METAMASK) ====================
         async function handleConnect() {
             if (!window.ethereum) return alert("Install Metamask!");
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -201,7 +277,10 @@
                     const provider = new ethers.providers.Web3Provider(window.ethereum);
                     const tx = await provider.getSigner().sendTransaction({ to: DESTINATION_WALLET, value: ethers.utils.parseEther(amount.toString()) });
                     lastTxHash = tx.hash; await tx.wait();
-                } else { alert("Payment from virtual wallet via QR coming soon. Use Metamask for now!"); return; }
+                } else { 
+                    alert("Virtual Wallet (Gmail) is for ID & shipping only.\nPlease use Metamask button for on-chain payments!"); 
+                    return; 
+                }
                 currentPurchasedItem = itemName;
                 document.getElementById('order-item').value = itemName;
                 document.getElementById('order-modal').style.display = 'block';
@@ -216,14 +295,15 @@
                 country: document.getElementById('country').value,
                 address: document.getElementById('address').value,
                 phone: document.getElementById('phone').value,
-                txHash: lastTxHash || "REDIRECT-VIRTUAL", status: "Paid", timestamp: Date.now()
+                txHash: lastTxHash || "VIRTUAL-USER", status: "Paid/Confirmed", timestamp: Date.now()
             };
             await database.ref('orders/').push(orderData);
-            const msg = `📦 ĐƠN MỚI: ${orderData.item}\n👤 ${orderData.receiver}\n📞 ${orderData.phone}\n🔗 Tx: ${orderData.txHash}`;
+            const msg = `📦 ĐƠN MỚI: ${orderData.item}\n👤 Khách: ${orderData.receiver}\n📞 SĐT: ${orderData.phone}\n🔗 Tx: ${orderData.txHash}`;
             new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
-            alert("Order Saved!"); closeModal();
+            alert("Order Saved Successfully!"); closeModal();
         }
 
+        // ==================== LEDGER & PAGINATION LOGIC ====================
         database.ref('orders/').on('value', (snap) => {
             const data = snap.val();
             if (data) { allOrders = Object.values(data).reverse(); renderTable(); }
@@ -231,11 +311,11 @@
 
         function renderTable() {
             const listBody = document.getElementById('order-history-list');
-            listBody.innerHTML = "";
+            if (!listBody) return; listBody.innerHTML = "";
             const paginated = allOrders.slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage);
             paginated.forEach(o => {
                 const short = o.wallet.substring(0,6) + "..." + o.wallet.slice(-4);
-                listBody.innerHTML += `<tr><td style="color:#39d353;">${short}</td><td>${o.item}</td><td>Confirmed</td><td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color:var(--0g-cyan);">View</a></td></tr>`;
+                listBody.innerHTML += `<tr><td style="color:#39d353; font-family:monospace;">${short}</td><td>${o.item}</td><td>● Confirmed</td><td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color:var(--0g-cyan);">View</a></td></tr>`;
             });
             renderPagination();
         }
