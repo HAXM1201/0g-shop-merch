@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://auth.privy.io/widget/index.js"></script>
 
     <style>
         :root {
@@ -89,7 +90,6 @@
         .btn-buy { background: var(--0g-cyan); color: #000; border: none; padding: 12px 0; border-radius: 12px; font-weight: 900; cursor: pointer; transition: 0.3s; }
         .btn-buy:hover { background: #fff; box-shadow: var(--neon-glow); }
 
-        /* LEDGER & PAGINATION */
         .ledger-container {
             max-width: 1200px; margin: 50px auto; padding: 20px; 
             background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(0, 245, 255, 0.1); 
@@ -145,7 +145,7 @@
     </div>
 
     <div class="node-ticker">
-        <div class="ticker-content">This project is a blockchain technology experiment dedicated to the SIC community. ● VALIDATOR: SIC ● NETWORK: 0G MAINNET ● LIMITLESS DEAI SCALABILITY</div>
+        <div class="ticker-content">VALIDATOR: SIC ● NETWORK: 0G MAINNET ● SMART INVESTOR COMMUNITY</div>
     </div>
 
     <div class="product-grid">
@@ -221,13 +221,13 @@
         <input type="text" id="order-item" readonly style="color:var(--0g-yellow); font-weight:bold;">
         <input type="text" id="receiver-name" placeholder="Receiver Name">
         <input type="text" id="country" placeholder="Country">
-        <textarea id="address" placeholder="Full Address (Street, City, State)"></textarea>
+        <textarea id="address" placeholder="Full Address"></textarea>
         <input type="text" id="phone" placeholder="Phone Number">
         <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
         <button onclick="closeModal()" style="width:100%; background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
     </div>
 
-    <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | SMART INVESTOR COMMUNITY</div>
+    <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET</div>
 
     <script>
         const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
@@ -240,180 +240,110 @@
             storageBucket: "sic-0g-shop.firebasestorage.app",
             messagingSenderId: "563480928582",
             appId: "1:563480928582:web:b47b24d3fa30be6e2d0547",
-            measurementId: "G-F0MTXQMVZW",
             databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        let currentPurchasedItem = "";
-        let lastTxHash = "";
-        let fullWalletAddress = ""; 
+        
+        let privy, fullWalletAddress = "", currentPurchasedItem = "", lastTxHash = "", allOrders = [], currentPage = 1, ordersPerPage = 20;
 
-        // --- LOGIC PHÂN TRANG ---
-        let allOrders = [];
-        let currentPage = 1;
-        const ordersPerPage = 20;
+        function initPrivy() {
+            if (window.PrivyWidget) {
+                privy = new PrivyWidget({
+                    appId: 'cmp20fb5u009b0cjs6gy1fd16',
+                    config: {
+                        loginMethods: ['google', 'email', 'wallet'],
+                        embeddedWallets: { createOnLogin: 'users-without-wallets', noPromptOnSignature: true },
+                        appearance: { theme: 'dark', accentColor: '#00f5ff' }
+                    }
+                });
+            } else setTimeout(initPrivy, 1000);
+        }
+        window.onload = initPrivy;
 
         async function handleConnect() {
-            if (!window.ethereum) return alert("Please install MetaMask!");
             try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                fullWalletAddress = accounts[0];
-                const shortenedAddress = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
-                document.getElementById('connect-btn').style.display = 'none';
-                document.getElementById('wallet-info').style.display = 'flex';
-                document.getElementById('wallet-address').innerText = shortenedAddress;
-                return true;
-            } catch (e) { return false; }
+                const user = await privy.login();
+                if (user && user.wallet) {
+                    fullWalletAddress = user.wallet.address;
+                    document.getElementById('connect-btn').style.display = 'none';
+                    document.getElementById('wallet-info').style.display = 'flex';
+                    document.getElementById('wallet-address').innerText = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.slice(-4);
+                }
+            } catch (e) {}
         }
 
-        function handleDisconnect() {
-            fullWalletAddress = "";
-            document.getElementById('connect-btn').style.display = 'block';
-            document.getElementById('wallet-info').style.display = 'none';
-            alert("Wallet Disconnected!");
-        }
+        function handleDisconnect() { if (privy) privy.logout(); location.reload(); }
 
         async function initiatePayment(amount, itemName) {
-            if (!fullWalletAddress) {
-                const connected = await handleConnect();
-                if (!connected) return;
-            }
+            if (!fullWalletAddress) return handleConnect();
             try {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const provider = new ethers.providers.Web3Provider(window.ethereum || privy.provider);
                 const signer = provider.getSigner();
                 currentPurchasedItem = itemName;
-                const tx = await signer.sendTransaction({
-                    to: DESTINATION_WALLET,
-                    value: ethers.utils.parseEther(amount.toString())
-                });
+                const tx = await signer.sendTransaction({ to: DESTINATION_WALLET, value: ethers.utils.parseEther(amount.toString()) });
                 lastTxHash = tx.hash;
-                alert(`Transaction sent! Hash: ${tx.hash}`);
+                alert(`Giao dịch đã gửi! Hash: ${tx.hash}`);
                 await tx.wait();
                 document.getElementById('order-item').value = itemName;
                 document.getElementById('order-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
-            } catch (e) { alert("Transaction failed!"); }
+            } catch (e) { alert("Thanh toán thất bại!"); }
         }
 
         async function sendTelegramAlert(orderData) {
-            const text = `
-📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*
-----------------------------------
-👤 *Khách:* ${orderData.receiver}
-📱 *SĐT:* ${orderData.phone}
-🌍 *Quốc gia:* ${orderData.country}
-🏠 *Địa chỉ:* ${orderData.address}
-🛍️ *Sản phẩm:* ${orderData.item}
-💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})
-----------------------------------
-🚀 *Vận hành bởi SIC Community*`;
-
-            try {
-                const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-                const img = new Image();
-                img.src = finalUrl; 
-            } catch (error) { console.error("Telegram error:", error); }
+            const text = `📦 ĐƠN HÀNG MỚI - SIC-0G SHOP\n👤 Khách: ${orderData.receiver}\n🛍️ SP: ${orderData.item}\n💸 [Xem Tx](https://chainscan.0g.ai/tx/${orderData.txHash})`;
+            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
         }
 
         async function submitOrder() {
-            const name = document.getElementById('receiver-name').value.trim();
-            const country = document.getElementById('country').value.trim();
-            const address = document.getElementById('address').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            
-            if (!name || !country || !address || !phone) return alert("Please fill all fields!");
-            
             const orderData = {
                 wallet: fullWalletAddress,
                 item: currentPurchasedItem,
-                receiver: name,
-                country: country,
-                address: address,
-                phone: phone,
+                receiver: document.getElementById('receiver-name').value.trim(),
+                country: document.getElementById('country').value.trim(),
+                address: document.getElementById('address').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
                 txHash: lastTxHash || "N/A",
                 status: "Confirmed",
                 timestamp: Date.now()
             };
-
+            if (!orderData.receiver || !orderData.phone) return alert("Vui lòng điền đầy đủ thông tin!");
             try {
                 await database.ref('orders/').push(orderData);
-                await sendTelegramAlert(orderData); 
-                alert("Order Saved Successfully!");
+                await sendTelegramAlert(orderData);
+                alert("Lưu đơn hàng thành công!");
                 closeModal();
-            } catch (error) { alert("Database Error: " + error.message); }
+            } catch (e) { console.error(e); }
         }
 
-        // --- CẬP NHẬT LEDGER VỚI PHÂN TRANG ---
         database.ref('orders/').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                allOrders = Object.values(data).reverse();
-                renderTable();
-            }
+            if (snapshot.val()) { allOrders = Object.values(snapshot.val()).reverse(); renderTable(); }
         });
 
         function renderTable() {
             const listBody = document.getElementById('order-history-list');
-            if (!listBody) return;
             listBody.innerHTML = "";
-
-            const startIndex = (currentPage - 1) * ordersPerPage;
-            const endIndex = startIndex + ordersPerPage;
-            const paginatedItems = allOrders.slice(startIndex, endIndex);
-
-            paginatedItems.forEach(o => {
-                const shortWallet = o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4);
-                listBody.innerHTML += `
-                    <tr>
-                        <td style="font-family: monospace; color: #39d353;">${shortWallet}</td>
-                        <td>${o.item}</td>
-                        <td><span style="color: #39d353;">● ${o.status}</span></td>
-                        <td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color: var(--0g-cyan);">View</a></td>
-                    </tr>`;
+            allOrders.slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage).forEach(o => {
+                const short = o.wallet.substring(0,6) + "..." + o.wallet.slice(-4);
+                listBody.innerHTML += `<tr><td style="color:#39d353; font-family:monospace;">${short}</td><td>${o.item}</td><td>Confirmed</td><td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color:var(--0g-cyan);">View</a></td></tr>`;
             });
             renderPagination();
         }
 
         function renderPagination() {
-            const pagination = document.getElementById('pagination');
-            const totalPages = Math.ceil(allOrders.length / ordersPerPage);
-            pagination.innerHTML = "";
-            if (totalPages <= 1) return;
-
-            const prevBtn = document.createElement('button');
-            prevBtn.innerText = "«";
-            prevBtn.className = "page-btn";
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => { currentPage--; renderTable(); };
-            pagination.appendChild(prevBtn);
-
-            for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
-                btn.innerText = i;
-                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-                btn.onclick = () => { currentPage = i; renderTable(); };
-                pagination.appendChild(btn);
+            const pag = document.getElementById('pagination'); pag.innerHTML = "";
+            const total = Math.ceil(allOrders.length / ordersPerPage);
+            if (total <= 1) return;
+            for (let i = 1; i <= total; i++) {
+                const b = document.createElement('button'); b.innerText = i; b.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                b.onclick = () => { currentPage = i; renderTable(); }; pag.appendChild(b);
             }
-
-            const nextBtn = document.createElement('button');
-            nextBtn.innerText = "»";
-            nextBtn.className = "page-btn";
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => { currentPage++; renderTable(); };
-            pagination.appendChild(nextBtn);
         }
 
-        function closeModal() {
-            document.getElementById('order-modal').style.display = 'none';
-            document.getElementById('modal-overlay').style.display = 'none';
-        }
-
-        setInterval(() => {
-            const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
-            document.getElementById('token-price').innerText = `$${mockPrice}`;
-        }, 5000);
+        function closeModal() { document.getElementById('order-modal').style.display = 'none'; document.getElementById('modal-overlay').style.display = 'none'; }
+        setInterval(() => { document.getElementById('token-price').innerText = `$${(0.5370 + Math.random()*0.002).toFixed(4)}`; }, 5000);
     </script>
 </body>
 </html>
