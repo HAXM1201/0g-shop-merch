@@ -235,7 +235,7 @@
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | 0G PAY ENABLED</div>
 
     <script>
-    // Cấu hình chuẩn của sếp Xuân
+    // 1. Cấu hình chuẩn của sếp Xuân
     const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
     const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
     const firebaseConfig = {
@@ -254,26 +254,49 @@
     let lastTxHash = "";
     let currentPurchasedItem = "";
 
-    // HÀM KHỞI TẠO SIÊU CẤU TRÚC (BẢN FIX TRIỆT ĐỂ)
-    function powerOn() {
-        console.log("🛠️ Hệ thống SIC-0G đang lên điện...");
-        
-        // 1. Kiểm tra Firebase Ledger
+    // 2. HÀM SIÊU NẠP SDK (ÉP CHẠY)
+    async function injectSDK() {
+        return new Promise((resolve) => {
+            console.log("🛠️ Đang cưỡng bức nạp SDK từ auth.privy.io...");
+            const script = document.createElement('script');
+            // Dùng link này là link ổn định nhất thế giới của Privy
+            script.src = "https://auth.privy.io/widget/index.js";
+            script.id = "privy-sdk-script";
+            script.async = true;
+            
+            script.onload = () => {
+                console.log("✅ Script đã nạp vào DOM thành công!");
+                resolve(true);
+            };
+            
+            script.onerror = (e) => {
+                console.error("❌ Trình duyệt đã chặn nạp Script này!", e);
+                resolve(false);
+            };
+            
+            document.body.appendChild(script);
+        });
+    }
+
+    // 3. KHỞI TẠO HỆ THỐNG
+    async function powerOn() {
+        // Khởi tạo Firebase Ledger (Luôn chạy được)
         if (typeof firebase !== 'undefined') {
-            if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             database = firebase.database();
             syncLedger();
             console.log("✅ Firebase Ledger Ready!");
-        } else {
-            console.warn("⚠️ Firebase chưa nạp, đang thử lại...");
-            setTimeout(powerOn, 1500);
-            return;
         }
 
-        // 2. Khởi tạo Privy với cơ chế nhận diện đa tầng
-        const TargetPrivy = window.Privy || window.PrivyWidget;
-        if (typeof TargetPrivy !== 'undefined') {
-            try {
+        // Ép nạp SDK Privy
+        const scriptInjected = await injectSDK();
+        
+        let retryCount = 0;
+        const checkPrivy = setInterval(() => {
+            const TargetPrivy = window.Privy || window.PrivyWidget;
+            
+            if (typeof TargetPrivy !== 'undefined') {
+                clearInterval(checkPrivy);
                 privy = new TargetPrivy({
                     appId: 'cmp20fb5u009b0cjs6gy1fd16',
                     config: {
@@ -282,21 +305,24 @@
                         appearance: { theme: 'dark', accentColor: '#00f5ff' }
                     }
                 });
-                console.log("✅ Privy Hybrid Login Ready!");
-            } catch (e) {
-                console.error("Lỗi khởi tạo Privy:", e);
+                console.log("🚀 Privy Hybrid Login CHÍNH THỨC SẴN SÀNG!");
+            } else {
+                retryCount++;
+                console.warn(`⏳ Đang đợi Privy xuất hiện trong window (Lần ${retryCount})...`);
+                if (retryCount > 10) {
+                    console.error("❌ SDK nạp rồi nhưng bị Extension chặn đứng. Hãy thử Tab ẩn danh!");
+                    clearInterval(checkPrivy);
+                }
             }
-        } else {
-            console.warn("⏳ Đang chờ SDK Privy từ auth.privy.io...");
-            setTimeout(powerOn, 1500);
-        }
+        }, 1000);
     }
 
-    // Chạy khi trang web đã nạp xong
+    // Kích hoạt ngay khi trang xong
     window.onload = powerOn;
 
+    // ---  ---
     async function handleConnect() {
-        if (!privy) return alert("Hệ thống đang nạp bảo mật, sếp đợi 2 giây nhé!");
+        if (!privy) return alert("Hệ thống bảo mật đang nạp, sếp đợi xíu nhấn lại nhé!");
         try {
             const user = await privy.login();
             if (user && user.wallet) {
@@ -306,7 +332,7 @@
                 document.getElementById('wallet-info').style.display = 'flex';
                 document.getElementById('wallet-address').innerText = short;
             }
-        } catch (e) { console.log("Login cancel"); }
+        } catch (e) { console.warn("Login cancelled"); }
     }
 
     async function handleDisconnect() {
