@@ -6,12 +6,10 @@
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
     
-    <!-- Các thư viện cũ -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
-    <!-- Tích hợp Privy SDK mới nhất -->
     <script src="https://unpkg.com/@privy-io/js-sdk@latest/dist/privy-auth.umd.js"></script>
 
     <style>
@@ -158,7 +156,6 @@
     </div>
 
     <div class="product-grid">
-        <!-- Đầy đủ 8 sản phẩm của sếp -->
         <div class="product-card">
             <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
             <h3>0G PANDA T-SHIRT</h3>
@@ -253,22 +250,38 @@
             databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        // Khai báo biến toàn cục
+        let privy;
+        let database;
         let currentPurchasedItem = "";
         let lastTxHash = "";
         let fullWalletAddress = ""; 
 
-        // --- CẤU HÌNH PRIVY HYBRID LOGIN (CẬP NHẬT APP ID MỚI) ---
-        const privy = new Privy({
-            appId: 'cmp20fb5u009b0cjs6gy1fd16',
-            config: {
-                loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
-                embeddedWallets: { createOnLogin: 'users-without-wallets' }
+        // Khởi tạo hệ thống khi load trang để tránh lỗi "Privy is not defined"
+        window.onload = function() {
+            if (typeof Privy !== 'undefined') {
+                privy = new Privy({
+                    appId: 'cmp20fb5u009b0cjs6gy1fd16',
+                    config: {
+                        loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
+                        embeddedWallets: { createOnLogin: 'users-without-wallets' }
+                    }
+                });
+                console.log("Privy Ready!");
             }
-        });
+
+            // Khởi tạo Firebase
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            database = firebase.database();
+            
+            // Chạy Ledger ngay khi load
+            syncLedger();
+        };
 
         async function handleConnect() {
+            if (!privy) return alert("Hệ thống đang khởi tạo, sếp đợi xíu nhé!");
             try {
                 const user = await privy.login();
                 fullWalletAddress = user.wallet.address;
@@ -285,10 +298,7 @@
         }
 
         async function handleDisconnect() {
-            await privy.logout();
-            fullWalletAddress = "";
-            document.getElementById('connect-btn').style.display = 'block';
-            document.getElementById('wallet-info').style.display = 'none';
+            if (privy) await privy.logout();
             location.reload();
         }
 
@@ -362,25 +372,27 @@
             }
         }
 
-        database.ref('orders/').on('value', (snapshot) => {
-            const orders = snapshot.val();
-            const listBody = document.getElementById('order-history-list');
-            if (!listBody) return;
-            listBody.innerHTML = "";
-            if (orders) {
-                Object.values(orders).reverse().forEach(o => {
-                    const shortWallet = o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4);
-                    listBody.innerHTML += `
-                        <tr>
-                            <td style="font-family: monospace; color: #39d353;">${shortWallet}</td>
-                            <td>${o.item}</td>
-                            <td><span style="color: #39d353;">● ${o.status}</span></td>
-                            <td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color: var(--0g-cyan);">View</a></td>
-                        </tr>
-                    `;
-                });
-            }
-        });
+        function syncLedger() {
+            database.ref('orders/').on('value', (snapshot) => {
+                const orders = snapshot.val();
+                const listBody = document.getElementById('order-history-list');
+                if (!listBody) return;
+                listBody.innerHTML = "";
+                if (orders) {
+                    Object.values(orders).reverse().forEach(o => {
+                        const shortWallet = o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4);
+                        listBody.innerHTML += `
+                            <tr>
+                                <td style="font-family: monospace; color: #39d353;">${shortWallet}</td>
+                                <td>${o.item}</td>
+                                <td><span style="color: #39d353;">● ${o.status}</span></td>
+                                <td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color: var(--0g-cyan);">View</a></td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+        }
 
         function closeModal() {
             document.getElementById('order-modal').style.display = 'none';
@@ -389,7 +401,8 @@
 
         setInterval(() => {
             const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
-            document.getElementById('token-price').innerText = `$${mockPrice}`;
+            const priceEl = document.getElementById('token-price');
+            if(priceEl) priceEl.innerText = `$${mockPrice}`;
         }, 5000);
     </script>
 </body>
