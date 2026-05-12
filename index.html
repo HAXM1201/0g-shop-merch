@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Cấu hình CSP để vượt lỗi eval và bảo mật domain 0gshop.online -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://auth.privy.io https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://script.google.com; connect-src 'self' https://auth.privy.io https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app wss://*.privy.io;">
+    <!-- THẺ META CSP "THÔNG CHỐT" CHO 0GSHOP.ONLINE -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; 
+                   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://auth.privy.io https://www.gstatic.com https://cdn.jsdelivr.net; 
+                   style-src 'self' 'unsafe-inline'; 
+                   img-src 'self' data: https://script.google.com; 
+                   connect-src 'self' https://auth.privy.io https://*.firebasedatabase.app wss://*.firebasedatabase.app wss://*.privy.io https://www.gstatic.com;">
     
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
@@ -152,7 +157,6 @@
     </div>
 
     <div class="product-grid">
-        <!-- Full 8 Panda Products -->
         <div class="product-card">
             <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
             <h3>0G PANDA T-SHIRT</h3>
@@ -395,7 +399,7 @@
             document.getElementById('modal-overlay').style.display = 'none';
         }
 
-        // Sửa setInterval để tuân thủ CSP chuẩn (dùng hàm mũi tên thay vì chuỗi)
+        // Sửa setInterval theo chuẩn CSP
         setInterval(() => {
             const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
             const priceEl = document.getElementById('token-price');
