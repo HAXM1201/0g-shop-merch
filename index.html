@@ -230,190 +230,185 @@
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | SMART INVESTOR COMMUNITY</div>
 
     <script>
-        const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
-        const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
+    const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
+    const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCHEV_Ob-nxZSV23s5j_bFn7iYQIVTKGy8",
-            authDomain: "sic-0g-shop.firebaseapp.com",
-            projectId: "sic-0g-shop",
-            storageBucket: "sic-0g-shop.firebasestorage.app",
-            messagingSenderId: "563480928582",
-            appId: "1:563480928582:web:b47b24d3fa30be6e2d0547",
-            measurementId: "G-F0MTXQMVZW",
-            databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyCHEV_Ob-nxZSV23s5j_bFn7iYQIVTKGy8",
+        authDomain: "sic-0g-shop.firebaseapp.com",
+        projectId: "sic-0g-shop",
+        storageBucket: "sic-0g-shop.firebasestorage.app",
+        messagingSenderId: "563480928582",
+        appId: "1:563480928582:web:b47b24d3fa30be6e2d0547",
+        databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
 
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        let currentPurchasedItem = "";
-        let lastTxHash = "";
-        let fullWalletAddress = ""; 
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const auth = firebase.auth();
 
-        // --- LOGIC PHÂN TRANG ---
-        let allOrders = [];
-        let currentPage = 1;
-        const ordersPerPage = 15;
+    let currentUser = null;
+    let hiddenWallet = null;
+    let fullWalletAddress = "";
+    let currentPurchasedItem = "";
+    let lastTxHash = "";
+    let allOrders = [];
+    let currentPage = 1;
+    const ordersPerPage = 15;
 
-        async function handleConnect() {
-            if (!window.ethereum) return alert("Please install MetaMask!");
-            try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                fullWalletAddress = accounts[0];
-                const shortenedAddress = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
-                document.getElementById('connect-btn').style.display = 'none';
-                document.getElementById('wallet-info').style.display = 'flex';
-                document.getElementById('wallet-address').innerText = shortenedAddress;
-                return true;
-            } catch (e) { return false; }
-        }
+    // ==================== GOOGLE LOGIN ====================
+    document.getElementById('google-login-btn').addEventListener('click', () => {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        auth.signInWithRedirect(provider);
+    });
 
-        function handleDisconnect() {
-            fullWalletAddress = "";
-            document.getElementById('connect-btn').style.display = 'block';
-            document.getElementById('wallet-info').style.display = 'none';
-            alert("Wallet Disconnected!");
-        }
-
-        async function initiatePayment(amount, itemName) {
-            if (!fullWalletAddress) {
-                const connected = await handleConnect();
-                if (!connected) return;
+    auth.getRedirectResult().then(async (result) => {
+        if (result?.user) {
+            currentUser = result.user;
+            const snap = await database.ref('users/' + currentUser.uid).once('value');
+            if (snap.exists() && snap.val().wallet) {
+                fullWalletAddress = snap.val().wallet;
+                hiddenWallet = new ethers.Wallet("0x" + "0".repeat(64)); // placeholder
+                updateUIAfterLogin();
+            } else {
+                showPasswordSetupModal(currentUser.email);
             }
-            try {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const signer = provider.getSigner();
-                currentPurchasedItem = itemName;
-                const tx = await signer.sendTransaction({
+        }
+    }).catch(e => console.error(e));
+
+    function showPasswordSetupModal(email) {
+        const html = `
+        <div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:2px solid #00f5ff;padding:30px;border-radius:20px;z-index:3000;width:90%;max-width:420px;">
+            <h3 style="color:#00f5ff;margin-top:0;">🔐 Tạo Ví Thanh Toán</h3>
+            <p>Email: <strong>${email}</strong></p>
+            <input type="password" id="u-pw" placeholder="Mật khẩu (tối thiểu 8 ký tự)" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f2e;color:white;">
+            <input type="password" id="u-pw-c" placeholder="Nhập lại mật khẩu" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f2e;color:white;">
+            <button onclick="createHiddenWallet()" style="width:100%;padding:14px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;margin-top:10px;">TẠO VÍ</button>
+        </div>
+        <div id="pw-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:2999;"></div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+    }
+
+    window.createHiddenWallet = async function() {
+        const pw = document.getElementById('u-pw').value;
+        const pw2 = document.getElementById('u-pw-c').value;
+        if (pw.length < 8 || pw !== pw2) return alert("Mật khẩu phải ít nhất 8 ký tự và khớp nhau!");
+
+        const seed = currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-MASTER-v3";
+        hiddenWallet = new ethers.Wallet(ethers.utils.id(seed));
+        fullWalletAddress = hiddenWallet.address;
+
+        await database.ref('users/' + currentUser.uid).set({
+            email: currentUser.email,
+            wallet: fullWalletAddress,
+            createdAt: Date.now()
+        });
+
+        document.getElementById('pw-modal').remove();
+        document.getElementById('pw-overlay').remove();
+        updateUIAfterLogin();
+    };
+
+    function getDisplayName(email) {
+        if (!email) return "User";
+        const name = email.split('@')[0];
+        return name.length > 10 ? name.substring(0, 6) + "..." + name.substring(name.length - 4) : name;
+    }
+
+    function updateUIAfterLogin() {
+        const displayName = getDisplayName(currentUser ? currentUser.email : "");
+        document.getElementById('google-login-btn').style.display = 'none';
+        document.getElementById('connect-btn').style.display = 'none';
+        document.getElementById('wallet-address').innerText = displayName;
+        document.getElementById('wallet-info').style.display = 'flex';
+    }
+
+    window.logout = () => { auth.signOut().then(() => location.reload()); };
+
+    // ==================== THANH TOÁN ====================
+    async function initiatePayment(amount, itemName) {
+        if (!fullWalletAddress) return alert("Vui lòng đăng nhập Gmail trước!");
+
+        currentPurchasedItem = itemName;
+
+        try {
+            if (hiddenWallet) {
+                const tx = await hiddenWallet.sendTransaction({
                     to: DESTINATION_WALLET,
                     value: ethers.utils.parseEther(amount.toString())
                 });
                 lastTxHash = tx.hash;
-                alert(`Transaction sent! Hash: ${tx.hash}`);
+                alert(`✅ Giao dịch thành công!\nHash: ${tx.hash}`);
                 await tx.wait();
-                document.getElementById('order-item').value = itemName;
-                document.getElementById('order-modal').style.display = 'block';
-                document.getElementById('modal-overlay').style.display = 'block';
-            } catch (e) { alert("Transaction failed!"); }
-        }
-
-        async function sendTelegramAlert(orderData) {
-            const text = `
-📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*
-----------------------------------
-👤 *Khách:* ${orderData.receiver}
-📱 *SĐT:* ${orderData.phone}
-🌍 *Quốc gia:* ${orderData.country}
-🏠 *Địa chỉ:* ${orderData.address}
-🛍️ *Sản phẩm:* ${orderData.item}
-💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})
-----------------------------------
-🚀 *Vận hành bởi SIC Community*`;
-
-            try {
-                const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-                const img = new Image();
-                img.src = finalUrl; 
-            } catch (error) { console.error("Telegram error:", error); }
-        }
-
-        async function submitOrder() {
-            const name = document.getElementById('receiver-name').value.trim();
-            const country = document.getElementById('country').value.trim();
-            const address = document.getElementById('address').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            
-            if (!name || !country || !address || !phone) return alert("Please fill all fields!");
-            
-            const orderData = {
-                wallet: fullWalletAddress,
-                item: currentPurchasedItem,
-                receiver: name,
-                country: country,
-                address: address,
-                phone: phone,
-                txHash: lastTxHash || "N/A",
-                status: "Confirmed",
-                timestamp: Date.now()
-            };
-
-            try {
-                await database.ref('orders/').push(orderData);
-                await sendTelegramAlert(orderData); 
-                alert("Order Saved Successfully!");
-                closeModal();
-            } catch (error) { alert("Database Error: " + error.message); }
-        }
-
-        // --- CẬP NHẬT LEDGER VỚI PHÂN TRANG ---
-        database.ref('orders/').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                allOrders = Object.values(data).reverse();
-                renderTable();
+            } else {
+                alert("Vui lòng tạo ví trước khi thanh toán.");
+                return;
             }
+
+            document.getElementById('order-item').value = itemName;
+            document.getElementById('order-modal').style.display = 'block';
+            document.getElementById('modal-overlay').style.display = 'block';
+        } catch (e) {
+            alert("Giao dịch thất bại: " + (e.message || e));
+        }
+    }
+
+    // Các hàm khác (submitOrder, ledger, closeModal...)
+    async function submitOrder() {
+        const orderData = {
+            wallet: fullWalletAddress,
+            item: currentPurchasedItem,
+            receiver: document.getElementById('receiver-name').value.trim(),
+            country: document.getElementById('country').value.trim(),
+            address: document.getElementById('address').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            txHash: lastTxHash || "N/A",
+            status: "Confirmed",
+            timestamp: Date.now()
+        };
+
+        if (!orderData.receiver || !orderData.address || !orderData.phone) 
+            return alert("Vui lòng điền đầy đủ thông tin shipping!");
+
+        await database.ref('orders/').push(orderData);
+        new Image().src = `${PROXY_URL}?message=${encodeURIComponent("📦 ĐƠN MỚI: " + orderData.item)}`;
+        alert("Đơn hàng đã được ghi nhận thành công!");
+        closeModal();
+    }
+
+    function closeModal() {
+        document.getElementById('order-modal').style.display = 'none';
+        document.getElementById('modal-overlay').style.display = 'none';
+    }
+
+    database.ref('orders/').on('value', (snap) => {
+        const data = snap.val();
+        if (data) {
+            allOrders = Object.values(data).reverse();
+            renderTable();
+        }
+    });
+
+    function renderTable() {
+        const tbody = document.getElementById('order-history-list');
+        tbody.innerHTML = "";
+        const start = (currentPage - 1) * ordersPerPage;
+        const pageData = allOrders.slice(start, start + ordersPerPage);
+        pageData.forEach(o => {
+            const short = o.wallet ? o.wallet.substring(0,6) + "..." + o.wallet.slice(-4) : "N/A";
+            tbody.innerHTML += `<tr>
+                <td style="font-family:monospace;color:#39d353">${short}</td>
+                <td>${o.item}</td>
+                <td>● Confirmed</td>
+                <td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color:var(--0g-cyan)">View</a></td>
+            </tr>`;
         });
+    }
 
-        function renderTable() {
-            const listBody = document.getElementById('order-history-list');
-            if (!listBody) return;
-            listBody.innerHTML = "";
-
-            const startIndex = (currentPage - 1) * ordersPerPage;
-            const endIndex = startIndex + ordersPerPage;
-            const paginatedItems = allOrders.slice(startIndex, endIndex);
-
-            paginatedItems.forEach(o => {
-                const shortWallet = o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4);
-                listBody.innerHTML += `
-                    <tr>
-                        <td style="font-family: monospace; color: #39d353;">${shortWallet}</td>
-                        <td>${o.item}</td>
-                        <td><span style="color: #39d353;">● ${o.status}</span></td>
-                        <td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color: var(--0g-cyan);">View</a></td>
-                    </tr>`;
-            });
-            renderPagination();
-        }
-
-        function renderPagination() {
-            const pagination = document.getElementById('pagination');
-            const totalPages = Math.ceil(allOrders.length / ordersPerPage);
-            pagination.innerHTML = "";
-            if (totalPages <= 1) return;
-
-            const prevBtn = document.createElement('button');
-            prevBtn.innerText = "«";
-            prevBtn.className = "page-btn";
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => { currentPage--; renderTable(); };
-            pagination.appendChild(prevBtn);
-
-            for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
-                btn.innerText = i;
-                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-                btn.onclick = () => { currentPage = i; renderTable(); };
-                pagination.appendChild(btn);
-            }
-
-            const nextBtn = document.createElement('button');
-            nextBtn.innerText = "»";
-            nextBtn.className = "page-btn";
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => { currentPage++; renderTable(); };
-            pagination.appendChild(nextBtn);
-        }
-
-        function closeModal() {
-            document.getElementById('order-modal').style.display = 'none';
-            document.getElementById('modal-overlay').style.display = 'none';
-        }
-
-        setInterval(() => {
-            const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
-            document.getElementById('token-price').innerText = `$${mockPrice}`;
-        }, 5000);
-    </script>
+    setInterval(() => {
+        document.getElementById('token-price').innerText = `$${(0.5370 + Math.random()*0.002).toFixed(4)}`;
+    }, 5000);
+</script>
 </body>
 </html>
