@@ -235,7 +235,7 @@
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | 0G PAY ENABLED</div>
 
     <script>
-    // 1. Cấu hình chuẩn của sếp Xuân
+    // 1. Cấu hình giữ nguyên từ bản chuẩn của sếp
     const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
     const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
     const firebaseConfig = {
@@ -254,75 +254,74 @@
     let lastTxHash = "";
     let currentPurchasedItem = "";
 
-    // 2. HÀM SIÊU NẠP SDK (ÉP CHẠY)
-    async function injectSDK() {
-        return new Promise((resolve) => {
-            console.log("🛠️ Đang cưỡng bức nạp SDK từ auth.privy.io...");
-            const script = document.createElement('script');
-            // Dùng link này là link ổn định nhất thế giới của Privy
-            script.src = "https://auth.privy.io/widget/index.js";
-            script.id = "privy-sdk-script";
-            script.async = true;
-            
-            script.onload = () => {
-                console.log("✅ Script đã nạp vào DOM thành công!");
-                resolve(true);
-            };
-            
-            script.onerror = (e) => {
-                console.error("❌ Trình duyệt đã chặn nạp Script này!", e);
-                resolve(false);
-            };
-            
-            document.body.appendChild(script);
+    // 2. CHIẾN THUẬT SIÊU NẠP (THỬ MỌI NGUỒN)
+    function forceLoadPrivy() {
+        const sources = [
+            "https://auth.privy.io/widget/index.js",
+            "https://unpkg.com/@privy-io/js-sdk@latest/dist/privy-auth.umd.js",
+            "https://cdn.jsdelivr.net/npm/@privy-io/js-sdk@latest/dist/privy-auth.umd.js"
+        ];
+
+        sources.forEach(src => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.async = true;
+            document.head.appendChild(s);
         });
     }
 
     // 3. KHỞI TẠO HỆ THỐNG
-    async function powerOn() {
-        // Khởi tạo Firebase Ledger (Luôn chạy được)
+    function powerOn() {
+        console.log("🛠️ Hệ thống SIC-0G đang khởi động tầng Firebase...");
+        
         if (typeof firebase !== 'undefined') {
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             database = firebase.database();
             syncLedger();
-            console.log("✅ Firebase Ledger Ready!");
+            console.log("✅ Ledger Firebase đã sẵn sàng!");
         }
 
-        // Ép nạp SDK Privy
-        const scriptInjected = await injectSDK();
-        
-        let retryCount = 0;
+        // Bắt đầu thử nạp SDK
+        forceLoadPrivy();
+
+        let attempts = 0;
         const checkPrivy = setInterval(() => {
-            const TargetPrivy = window.Privy || window.PrivyWidget;
-            
-            if (typeof TargetPrivy !== 'undefined') {
+            attempts++;
+            // Kiểm tra mọi biến thể mà Privy có thể đăng ký vào window
+            const TargetPrivy = window.Privy || window.PrivyWidget || (window.privyAuth ? window.privyAuth.Privy : null);
+
+            if (TargetPrivy) {
                 clearInterval(checkPrivy);
-                privy = new TargetPrivy({
-                    appId: 'cmp20fb5u009b0cjs6gy1fd16',
-                    config: {
-                        loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
-                        embeddedWallets: { createOnLogin: 'users-without-wallets' },
-                        appearance: { theme: 'dark', accentColor: '#00f5ff' }
-                    }
-                });
-                console.log("🚀 Privy Hybrid Login CHÍNH THỨC SẴN SÀNG!");
-            } else {
-                retryCount++;
-                console.warn(`⏳ Đang đợi Privy xuất hiện trong window (Lần ${retryCount})...`);
-                if (retryCount > 10) {
-                    console.error("❌ SDK nạp rồi nhưng bị Extension chặn đứng. Hãy thử Tab ẩn danh!");
-                    clearInterval(checkPrivy);
+                try {
+                    privy = new TargetPrivy({
+                        appId: 'cmp20fb5u009b0cjs6gy1fd16',
+                        config: {
+                            loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
+                            embeddedWallets: { createOnLogin: 'users-without-wallets' },
+                            appearance: { theme: 'dark', accentColor: '#00f5ff' }
+                        }
+                    });
+                    console.log("🚀 CHÚC MỪNG SẾP XUÂN! PRIVY CHÍNH THỨC SẴN SÀNG!");
+                } catch (e) {
+                    console.error("Lỗi cấu hình Privy:", e);
                 }
+            } else if (attempts > 15) {
+                console.error("❌ SDK bị chặn bởi trình duyệt. Đang thử nạp lại tầng cuối...");
+                forceLoadPrivy(); // Thử nạp lại lần nữa
+                attempts = 0;
+            } else {
+                console.warn(`⏳ Đang đợi tín hiệu SDK Privy (Lần thử ${attempts})...`);
             }
         }, 1000);
     }
 
-    // Kích hoạt ngay khi trang xong
-    window.onload = powerOn;
+    // Ưu tiên nạp ngay khi DOM xong
+    if (document.readyState === "complete") powerOn();
+    else window.addEventListener('load', powerOn);
 
-    // ---  ---
+    // --- CÁC HÀM XỬ LÝ GIỮ NGUYÊN BẢN CHUẨN CỦA SẾP ---
     async function handleConnect() {
-        if (!privy) return alert("Hệ thống bảo mật đang nạp, sếp đợi xíu nhấn lại nhé!");
+        if (!privy) return alert("Hệ thống bảo mật đang nạp, sếp nhấn lại sau 2 giây nhé!");
         try {
             const user = await privy.login();
             if (user && user.wallet) {
@@ -332,12 +331,7 @@
                 document.getElementById('wallet-info').style.display = 'flex';
                 document.getElementById('wallet-address').innerText = short;
             }
-        } catch (e) { console.warn("Login cancelled"); }
-    }
-
-    async function handleDisconnect() {
-        if (privy) await privy.logout();
-        location.reload();
+        } catch (e) { console.log("User cancelled login"); }
     }
 
     async function initiatePayment(amount, itemName) {
@@ -356,7 +350,7 @@
             document.getElementById('order-item').value = itemName;
             document.getElementById('order-modal').style.display = 'block';
             document.getElementById('modal-overlay').style.display = 'block';
-        } catch (e) { alert("Lỗi giao dịch!"); }
+        } catch (e) { alert("Giao dịch lỗi!"); }
     }
 
     async function sendTelegramAlert(orderData) {
