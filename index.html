@@ -10,7 +10,7 @@
     <link rel="icon" type="image/png" href="favicon.png">
     
     <!-- Thư viện hỗ trợ -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@privy-io/js-sdk@latest/dist/privy.umd.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     
@@ -249,32 +249,35 @@
         let currentPurchasedItem = "";
         let lastTxHash = "";
 
-        function initPrivy() {
-            // Kiểm tra các trường hợp tên biến CDN có thể có
-            const PrivyClient = window.Privy?.PrivyClient || window.Privy;
+       // Thay thế toàn bộ hàm initPrivy cũ
+function initPrivy() {
+    // Thử tìm Privy trong các đối tượng Global khác nhau
+    const PrivySDK = window.Privy?.PrivyClient || window['@privy-io/js-sdk']?.PrivyClient || window.Privy;
 
-            if (PrivyClient) {
-                privy = new PrivyClient({
-                    appId: 'YOUR_PRIVY_APP_ID', // <--- THAY APP ID CỦA BẠN VÀO ĐÂY
-                    config: {
-                        loginMethods: ['google', 'wallet'],
-                        embeddedWallets: {
-                            createOnLogin: 'users-without-wallets'
-                        },
-                        appearance: {
-                            theme: 'dark',
-                            accentColor: '#00f5ff',
-                        }
+    if (typeof PrivySDK === 'function' || typeof PrivySDK === 'object') {
+        try {
+            privy = new (PrivySDK.PrivyClient || PrivySDK)({
+                appId: 'YOUR_PRIVY_APP_ID', // <--- ĐẢM BẢO THAY APP ID THẬT TẠI ĐÂY
+                config: {
+                    loginMethods: ['google', 'wallet'],
+                    embeddedWallets: {
+                        createOnLogin: 'users-without-wallets'
+                    },
+                    appearance: {
+                        theme: 'dark',
+                        accentColor: '#00f5ff',
                     }
-                });
-                console.log("✅ Privy Ready!");
-            } else {
-                console.warn("Retrying Privy initialization...");
-                setTimeout(initPrivy, 1000);
-            }
+                }
+            });
+            console.log("✅ Privy Ready!");
+        } catch (err) {
+            console.error("❌ Initialization error:", err);
         }
-
-        window.addEventListener('load', initPrivy);
+    } else {
+        console.warn("Retrying Privy initialization...");
+        setTimeout(initPrivy, 1000);
+    }
+}
 
         // --- AUTHENTICATION LOGIC ---
         async function handleConnect() {
