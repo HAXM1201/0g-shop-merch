@@ -6,13 +6,13 @@
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
     
-    <!-- 1. TẢI FIREBASE & ETHERS TRƯỚC (BẮT BUỘC) -->
+    <!-- 1. TẢI FIREBASE & ETHERS TRƯỚC (Logic chuẩn của sếp) -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <!-- 2. TẢI SDK PRIVY CHUẨN (LINK FIX LỖI 404) -->
-    <script src="https://unpkg.com/@privy-io/js-sdk@1.56.0/dist/privy-auth.umd.js"></script>
+    <!-- 2. TẢI SDK PRIVY CHUẨN (Link Widget ổn định nhất) -->
+    <script src="https://auth.privy.io/widget/index.js"></script>
 
     <style>
         :root {
@@ -229,7 +229,7 @@
         <textarea id="address" placeholder="Full Address (Street, City, State)"></textarea>
         <input type="text" id="phone" placeholder="Phone Number">
         <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
-        <button onclick="closeModal()" style="background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
+        <button onclick="closeModal()" style="width:100%; background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
     </div>
 
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | 0G PAY ENABLED</div>
@@ -254,11 +254,11 @@
     let lastTxHash = "";
     let currentPurchasedItem = "";
 
-    // HÀM KHỞI TẠO SIÊU CẤU TRÚC
+    // HÀM KHỞI TẠO SIÊU CẤU TRÚC (BẢN FIX TRIỆT ĐỂ)
     function powerOn() {
         console.log("🛠️ Hệ thống SIC-0G đang lên điện...");
         
-        // 1. Kiểm tra Firebase trước khi chạy bất cứ gì khác
+        // 1. Kiểm tra Firebase Ledger
         if (typeof firebase !== 'undefined') {
             if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
             database = firebase.database();
@@ -266,29 +266,33 @@
             console.log("✅ Firebase Ledger Ready!");
         } else {
             console.warn("⚠️ Firebase chưa nạp, đang thử lại...");
-            setTimeout(powerOn, 1000);
+            setTimeout(powerOn, 1500);
             return;
         }
 
-        // 2. Khởi tạo Privy với cơ chế an toàn tuyệt đối
-        const TargetPrivy = window.Privy;
-        if (TargetPrivy) {
-            privy = new TargetPrivy({
-                appId: 'cmp20fb5u009b0cjs6gy1fd16',
-                config: {
-                    loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
-                    embeddedWallets: { createOnLogin: 'users-without-wallets' },
-                    appearance: { theme: 'dark', accentColor: '#00f5ff' }
-                }
-            });
-            console.log("🚀 Privy Hybrid Login Ready!");
+        // 2. Khởi tạo Privy với cơ chế nhận diện đa tầng
+        const TargetPrivy = window.Privy || window.PrivyWidget;
+        if (typeof TargetPrivy !== 'undefined') {
+            try {
+                privy = new TargetPrivy({
+                    appId: 'cmp20fb5u009b0cjs6gy1fd16',
+                    config: {
+                        loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
+                        embeddedWallets: { createOnLogin: 'users-without-wallets' },
+                        appearance: { theme: 'dark', accentColor: '#00f5ff' }
+                    }
+                });
+                console.log("✅ Privy Hybrid Login Ready!");
+            } catch (e) {
+                console.error("Lỗi khởi tạo Privy:", e);
+            }
         } else {
-            console.warn("⏳ Đang chờ SDK Privy...");
-            setTimeout(powerOn, 1000);
+            console.warn("⏳ Đang chờ SDK Privy từ auth.privy.io...");
+            setTimeout(powerOn, 1500);
         }
     }
 
-    // Chạy khi trang web đã nạp xong (Cơ chế window.onload an toàn nhất)
+    // Chạy khi trang web đã nạp xong
     window.onload = powerOn;
 
     async function handleConnect() {
@@ -313,7 +317,6 @@
     async function initiatePayment(amount, itemName) {
         if (!fullWalletAddress) return handleConnect();
         try {
-            // Ưu tiên provider của Privy để vượt rào extension ví lỗi
             const provider = new ethers.providers.Web3Provider(window.ethereum || privy.provider);
             const signer = provider.getSigner();
             currentPurchasedItem = itemName;
@@ -366,7 +369,7 @@
             if (orders) {
                 Object.values(orders).reverse().forEach(o => {
                     const short = o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4);
-                    listBody.innerHTML += `<tr><td style="color:#39d353;">${short}</td><td>${o.item}</td><td>Confirmed</td><td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color:var(--0g-cyan);">View</a></td></tr>`;
+                    listBody.innerHTML += `<tr><td style="color:#39d353; font-family:monospace;">${short}</td><td>${o.item}</td><td>Confirmed</td><td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color:var(--0g-cyan);">View</a></td></tr>`;
                 });
             }
         });
