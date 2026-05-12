@@ -5,9 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
+    
+    <!-- Các thư viện cũ -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <!-- Tích hợp Privy SDK mới nhất -->
+    <script src="https://unpkg.com/@privy-io/js-sdk@latest/dist/privy-auth.umd.js"></script>
 
     <style>
         :root {
@@ -39,19 +44,30 @@
 
         .logo-text { font-weight: 900; color: var(--0g-cyan); font-size: 1.6rem; text-shadow: var(--neon-glow); }
 
-        #connect-btn {
+        /* Nút Connect Hybrid */
+        .btn-connect {
             background: transparent; border: 1.5px solid var(--0g-cyan); color: var(--0g-cyan);
             padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer;
             transition: 0.3s;
         }
 
-        #connect-btn:hover { background: var(--0g-cyan); color: #000; box-shadow: var(--neon-glow); }
+        .btn-connect:hover { background: var(--0g-cyan); color: #000; box-shadow: var(--neon-glow); }
 
         .main-title { 
             color: var(--0g-cyan); font-size: 4rem; letter-spacing: 5px;
             margin-top: 50px; font-weight: 900;
             text-shadow: 3px 3px 0px #ff00ff, -3px -3px 0px #00ffff;
         }
+
+        /* Nút 0G Pay Gateway */
+        .btn-0g-pay {
+            background: #ffffff; color: #000; border: none; padding: 10px 25px;
+            border-radius: 12px; font-weight: bold; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 10px; margin: 20px 0;
+            transition: 0.3s; box-shadow: 0 4px 15px rgba(255,255,255,0.2);
+        }
+
+        .btn-0g-pay:hover { background: var(--0g-yellow); transform: scale(1.05); }
 
         .live-price-box {
             background: rgba(0, 245, 255, 0.05);
@@ -117,15 +133,19 @@
     <header>
         <div class="logo-text">SIC-0G MERCH</div>
         <div id="wallet-container" style="display: flex; align-items: center; gap: 10px;">
-            <button id="connect-btn" onclick="handleConnect()">CONNECT WALLET</button>
+            <button id="connect-btn" class="btn-connect" onclick="handleConnect()">CONNECT / SIGN IN</button>
             <div id="wallet-info" style="display:none; align-items: center; gap: 10px;">
                 <div id="wallet-address" style="color: #39d353; border: 1px solid #39d353; padding: 8px 20px; border-radius: 50px; font-family: monospace;"></div>
-                <button id="disconnect-btn" onclick="handleDisconnect()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s;">DISCONNECT</button>
+                <button id="disconnect-btn" onclick="handleDisconnect()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s;">LOGOUT</button>
             </div>
         </div>
     </header>
 
     <h1 class="main-title">0G-BRIDGING THE DIGITAL AND PHYSICAL</h1>
+
+    <button class="btn-0g-pay" onclick="window.open('https://pc.0g.ai', '_blank')">
+        💳 TOP UP WITH VISA / MASTER (0G PAY)
+    </button>
 
     <div class="live-price-box">
         <span style="color: #848e9c; font-size: 0.8rem; margin-right: 10px;">LIVE 0G/USDT</span>
@@ -138,6 +158,7 @@
     </div>
 
     <div class="product-grid">
+        <!-- Đầy đủ 8 sản phẩm của sếp -->
         <div class="product-card">
             <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
             <h3>0G PANDA T-SHIRT</h3>
@@ -215,12 +236,10 @@
         <button onclick="closeModal()" style="width:100%; background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
     </div>
 
-    <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | SMART INVESTOR COMMUNITY</div>
+    <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | 0G PAY ENABLED</div>
 
     <script>
         const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
-        
-        // --- CẤU HÌNH TELEGRAM BOT PROXY ---
         const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
 
         const firebaseConfig = {
@@ -240,24 +259,37 @@
         let lastTxHash = "";
         let fullWalletAddress = ""; 
 
+        // --- CẤU HÌNH PRIVY HYBRID LOGIN (CẬP NHẬT APP ID MỚI) ---
+        const privy = new Privy({
+            appId: 'cmp20fb5u009b0cjs6gy1fd16',
+            config: {
+                loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
+                embeddedWallets: { createOnLogin: 'users-without-wallets' }
+            }
+        });
+
         async function handleConnect() {
-            if (!window.ethereum) return alert("Please install MetaMask!");
             try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                fullWalletAddress = accounts[0];
+                const user = await privy.login();
+                fullWalletAddress = user.wallet.address;
                 const shortenedAddress = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
+                
                 document.getElementById('connect-btn').style.display = 'none';
                 document.getElementById('wallet-info').style.display = 'flex';
                 document.getElementById('wallet-address').innerText = shortenedAddress;
                 return true;
-            } catch (e) { return false; }
+            } catch (e) { 
+                console.error("Privy Error:", e);
+                return false; 
+            }
         }
 
-        function handleDisconnect() {
+        async function handleDisconnect() {
+            await privy.logout();
             fullWalletAddress = "";
             document.getElementById('connect-btn').style.display = 'block';
             document.getElementById('wallet-info').style.display = 'none';
-            alert("Wallet Disconnected!");
+            location.reload();
         }
 
         async function initiatePayment(amount, itemName) {
@@ -279,10 +311,9 @@
                 document.getElementById('order-item').value = itemName;
                 document.getElementById('order-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
-            } catch (e) { alert("Transaction failed!"); }
+            } catch (e) { alert("Transaction failed! Make sure you have enough 0G."); }
         }
 
-        // HÀM GỬI THÔNG BÁO TỚI TELEGRAM - SỬ DỤNG MẸO THẺ ẢNH (IMAGE BEACON)
         async function sendTelegramAlert(orderData) {
             const text = `
 📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*
@@ -296,19 +327,9 @@
 ----------------------------------
 🚀 *Vận hành bởi SIC Community*
             `;
-
-            try {
-                // Tạo URL với tham số message để gửi qua phương thức GET
-                const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-                
-                // Sử dụng Image object để kích hoạt lệnh gửi đi mà không bị chặn bởi CORS
-                const img = new Image();
-                img.src = finalUrl; 
-                
-                console.log("Đã kích hoạt lệnh gửi thông báo Telegram...");
-            } catch (error) {
-                console.error("Lỗi gửi thông báo Telegram:", error);
-            }
+            const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
+            const img = new Image();
+            img.src = finalUrl; 
         }
 
         async function submitOrder() {
@@ -332,12 +353,8 @@
             };
 
             try {
-                // 1. Lưu vào Firebase trước
                 await database.ref('orders/').push(orderData);
-                
-                // 2. Bắn thông báo Telegram ngay lập tức
                 await sendTelegramAlert(orderData); 
-                
                 alert("Order Saved Successfully!");
                 closeModal();
             } catch (error) { 
@@ -368,10 +385,6 @@
         function closeModal() {
             document.getElementById('order-modal').style.display = 'none';
             document.getElementById('modal-overlay').style.display = 'none';
-            document.getElementById('receiver-name').value = "";
-            document.getElementById('country').value = "";
-            document.getElementById('address').value = "";
-            document.getElementById('phone').value = "";
         }
 
         setInterval(() => {
