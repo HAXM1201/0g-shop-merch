@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- THẺ META CSP "THÔNG CHỐT" CHO 0GSHOP.ONLINE -->
-    <meta http-equiv="Content-Security-Policy" 
-      content="default-src 'self'; 
-               script-src 'self' 'unsafe-inline' 'unsafe-eval' https://auth.privy.io https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebasedatabase.app; 
-               style-src 'self' 'unsafe-inline'; 
-               img-src 'self' data: https://script.google.com; 
-               connect-src 'self' https://auth.privy.io https://*.firebasedatabase.app wss://*.firebasedatabase.app wss://*.privy.io https://www.gstatic.com;">
-    
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
+    
+    <!-- Cấu hình CSP tối ưu để trị dứt điểm lỗi eval, connect-src và CORB -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self' https://*.privy.io; 
+                   script-src 'self' 'unsafe-inline' 'unsafe-eval' https://auth.privy.io https://*.privy.io https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebasedatabase.app; 
+                   style-src 'self' 'unsafe-inline' https://*.privy.io; 
+                   img-src 'self' data: https://script.google.com https://*.privy.io; 
+                   connect-src 'self' https://auth.privy.io https://*.privy.io https://*.firebasedatabase.app wss://*.firebasedatabase.app wss://*.privy.io https://www.gstatic.com;">
+
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- Nạp Privy Widget -->
     <script src="https://auth.privy.io/widget/index.js"></script>
 
     <style>
@@ -107,13 +109,9 @@
         th { color: var(--0g-yellow); padding: 15px; border-bottom: 1px solid rgba(0, 245, 255, 0.2); }
         td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 
-        .pagination-controls {
-            margin-top: 20px; display: flex; justify-content: center; gap: 8px; padding-bottom: 10px;
-        }
-        .page-btn {
-            background: transparent; border: 1px solid var(--0g-cyan); color: var(--0g-cyan);
-            padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: bold;
-        }
+        /* Pagination Styling */
+        .pagination-controls { margin-top: 20px; display: flex; justify-content: center; gap: 8px; padding-bottom: 10px; }
+        .page-btn { background: transparent; border: 1px solid var(--0g-cyan); color: var(--0g-cyan); padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         .page-btn.active { background: var(--0g-cyan); color: #000; }
         .page-btn:disabled { border-color: #333; color: #333; cursor: not-allowed; }
 
@@ -227,10 +225,10 @@
     <div id="order-modal">
         <h2 style="color:var(--0g-cyan); margin-top:0;">📦 SHIPPING INFO</h2>
         <input type="text" id="order-item" readonly style="color:var(--0g-yellow); font-weight:bold;">
-        <input type="text" id="receiver-name" placeholder="Receiver Name">
-        <input type="text" id="country" placeholder="Country">
-        <textarea id="address" placeholder="Full Address"></textarea>
-        <input type="text" id="phone" placeholder="Phone Number">
+        <input type="text" id="receiver-name" placeholder="Receiver Name" autocomplete="name">
+        <input type="text" id="country" placeholder="Country" autocomplete="country-name">
+        <textarea id="address" placeholder="Full Address (Street, City, State)" autocomplete="street-address"></textarea>
+        <input type="text" id="phone" placeholder="Phone Number" autocomplete="tel">
         <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
         <button onclick="closeModal()" style="width:100%; background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
     </div>
@@ -248,13 +246,20 @@
             storageBucket: "sic-0g-shop.firebasestorage.app",
             messagingSenderId: "563480928582",
             appId: "1:563480928582:web:b47b24d3fa30be6e2d0547",
+            measurementId: "G-F0MTXQMVZW",
             databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         
-        let privy, fullWalletAddress = "", currentPurchasedItem = "", lastTxHash = "", allOrders = [], currentPage = 1, ordersPerPage = 20;
+        let privy;
+        let fullWalletAddress = ""; 
+        let currentPurchasedItem = "";
+        let lastTxHash = "";
+        let allOrders = [];
+        let currentPage = 1;
+        const ordersPerPage = 20;
 
         // --- KHỞI TẠO PRIVY ---
         function initPrivy() {
@@ -263,33 +268,46 @@
                     appId: 'cmp20fb5u009b0cjs6gy1fd16',
                     config: {
                         loginMethods: ['google', 'email', 'wallet'],
-                        embeddedWallets: { createOnLogin: 'users-without-wallets', noPromptOnSignature: true },
+                        embeddedWallets: {
+                            createOnLogin: 'users-without-wallets',
+                            noPromptOnSignature: true 
+                        },
                         appearance: { theme: 'dark', accentColor: '#00f5ff' }
                     }
                 });
-            } else setTimeout(initPrivy, 1000);
+            } else {
+                setTimeout(initPrivy, 1000);
+            }
         }
         window.onload = initPrivy;
 
-        // --- KẾT NỐI VÍ ---
+        // --- KẾT NỐI VÍ (PRIVY) ---
         async function handleConnect() {
             if (!privy) return;
             try {
                 const user = await privy.login();
                 if (user && user.wallet) {
                     fullWalletAddress = user.wallet.address;
+                    const shortenedAddress = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
                     document.getElementById('connect-btn').style.display = 'none';
                     document.getElementById('wallet-info').style.display = 'flex';
-                    document.getElementById('wallet-address').innerText = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.slice(-4);
+                    document.getElementById('wallet-address').innerText = shortenedAddress;
+                    return true;
                 }
-            } catch (e) { console.log("Login canceled"); }
+            } catch (e) { return false; }
         }
 
-        function handleDisconnect() { if (privy) privy.logout(); location.reload(); }
+        function handleDisconnect() {
+            if (privy) privy.logout();
+            location.reload();
+        }
 
         // --- THANH TOÁN ---
         async function initiatePayment(amount, itemName) {
-            if (!fullWalletAddress) return handleConnect();
+            if (!fullWalletAddress) {
+                const connected = await handleConnect();
+                if (!connected) return;
+            }
             try {
                 const provider = new ethers.providers.Web3Provider(window.ethereum || privy.provider);
                 const signer = provider.getSigner();
@@ -329,28 +347,36 @@
         }
 
         async function submitOrder() {
+            const name = document.getElementById('receiver-name').value.trim();
+            const country = document.getElementById('country').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            
+            if (!name || !country || !address || !phone) return alert("Please fill all fields!");
+            
             const orderData = {
                 wallet: fullWalletAddress,
                 item: currentPurchasedItem,
-                receiver: document.getElementById('receiver-name').value.trim(),
-                country: document.getElementById('country').value.trim(),
-                address: document.getElementById('address').value.trim(),
-                phone: document.getElementById('phone').value.trim(),
+                receiver: name,
+                country: country,
+                address: address,
+                phone: phone,
                 txHash: lastTxHash || "N/A",
                 status: "Confirmed",
                 timestamp: Date.now()
             };
-            if (!orderData.receiver || !orderData.phone) return alert("Vui lòng điền đủ thông tin!");
 
             try {
                 await database.ref('orders/').push(orderData);
-                await sendTelegramAlert(orderData);
-                alert("Lưu đơn hàng thành công!");
+                await sendTelegramAlert(orderData); 
+                alert("Order Saved Successfully!");
                 closeModal();
-            } catch (error) { console.error(error); }
+            } catch (error) { 
+                alert("Database Error: " + error.message); 
+            }
         }
 
-        // --- PHÂN TRANG LEDGER ---
+        // --- PHÂN TRANG (PAGINATION) LEDGER ---
         database.ref('orders/').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -367,7 +393,7 @@
             const paginatedItems = allOrders.slice(startIndex, startIndex + ordersPerPage);
 
             paginatedItems.forEach(o => {
-                const shortWallet = o.wallet.substring(0,6) + "..." + o.wallet.slice(-4);
+                const shortWallet = o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4);
                 listBody.innerHTML += `
                     <tr>
                         <td style="font-family: monospace; color: #39d353;">${shortWallet}</td>
@@ -397,9 +423,12 @@
         function closeModal() {
             document.getElementById('order-modal').style.display = 'none';
             document.getElementById('modal-overlay').style.display = 'none';
+            document.getElementById('receiver-name').value = "";
+            document.getElementById('country').value = "";
+            document.getElementById('address').value = "";
+            document.getElementById('phone').value = "";
         }
 
-        // Sửa setInterval theo chuẩn CSP
         setInterval(() => {
             const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
             const priceEl = document.getElementById('token-price');
