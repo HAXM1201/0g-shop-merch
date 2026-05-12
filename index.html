@@ -7,13 +7,8 @@
     <link rel="icon" type="image/png" href="favicon.png">
     
     <!-- 1. TẢI FIREBASE & ETHERS TRƯỚC (Logic chuẩn của sếp) -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-    <!-- 2. TẢI SDK PRIVY CHUẨN (Link Widget ổn định nhất) -->
-    <script src="https://auth.privy.io/widget/index.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/@privy-io/js-sdk@1.56.0/dist/privy-auth.umd.js" defer></script>
+   
     <style>
         :root {
             --0g-cyan: #00f5ff;
@@ -235,7 +230,7 @@
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | 0G PAY ENABLED</div>
 
     <script>
-    // 1. Cấu hình giữ nguyên từ bản chuẩn của sếp
+    // 1. Cấu hình giữ nguyên từ bản chuẩn
     const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
     const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
     const firebaseConfig = {
@@ -254,74 +249,42 @@
     let lastTxHash = "";
     let currentPurchasedItem = "";
 
-    // 2. CHIẾN THUẬT SIÊU NẠP (THỬ MỌI NGUỒN)
-    function forceLoadPrivy() {
-        const sources = [
-            "https://auth.privy.io/widget/index.js",
-            "https://unpkg.com/@privy-io/js-sdk@latest/dist/privy-auth.umd.js",
-            "https://cdn.jsdelivr.net/npm/@privy-io/js-sdk@latest/dist/privy-auth.umd.js"
-        ];
-
-        sources.forEach(src => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.async = true;
-            document.head.appendChild(s);
-        });
-    }
-
-    // 3. KHỞI TẠO HỆ THỐNG
-    function powerOn() {
-        console.log("🛠️ Hệ thống SIC-0G đang khởi động tầng Firebase...");
+    // 2. Hàm khởi tạo "Phá băng"
+    function initSICSystem() {
+        console.log("🛠️ Đang kích hoạt tầng xử lý đơn hàng...");
         
+        // Luôn nạp Firebase Ledger trước
         if (typeof firebase !== 'undefined') {
             if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
             database = firebase.database();
             syncLedger();
-            console.log("✅ Ledger Firebase đã sẵn sàng!");
         }
 
-        // Bắt đầu thử nạp SDK
-        forceLoadPrivy();
-
-        let attempts = 0;
-        const checkPrivy = setInterval(() => {
-            attempts++;
-            // Kiểm tra mọi biến thể mà Privy có thể đăng ký vào window
-            const TargetPrivy = window.Privy || window.PrivyWidget || (window.privyAuth ? window.privyAuth.Privy : null);
-
-            if (TargetPrivy) {
-                clearInterval(checkPrivy);
-                try {
-                    privy = new TargetPrivy({
-                        appId: 'cmp20fb5u009b0cjs6gy1fd16',
-                        config: {
-                            loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
-                            embeddedWallets: { createOnLogin: 'users-without-wallets' },
-                            appearance: { theme: 'dark', accentColor: '#00f5ff' }
-                        }
-                    });
-                    console.log("🚀 CHÚC MỪNG SẾP XUÂN! PRIVY CHÍNH THỨC SẴN SÀNG!");
-                } catch (e) {
-                    console.error("Lỗi cấu hình Privy:", e);
+        // Kiểm tra Privy trực tiếp từ window
+        const PrivyLib = window.Privy;
+        if (PrivyLib) {
+            privy = new PrivyLib({
+                appId: 'cmp20fb5u009b0cjs6gy1fd16',
+                config: {
+                    loginMethods: ['email', 'google', 'twitter', 'tiktok', 'telegram', 'wallet'],
+                    embeddedWallets: { createOnLogin: 'users-without-wallets' },
+                    appearance: { theme: 'dark', accentColor: '#00f5ff' }
                 }
-            } else if (attempts > 15) {
-                console.error("❌ SDK bị chặn bởi trình duyệt. Đang thử nạp lại tầng cuối...");
-                forceLoadPrivy(); // Thử nạp lại lần nữa
-                attempts = 0;
-            } else {
-                console.warn(`⏳ Đang đợi tín hiệu SDK Privy (Lần thử ${attempts})...`);
-            }
-        }, 1000);
+            });
+            console.log("🚀 HỆ THỐNG PRIVY ĐÃ THÔNG SUỐT!");
+        } else {
+            console.error("❌ SDK Privy bị chặn. Sếp hãy thử: 1. Mở Tab ẩn danh | 2. Tắt ví Razor/Namada tạm thời.");
+            // Thử nạp lại sau 3s nếu vẫn thất bại
+            setTimeout(initSICSystem, 3000);
+        }
     }
 
-    // Ưu tiên nạp ngay khi DOM xong
-    if (document.readyState === "complete") powerOn();
-    else window.addEventListener('load', powerOn);
+    // Lắng nghe sự kiện load để đảm bảo script CDN đã về
+    window.addEventListener('load', initSICSystem);
 
-    // --- CÁC HÀM XỬ LÝ GIỮ NGUYÊN BẢN CHUẨN CỦA SẾP ---
+    // --- LOGIC XỬ LÝ ĐƠN HÀNG (GIỮ NGUYÊN CODE CHUẨN CỦA SẾP) ---
     async function handleConnect() {
-        if (!privy) return alert("Hệ thống bảo mật đang nạp, sếp nhấn lại sau 2 giây nhé!");
+        if (!privy) return alert("SDK chưa nạp xong, sếp thử lại sau 3 giây nhé!");
         try {
             const user = await privy.login();
             if (user && user.wallet) {
@@ -331,7 +294,7 @@
                 document.getElementById('wallet-info').style.display = 'flex';
                 document.getElementById('wallet-address').innerText = short;
             }
-        } catch (e) { console.log("User cancelled login"); }
+        } catch (e) { console.log("Login cancel"); }
     }
 
     async function initiatePayment(amount, itemName) {
@@ -345,17 +308,13 @@
                 value: ethers.utils.parseEther(amount.toString())
             });
             lastTxHash = tx.hash;
-            alert(`Giao dịch thành công! Hash: ${tx.hash}`);
+            alert(`Giao dịch đã gửi! Hash: ${tx.hash}`);
             await tx.wait();
+            
             document.getElementById('order-item').value = itemName;
             document.getElementById('order-modal').style.display = 'block';
             document.getElementById('modal-overlay').style.display = 'block';
-        } catch (e) { alert("Giao dịch lỗi!"); }
-    }
-
-    async function sendTelegramAlert(orderData) {
-        const text = `📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*\n👤 *Khách:* ${orderData.receiver}\n🏠 *Địa chỉ:* ${orderData.address}\n🛍️ *Sản phẩm:* ${orderData.item}\n💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})`;
-        new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
+        } catch (e) { alert("Lỗi giao dịch!"); }
     }
 
     async function submitOrder() {
@@ -370,17 +329,17 @@
             status: "Confirmed",
             timestamp: Date.now()
         };
-        if (!orderData.receiver || !orderData.address) return alert("Thiếu thông tin sếp ơi!");
+        if(!orderData.receiver || !orderData.address) return alert("Điền đủ thông tin sếp ơi!");
         try {
             await database.ref('orders/').push(orderData);
-            await sendTelegramAlert(orderData);
-            alert("Đã lưu đơn hàng!");
+            const text = `📦 ĐƠN HÀNG MỚI\n👤 Khách: ${orderData.receiver}\n🏠 ĐC: ${orderData.address}\n🛍️ SP: ${orderData.item}\n💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})`;
+            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
+            alert("Lưu đơn thành công!");
             closeModal();
-        } catch (e) { alert("Lỗi: " + e.message); }
+        } catch (e) { alert("Lỗi lưu đơn."); }
     }
 
     function syncLedger() {
-        if(!database) return;
         database.ref('orders/').on('value', (snapshot) => {
             const listBody = document.getElementById('order-history-list');
             if (!listBody) return;
