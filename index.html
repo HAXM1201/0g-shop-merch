@@ -99,20 +99,23 @@
 
     <!-- MODULE 3: HEADER -->
     <header>
-        <div class="logo" onclick="location.reload()">Ogshop.online</div>
-        <div class="slogan">0G-BRIDGING THE DIGITAL AND PHYSICAL</div>
-        <div class="auth-buttons">
-            <button id="google-login-btn" class="btn-auth">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Gmail Login
-            </button>
-            <button id="connect-btn" class="btn-auth" onclick="handleConnect()">CONNECT WALLET</button>
-            
-            <div id="wallet-info" style="display:none; align-items:center; gap:10px;">
-                <div id="gmail-display" style="font-size:0.85rem; background:rgba(0,245,255,0.1); padding:8px 15px; border-radius:9999px; color:var(--cyan); font-weight: bold;"></div>
-                <button onclick="logout()" style="background:none; border:1px solid #f43f5e; color:#f43f5e; padding:6px 12px; border-radius:9999px; font-size:0.7rem; cursor:pointer;">LOGOUT</button>
-            </div>
+    <div class="logo" onclick="location.reload()">Ogshop.online</div>
+    <div class="slogan gradient-text" style="font-size: 2.2rem; border: none; text-shadow: none;">
+        0G-BRIDGING THE DIGITAL AND PHYSICAL
+    </div>
+
+    <div class="auth-buttons">
+        <button id="google-login-btn" class="btn-auth">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Gmail Login
+        </button>
+        <button id="connect-btn" class="btn-auth" onclick="handleConnect()">CONNECT WALLET</button>
+        
+        <div id="wallet-info" style="display:none; align-items:center; gap:10px;">
+            <div id="gmail-display" style="font-size:0.85rem; background:rgba(0,245,255,0.1); padding:8px 15px; border-radius:9999px; color:var(--cyan); font-weight: bold;"></div>
+            <button onclick="logout()" style="background:none; border:1px solid #f43f5e; color:#f43f5e; padding:6px 12px; border-radius:9999px; font-size:0.7rem; cursor:pointer;">LOGOUT</button>
         </div>
-    </header>
+    </div>
+</header>
 
     <!-- MODULE 4: SIDEBAR -->
     <div class="sidebar">
