@@ -170,14 +170,15 @@
 
     <!-- ORDER MODAL -->
     <div id="order-modal">
-        <h2 style="color:var(--cyan); margin-bottom:15px; font-size:1.1rem;">📦 Shipping & Customization</h2>
-        <input type="text" id="order-item" readonly style="color:var(--yellow); font-weight:bold;">
-        <input type="text" id="receiver-name" placeholder="Recipient Full Name">
-        <textarea id="address" rows="2" placeholder="Full Delivery Address"></textarea>
-        <input type="tel" id="phone" placeholder="Phone Number">
-        <textarea id="order-note" rows="2" placeholder="Note (Size, Color, Special request...)"></textarea>
-        <button onclick="submitOrder()" class="btn-buy">COMPLETE ORDER</button>
-    </div>
+    <h2 style="color:var(--cyan); margin-bottom:15px; font-size:1.1rem;">📦 Shipping & Customization</h2>
+    <input type="text" id="order-item" readonly style="color:var(--yellow); font-weight:bold;">
+    <input type="text" id="receiver-name" placeholder="Recipient Full Name">
+    <input type="text" id="country" placeholder="Country (e.g. Vietnam, USA...)">
+    <textarea id="address" rows="2" placeholder="Full Delivery Address"></textarea>
+    <input type="tel" id="phone" placeholder="Phone Number">
+    <textarea id="order-note" rows="2" placeholder="Note (Size, Color, Special request...)"></textarea>
+    <button onclick="submitOrder()" class="btn-buy">COMPLETE ORDER</button>
+</div>
 
     <!-- PROFILE MODAL -->
     <div id="profile-modal">
