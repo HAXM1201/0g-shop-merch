@@ -12,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-    <!-- 2. GIAO DIỆN (CSS) -->
+    <!-- 2. GIAO DIỆN (CSS TỐI ƯU) -->
     <style>
         :root {
             --0g-cyan: #00f5ff;
@@ -57,29 +57,45 @@
             font-size: 0.95rem; color: #39d353; border: 1px solid #39d353; 
             padding: 8px 20px; border-radius: 50px; font-family: monospace; text-align:left;
         }
-        #wallet-gmail { font-weight: bold; }
 
+        /* 1: SỬA GIAO DIỆN 4 VẬT PHẨM 1 HÀNG */
         .product-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; 
-            max-width: 1400px; margin: 0 auto; padding: 30px 50px 120px 50px;
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); /* Ép hiển thị đúng 4 cột */
+            gap: 20px; 
+            max-width: 1200px; margin: 50px auto; padding: 0 20px;
         }
+
+        @media (max-width: 1024px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } }
 
         .product-card { 
-            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 25px; padding: 20px; 
-            background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); transition: 0.5s;
+            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 15px; 
+            background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); transition: 0.4s;
+            display: flex; flex-direction: column; justify-content: space-between;
         }
-        .product-card:hover { transform: translateY(-10px); border-color: var(--0g-cyan); }
-        .product-img { width: 100%; height: 220px; object-fit: cover; border-radius: 18px; margin-bottom: 15px; }
-        .price { font-size: 24px; color: var(--0g-yellow); font-weight: 800; margin: 10px 0; }
-        .btn-buy { background: var(--0g-cyan); color: #000; border: none; padding: 12px 0; border-radius: 12px; font-weight: 900; cursor: pointer; width: 100%; }
+        .product-card:hover { transform: translateY(-8px); border-color: var(--0g-cyan); box-shadow: var(--neon-glow); }
+        .product-img { width: 100%; height: 200px; object-fit: cover; border-radius: 15px; margin-bottom: 12px; }
+        .product-card h3 { font-size: 1rem; margin: 10px 0; letter-spacing: 1px; }
+        .price { font-size: 1.2rem; color: var(--0g-yellow); font-weight: 800; margin-bottom: 15px; }
+        .btn-buy { background: var(--0g-cyan); color: #000; border: none; padding: 10px 0; border-radius: 10px; font-weight: 900; cursor: pointer; width: 100%; }
 
+        /* PHẦN LEDGER & PHÂN TRANG */
         .ledger-container {
-            max-width: 1200px; margin: 50px auto; padding: 20px; background: rgba(255, 255, 255, 0.02); 
-            border: 1px solid rgba(0, 245, 255, 0.1); border-radius: 20px;
+            max-width: 1000px; margin: 50px auto 100px auto; padding: 20px; 
+            background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(0, 245, 255, 0.1); border-radius: 20px;
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { color: var(--0g-yellow); padding: 15px; border-bottom: 1px solid rgba(0, 245, 255, 0.2); }
-        td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th { color: var(--0g-yellow); padding: 12px; border-bottom: 1px solid rgba(0, 245, 255, 0.2); text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); text-align: left; }
+        
+        .pagination { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .page-btn { 
+            background: transparent; border: 1px solid var(--0g-cyan); color: var(--0g-cyan); 
+            padding: 5px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+        .page-btn.active { background: var(--0g-cyan); color: #000; }
+        .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         #order-modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -109,61 +125,63 @@
         </div>
     </header>
 
-    <h1 class="main-title" style="margin-top: 50px;">0G-BRIDGING THE DIGITAL AND PHYSICAL</h1>
+    <h1 class="main-title" style="margin-top: 50px; color: var(--0g-cyan); letter-spacing: 3px;">0G-PHYSICAL DEAI HUB</h1>
 
+    <!-- 1. GIAO DIỆN 4 VẬT PHẨM 1 HÀNG -->
     <div class="product-grid">
         <div class="product-card">
-            <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
+            <img src="ao-0g.jpg" class="product-img">
             <h3>0G PANDA T-SHIRT</h3>
             <div class="price">0.04 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.04, '0G PANDA T-SHIRT')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="mu-0g.jpg" class="product-img" alt="Snapback">
+            <img src="mu-0g.jpg" class="product-img">
             <h3>0G SNAPBACK</h3>
             <div class="price">0.03 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.03, '0G SNAPBACK')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="lot-chuot-0g.jpg" class="product-img" alt="Deskmat">
+            <img src="lot-chuot-0g.jpg" class="product-img">
             <h3>0G DEAI DESKMAT</h3>
             <div class="price">0.02 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.02, '0G DEAI DESKMAT')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="binh-nuoc.jpg" class="product-img" alt="Tumbler">
+            <img src="binh-nuoc.jpg" class="product-img">
             <h3>0G TUMBLER</h3>
             <div class="price">0.05 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.05, '0G TUMBLER')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="sotay.jpg" class="product-img" alt="Notebook">
+            <img src="sotay.jpg" class="product-img">
             <h3>0G NOTEBOOK</h3>
             <div class="price">0.01 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.01, '0G NOTEBOOK')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="panda.jpg" class="product-img" alt="Panda Neon">
+            <img src="panda.jpg" class="product-img">
             <h3>0G PANDA NEON</h3>
             <div class="price">0.03 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.03, '0G PANDA NEON')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="hoodie.jpg" class="product-img" alt="Hoodie">
+            <img src="hoodie.jpg" class="product-img">
             <h3>0G HOODIE</h3>
             <div class="price">0.05 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.05, '0G HOODIE')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="0gcombo.jpg" class="product-img" alt="Combo">
+            <img src="0gcombo.jpg" class="product-img">
             <h3>COMBO 0G FAN</h3>
             <div class="price">0.1 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.1, 'COMBO 0G FAN')">MINT NOW</button>
         </div>
     </div>
 
+    <!-- 2. DANH SÁCH VÍ 15 TRÊN 1 TRANG -->
     <div class="ledger-container">
-        <h2 style="color: var(--0g-cyan);">📜 ON-CHAIN ORDER LEDGER</h2>
+        <h2 style="color: var(--0g-cyan); font-size: 1.2rem;">📜 ON-CHAIN ORDER LEDGER</h2>
         <table>
             <thead>
                 <tr>
@@ -175,15 +193,16 @@
             </thead>
             <tbody id="order-history-list"></tbody>
         </table>
+        <div id="pagination-controls" class="pagination"></div>
     </div>
 
     <div id="modal-overlay" onclick="closeModal()"></div>
     <div id="order-modal">
         <h2 style="color:var(--0g-cyan); margin-top:0;">📦 SHIPPING INFO</h2>
-        <input type="text" id="order-item" readonly style="color:var(--0g-yellow); font-weight:bold;">
+        <input type="text" id="order-item" readonly style="color:var(--0g-yellow); font-weight:bold; border-color: var(--0g-yellow);">
         <input type="text" id="receiver-name" placeholder="Receiver Name">
         <input type="text" id="country" placeholder="Country" value="Vietnam">
-        <textarea id="address" placeholder="Full Address"></textarea>
+        <textarea id="address" placeholder="Full Address (Street, City, State)"></textarea>
         <input type="tel" id="phone" placeholder="Phone Number">
         <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:15px; border-radius:12px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
     </div>
@@ -191,20 +210,17 @@
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | SMART INVESTOR COMMUNITY</div>
 
     <script>
-        // --- 1. CẤU HÌNH ---
         const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
-        const RPC_URL = "https://evmrpc.0g.ai"; // RPC chính thức bạn cung cấp
+        const RPC_URL = "https://evmrpc.0g.ai"; 
         const EXPLORER_URL = "https://explorer.0g.ai/tx/";
         const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
 
-        const firebaseConfig = {
+        firebase.initializeApp({
             apiKey: "AIzaSyCHEV_Ob-nxZSV23s5j_bFn7iYQIVTKGy8",
             authDomain: "sic-0g-shop.firebaseapp.com",
             projectId: "sic-0g-shop",
             databaseURL: "https://sic-0g-shop-default-rtdb.asia-southeast1.firebasedatabase.app"
-        };
-
-        firebase.initializeApp(firebaseConfig);
+        });
         const database = firebase.database();
         const auth = firebase.auth();
 
@@ -213,10 +229,13 @@
             currentUser: null,
             isGmailLogin: false,
             currentPurchasedItem: "",
-            lastTxHash: ""
+            lastTxHash: "",
+            allOrders: [],
+            currentPage: 1,
+            rowsPerPage: 15 // Đặt 15 ví 1 trang
         };
 
-        // --- 2. MODULE: ĐĂNG NHẬP ---
+        // ĐĂNG NHẬP GMAIL
         document.getElementById('google-login-btn').addEventListener('click', () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider); 
@@ -227,7 +246,7 @@
                 state.currentUser = user;
                 state.isGmailLogin = true;
                 const snap = await database.ref('users/' + user.uid).once('value');
-                if (snap.exists() && snap.val().walletAddress) {
+                if (snap.exists()) {
                     state.fullWalletAddress = snap.val().walletAddress;
                     updateUIAfterLogin();
                 } else {
@@ -236,11 +255,10 @@
             }
         });
 
-        // --- 3. MODULE: VÍ ẨN ---
         function showPasswordSetupModal(email) {
             const html = `
             <div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:2px solid #00f5ff;padding:30px;border-radius:20px;z-index:3000;width:90%;max-width:420px;">
-                <h3 style="color:#00f5ff;margin-top:0;">🔐 Thiết lập Mật khẩu ví ẩn</h3>
+                <h3 style="color:#00f5ff;margin-top:0;">🔐 Thiết lập Ví ẩn cho ${email}</h3>
                 <input type="password" id="u-pw" placeholder="Mật khẩu (≥8 ký tự)" style="width:100%;padding:10px;margin:10px 0;background:#1a1f2e;color:white;border:1px solid #333;border-radius:8px;">
                 <input type="password" id="u-pw-c" placeholder="Xác nhận mật khẩu" style="width:100%;padding:10px;margin:10px 0;background:#1a1f2e;color:white;border:1px solid #333;border-radius:8px;">
                 <button onclick="createHiddenWallet()" style="width:100%;padding:14px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;margin-top:10px;cursor:pointer;">TẠO VÍ</button>
@@ -251,49 +269,31 @@
 
         window.createHiddenWallet = async function() {
             const pw = document.getElementById('u-pw').value;
-            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return alert("Mật khẩu không hợp lệ!");
-
+            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return alert("Mật khẩu không khớp hoặc quá ngắn!");
             const seed = state.currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-v3";
             const wallet = new ethers.Wallet(ethers.utils.id(seed));
             state.fullWalletAddress = wallet.address;
-
-            await database.ref('users/' + state.currentUser.uid).set({
-                email: state.currentUser.email,
-                walletAddress: wallet.address,
-                createdAt: Date.now()
-            });
-
+            await database.ref('users/' + state.currentUser.uid).set({ email: state.currentUser.email, walletAddress: wallet.address, createdAt: Date.now() });
             document.getElementById('pw-modal').remove();
             document.getElementById('pw-overlay').remove();
             updateUIAfterLogin();
         };
 
-        // --- 4. MODULE: KẾT NỐI METAMASK ---
+        // METAMASK
         async function handleConnect() {
-            if (!window.ethereum) return alert("Hãy cài MetaMask!");
+            if (!window.ethereum) return alert("Please install MetaMask!");
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             state.fullWalletAddress = accounts[0];
             state.isGmailLogin = false;
             updateUIAfterLogin();
         }
 
-        // --- 5. MODULE: COPY ĐỊA CHỈ VÍ ---
+        // UI & COPY
         function updateUIAfterLogin() {
             document.getElementById('google-login-btn').style.display = 'none';
             document.getElementById('connect-btn').style.display = 'none';
-            
-            let displayName = "User";
-            if(state.currentUser) {
-                const name = state.currentUser.email.split('@')[0];
-                displayName = name.length > 8 ? name.substring(0,8) + "..." : name;
-            } else {
-                displayName = state.fullWalletAddress.substring(0,6) + "...";
-            }
-
-            document.getElementById('wallet-address-display').innerHTML = `
-                <span id="wallet-gmail">📧 ${displayName}</span>
-                <span style="font-size:0.7rem; opacity:0.7;">(Click to copy Wallet)</span>
-            `;
+            let name = state.currentUser ? state.currentUser.email.split('@')[0] : "User";
+            document.getElementById('wallet-address-display').innerHTML = `📧 ${name.substring(0,8)}... 📋`;
             document.getElementById('wallet-info').style.display = 'flex';
         }
 
@@ -304,123 +304,89 @@
             el.select();
             document.execCommand('copy');
             document.body.removeChild(el);
-            alert("Đã Copy địa chỉ ví: " + state.fullWalletAddress);
+            alert("Đã Copy địa chỉ ví!");
         };
 
-        // --- 6. MODULE: THANH TOÁN ---
-    
-// --- 6. MODULE: THANH TOÁN (ĐÃ FIX LỖI LƯU ĐƠN) ---
-async function initiatePayment(amount, itemName) {
-    if (!state.fullWalletAddress) return alert("Vui lòng đăng nhập!");
-    
-    try {
-        let tx;
-        const value = ethers.utils.parseEther(amount.toString());
-
-        if (state.isGmailLogin) {
-            const password = prompt("Nhập mật khẩu ví ẩn để ký thanh toán:");
-            if (!password) return;
-            const seed = state.currentUser.email.toLowerCase() + "|" + password + "|SIC-0G-v3";
-            const provider = new ethers.providers.StaticJsonRpcProvider(RPC_URL);
-            const wallet = new ethers.Wallet(ethers.utils.id(seed), provider);
-            
-            if (wallet.address !== state.fullWalletAddress) return alert("Sai mật khẩu ví ẩn!");
-            
-            alert("Đang gửi giao dịch lên Mainnet...");
-            const gasPrice = await provider.getGasPrice();
-            tx = await wallet.sendTransaction({ 
-                to: DESTINATION_WALLET, 
-                value: value,
-                gasPrice: gasPrice.mul(12).div(10), // Tăng gas để tránh kẹt lệnh
-                gasLimit: 25000 
-            });
-        } else {
-            const provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer = provider.getSigner();
-            tx = await signer.sendTransaction({ to: DESTINATION_WALLET, value: value });
+        // THANH TOÁN
+        async function initiatePayment(amount, itemName) {
+            if (!state.fullWalletAddress) return alert("Vui lòng đăng nhập!");
+            try {
+                let tx;
+                const value = ethers.utils.parseEther(amount.toString());
+                if (state.isGmailLogin) {
+                    const password = prompt("Nhập mật khẩu ví ẩn:");
+                    if (!password) return;
+                    const seed = state.currentUser.email.toLowerCase() + "|" + password + "|SIC-0G-v3";
+                    const wallet = new ethers.Wallet(ethers.utils.id(seed), new ethers.providers.JsonRpcProvider(RPC_URL));
+                    if (wallet.address !== state.fullWalletAddress) return alert("Sai mật khẩu!");
+                    alert("Đang gửi giao dịch...");
+                    tx = await wallet.sendTransaction({ to: DESTINATION_WALLET, value: value });
+                } else {
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    tx = await provider.getSigner().sendTransaction({ to: DESTINATION_WALLET, value: value });
+                }
+                state.lastTxHash = tx.hash;
+                state.currentPurchasedItem = itemName;
+                alert("Đang xác nhận...");
+                await tx.wait();
+                document.getElementById('order-item').value = itemName;
+                document.getElementById('order-modal').style.display = 'block';
+                document.getElementById('modal-overlay').style.display = 'block';
+            } catch (e) { alert("Lỗi: " + e.message); }
         }
 
-        // LƯU BIẾN QUAN TRỌNG VÀO STATE NGAY LẬP TỨC
-        state.lastTxHash = tx.hash;
-        state.currentPurchasedItem = itemName;
+        async function submitOrder() {
+            const name = document.getElementById('receiver-name').value;
+            const addr = document.getElementById('address').value;
+            const phone = document.getElementById('phone').value;
+            if (!name || !addr || !phone) return alert("Thiếu thông tin!");
+            const order = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, address: addr, phone: phone, txHash: state.lastTxHash, status: "Confirmed", timestamp: Date.now() };
+            await database.ref('orders/').push(order);
+            const text = `📦 MỚI: ${order.item}\n👤 Khách: ${order.receiver}\n💸 Tx: ${EXPLORER_URL}${order.txHash}`;
+            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
+            alert("Thành công!");
+            closeModal();
+        }
 
-        alert("Giao dịch đã gửi! Đang chờ Blockchain xác nhận (khoảng 5-10 giây)...");
-        
-        // Chờ xác nhận thành công
-        const receipt = await tx.wait();
-        console.log("Thanh toán thành công:", receipt);
-
-        // HIỆN MODAL ĐỂ NHẬP THÔNG TIN SHIP
-        document.getElementById('order-item').value = itemName;
-        document.getElementById('order-modal').style.display = 'block';
-        document.getElementById('modal-overlay').style.display = 'block';
-
-    } catch (e) {
-        console.error("Lỗi thanh toán:", e);
-        alert("Lỗi: " + (e.reason || "Giao dịch không thành công hoặc bị hủy."));
-    }
-}
-
-// --- MODULE: LƯU ĐƠN HÀNG (ĐÃ TỐI ƯU) ---
-async function submitOrder() {
-    const name = document.getElementById('receiver-name').value.trim();
-    const addr = document.getElementById('address').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const country = document.getElementById('country').value || "Vietnam";
-
-    // Kiểm tra dữ liệu đầu vào
-    if (!name || !addr || !phone) return alert("Vui lòng điền đủ thông tin giao hàng!");
-    if (!state.lastTxHash) return alert("Không tìm thấy mã giao dịch. Vui lòng thanh toán lại.");
-
-    const orderData = {
-        wallet: state.fullWalletAddress,
-        item: state.currentPurchasedItem,
-        receiver: name,
-        address: addr,
-        phone: phone,
-        country: country,
-        txHash: state.lastTxHash,
-        status: "Confirmed",
-        timestamp: Date.now()
-    };
-
-    try {
-        // 1. Ghi vào Firebase
-        const newOrderRef = database.ref('orders/').push();
-        await newOrderRef.set(orderData);
-        
-        // 2. Gửi Telegram (Image Beacon để tránh lỗi CORS)
-        const text = `📦 ĐƠN HÀNG MỚI: ${orderData.item}\n👤 Khách: ${orderData.receiver}\n📞 SĐT: ${orderData.phone}\n💸 Tx: ${EXPLORER_URL}${orderData.txHash}`;
-        const telegramImg = new Image();
-        telegramImg.src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-
-        alert("✅ ĐẶT HÀNG THÀNH CÔNG! SIC Community sẽ sớm liên hệ với bạn.");
-        closeModal(); // Đóng modal và xóa form
-    } catch (error) {
-        console.error("Lỗi Firebase:", error);
-        alert("Lỗi hệ thống khi lưu đơn hàng: " + error.message);
-    }
-}
-
-        // --- 7. MODULE: LEDGER ---
+        // MODULE PHÂN TRANG 15 VÍ
         database.ref('orders/').on('value', (snapshot) => {
-            const orders = snapshot.val();
-            const listBody = document.getElementById('order-history-list');
-            if (!listBody) return;
-            listBody.innerHTML = "";
-            if (orders) {
-                Object.values(orders).reverse().forEach(o => {
-                    const shortWallet = o.wallet ? (o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4)) : "N/A";
-                    listBody.innerHTML += `<tr><td style="font-family: monospace; color: #39d353;">${shortWallet}</td><td>${o.item}</td><td><span style="color: #39d353;">● Confirmed</span></td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color: var(--0g-cyan);">View</a></td></tr>`;
-                });
+            const data = snapshot.val();
+            if (data) {
+                state.allOrders = Object.values(data).reverse();
+                renderLedger();
             }
         });
 
-        window.logout = () => { auth.signOut(); location.reload(); };
-        function closeModal() {
-            document.getElementById('order-modal').style.display = 'none';
-            document.getElementById('modal-overlay').style.display = 'none';
+        function renderLedger() {
+            const listBody = document.getElementById('order-history-list');
+            listBody.innerHTML = "";
+            const start = (state.currentPage - 1) * state.rowsPerPage;
+            const end = start + state.rowsPerPage;
+            const paginatedItems = state.allOrders.slice(start, end);
+
+            paginatedItems.forEach(o => {
+                const short = o.wallet ? o.wallet.substring(0,6) + "..." + o.wallet.slice(-4) : "N/A";
+                listBody.innerHTML += `<tr><td style="font-family:monospace;color:#39d353">${short}</td><td>${o.item}</td><td><span style="color:#39d353">● Confirmed</span></td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:var(--0g-cyan)">View</a></td></tr>`;
+            });
+            renderPagination();
         }
+
+        function renderPagination() {
+            const controls = document.getElementById('pagination-controls');
+            const totalPages = Math.ceil(state.allOrders.length / state.rowsPerPage);
+            controls.innerHTML = "";
+            if (totalPages <= 1) return;
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`;
+                btn.onclick = () => { state.currentPage = i; renderLedger(); };
+                controls.appendChild(btn);
+            }
+        }
+
+        window.logout = () => { auth.signOut(); location.reload(); };
+        function closeModal() { document.getElementById('order-modal').style.display = 'none'; document.getElementById('modal-overlay').style.display = 'none'; }
     </script>
 </body>
 </html>
