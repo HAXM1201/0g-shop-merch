@@ -6,7 +6,7 @@
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
 
-    <!-- 1. IMPORT THƯ VIỆN (Firebase & Ethers) -->
+    <!-- 1. IMPORT THƯ VIỆN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -49,21 +49,19 @@
         }
 
         #google-login-btn { background:#4285F4; color:white; border:none; display:flex; align-items:center; gap:8px; }
-
-        #connect-btn {
-            background: transparent; border: 1.5px solid var(--0g-cyan); color: var(--0g-cyan);
-            padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer;
-        }
-
+        #connect-btn { background: transparent; border: 1.5px solid var(--0g-cyan); color: var(--0g-cyan); }
         #connect-btn:hover { background: var(--0g-cyan); color: #000; box-shadow: var(--neon-glow); }
 
+        /* PHẦN HIỂN THỊ VÍ SAU ĐĂNG NHẬP */
         #wallet-address-display {
-            display: flex; flex-direction: column; align-items: flex-start;
+            cursor: pointer; /* Biến chuột thành hình bàn tay để user biết là nhấn được */
+            display: flex; align-items: center; gap: 8px;
             font-size: 0.95rem; color: #39d353; border: 1px solid #39d353; 
-            padding: 8px 20px; border-radius: 50px; font-family: monospace; text-align:left;
+            padding: 8px 20px; border-radius: 50px; font-family: monospace;
+            transition: 0.3s;
         }
-        #wallet-gmail { color: #39d353; font-weight: bold; }
-        #wallet-hidden { color: #00f5ff; font-size: 0.85rem; }
+        #wallet-address-display:hover { background: rgba(57, 211, 83, 0.1); }
+        #wallet-gmail { font-weight: bold; }
 
         .live-price-box {
             background: rgba(0, 245, 255, 0.05); border: 1px solid rgba(0, 245, 255, 0.3);
@@ -83,9 +81,6 @@
             max-width: 1400px; margin: 0 auto; padding: 30px 50px 120px 50px;
         }
 
-        @media (max-width: 1200px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } .main-title { font-size: 2.2rem; } }
-
         .product-card { 
             border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 25px; padding: 20px; 
             background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); transition: 0.5s;
@@ -93,7 +88,7 @@
         .product-card:hover { transform: translateY(-10px); border-color: var(--0g-cyan); }
         .product-img { width: 100%; height: 220px; object-fit: cover; border-radius: 18px; margin-bottom: 15px; }
         .price { font-size: 24px; color: var(--0g-yellow); font-weight: 800; margin: 10px 0; }
-        .btn-buy { background: var(--0g-cyan); color: #000; border: none; padding: 12px 0; border-radius: 12px; font-weight: 900; cursor: pointer; }
+        .btn-buy { background: var(--0g-cyan); color: #000; border: none; padding: 12px 0; border-radius: 12px; font-weight: 900; cursor: pointer; width: 100%; }
 
         .ledger-container {
             max-width: 1200px; margin: 50px auto; padding: 20px; background: rgba(255, 255, 255, 0.02); 
@@ -109,7 +104,7 @@
             border-radius: 20px; z-index: 2000; width: 90%; max-width: 400px; box-shadow: var(--neon-glow);
         }
         #order-modal input, #order-modal textarea {
-            width: 100%; margin-bottom: 12px; background: #1a1f2e; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px;
+            width: 100%; margin-bottom: 12px; background: #1a1f2e; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; box-sizing: border-box;
         }
         #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1999; }
         .footer-bar { position: fixed; bottom: 0; width: 100%; background: rgba(0, 0, 0, 0.9); padding: 12px 0; color: rgba(0, 245, 255, 0.6); font-family: monospace; font-size: 0.75rem; border-top: 1px solid rgba(0, 245, 255, 0.2); z-index: 99; }
@@ -117,7 +112,7 @@
 </head>
 <body>
 
-    <!-- 3. HEADER & NAVIGATION -->
+    <!-- 3. HEADER -->
     <header>
         <div class="logo-text">SIC-0G MERCH</div>
         <div id="wallet-container" style="display: flex; align-items: center; gap: 10px;">
@@ -126,26 +121,23 @@
             </button>          
             <button id="connect-btn" onclick="handleConnect()">CONNECT WALLET</button>
             <div id="wallet-info" style="display:none; align-items: center; gap: 10px;">
-                <div id="wallet-address-display"></div>
+                <!-- Nhấp vào đây để xem ví -->
+                <div id="wallet-address-display" onclick="showWalletAddress()"></div>
                 <button onclick="logout()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold;">LOGOUT</button>
             </div>
         </div>
     </header>
 
-    <h1 class="main-title" style="color: var(--0g-cyan); font-size: 4rem; margin-top: 50px;">0G-BRIDGING THE DIGITAL AND PHYSICAL</h1>
+    <h1 class="main-title" style="margin-top: 50px;">0G-BRIDGING THE DIGITAL AND PHYSICAL</h1>
 
-    <!-- 4. LIVE PRICE & TICKER -->
+    <!-- 4. LIVE PRICE -->
     <div class="live-price-box">
         <span style="color: #848e9c; font-size: 0.8rem; margin-right: 10px;">LIVE 0G/USDT</span>
         <span id="token-price" style="font-weight: bold; font-family: monospace;">$0.5370</span>
         <span id="price-change" style="color: #39d353; margin-left: 10px;">+1.32%</span>
     </div>
 
-    <div class="node-ticker">
-        <div class="ticker-content">This project is a blockchain technology experiment dedicated to the SIC community. ● VALIDATOR: SIC ● NETWORK: 0G MAINNET ● LIMITLESS DEAI SCALABILITY</div>
-    </div>
-
-    <!-- 5. PRODUCT LIST -->
+    <!-- 5. PRODUCT LIST (Bạn có thể thêm các sản phẩm khác tương tự vào đây) -->
     <div class="product-grid">
         <div class="product-card">
             <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
@@ -214,23 +206,22 @@
     </div>
 
     <!-- 7. MODALS -->
-    <div id="modal-overlay"></div>
+    <div id="modal-overlay" onclick="closeModal()"></div>
     <div id="order-modal">
         <h2 style="color:var(--0g-cyan); margin-top:0;">📦 SHIPPING INFO</h2>
         <input type="text" id="order-item" readonly style="color:var(--0g-yellow); font-weight:bold;">
         <input type="text" id="receiver-name" placeholder="Receiver Name" autocomplete="name">
-        <input type="text" id="country" placeholder="Country" autocomplete="country-name" value="Vietnam">
-        <textarea id="address" placeholder="Full Address" autocomplete="street-address"></textarea>
-        <input type="tel" id="phone" placeholder="Phone Number" autocomplete="tel">
-        <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
-        <button onclick="closeModal()" style="width:100%; background:transparent; color:#848e9c; border:none; margin-top:10px; cursor:pointer;">Maybe later</button>
+        <input type="text" id="country" placeholder="Country" value="Vietnam">
+        <textarea id="address" placeholder="Full Address"></textarea>
+        <input type="tel" id="phone" placeholder="Phone Number">
+        <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:15px; border-radius:12px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
     </div>
 
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | SMART INVESTOR COMMUNITY</div>
 
     <!-- 8. JAVASCRIPT LOGIC -->
     <script>
-        // --- Cấu hình & Biến toàn cục ---
+        // --- CẤU HÌNH ---
         const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
         const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
 
@@ -253,33 +244,27 @@
         let lastTxHash = "";
         let fullWalletAddress = ""; 
         let currentUser = null;
-        let hiddenWallet = null;
 
-        // --- Module: Đăng nhập Gmail & Lắng nghe trạng thái ---
+        // --- MODULE: ĐĂNG NHẬP GMAIL ---
         document.getElementById('google-login-btn').addEventListener('click', () => {
             const provider = new firebase.auth.GoogleAuthProvider();
-            // Sử dụng signInWithPopup để tránh lỗi Third-party cookie của Chrome
-            auth.signInWithPopup(provider).catch(e => {
-                console.warn("Popup blocked, falling back to redirect");
-                auth.signInWithRedirect(provider);
-            });
+            auth.signInWithPopup(provider); 
         });
 
-        // Tự động nhận diện User khi trang web tải lại
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUser = user;
-                const snap = await database.ref('users/' + currentUser.uid).once('value');
+                const snap = await database.ref('users/' + user.uid).once('value');
                 if (snap.exists() && snap.val().walletAddress) {
                     fullWalletAddress = snap.val().walletAddress;
                     updateUIAfterLogin();
                 } else {
-                    showPasswordSetupModal(currentUser.email);
+                    showPasswordSetupModal(user.email);
                 }
             }
         });
 
-        // --- Module: Tạo Ví Ẩn cho User Gmail ---
+        // --- MODULE: LƯU VÍ & TẠO VÍ ẨN ---
         function showPasswordSetupModal(email) {
             const html = `
             <div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:2px solid #00f5ff;padding:30px;border-radius:20px;z-index:3000;width:90%;max-width:420px;">
@@ -295,7 +280,7 @@
         window.createHiddenWallet = async function() {
             const pw = document.getElementById('u-pw').value;
             const pw2 = document.getElementById('u-pw-c').value;
-            if (pw.length < 8 || pw !== pw2) return alert("Mật khẩu phải ≥ 8 ký tự và khớp nhau!");
+            if (pw.length < 8 || pw !== pw2) return alert("Mật khẩu không khớp hoặc quá ngắn!");
 
             const seed = currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-v3";
             const wallet = new ethers.Wallet(ethers.utils.id(seed));
@@ -312,7 +297,7 @@
             updateUIAfterLogin();
         };
 
-        // --- Module: Kết nối Metamask ---
+        // --- MODULE: ĐĂNG NHẬP METAMASK ---
         async function handleConnect() {
             if (!window.ethereum) return alert("Please install MetaMask!");
             try {
@@ -323,36 +308,43 @@
             } catch (e) { return false; }
         }
 
-        // --- Module: Cập nhật UI & Logout ---
+        // --- MODULE: HIỂN THỊ VÍ (CHỈ HIỆN GMAIL RÚT GỌN) ---
         function updateUIAfterLogin() {
             document.getElementById('google-login-btn').style.display = 'none';
             document.getElementById('connect-btn').style.display = 'none';
-            const walletShort = fullWalletAddress.substring(0,6) + "..." + fullWalletAddress.slice(-4);
             
-            let displayContent = "";
+            let displayName = "User";
             if(currentUser) {
-                const gmailName = currentUser.email.split('@')[0];
-                const gmailShort = gmailName.length > 10 ? gmailName.substring(0,6) + "..." : gmailName;
-                displayContent = `<div id="wallet-gmail">${gmailShort}@gmail.com</div><div id="wallet-hidden">${walletShort}</div>`;
+                const name = currentUser.email.split('@')[0];
+                displayName = name.length > 10 ? name.substring(0,7) + "..." : name;
             } else {
-                displayContent = `<div>Wallet: ${walletShort}</div>`;
+                displayName = fullWalletAddress.substring(0,6) + "...";
             }
-            
-            document.getElementById('wallet-address-display').innerHTML = displayContent;
+
+            document.getElementById('wallet-address-display').innerHTML = `
+                <span id="wallet-gmail">📧 ${displayName}</span>
+                <span style="font-size:0.7rem; opacity:0.7;">(Click to view Wallet)</span>
+            `;
             document.getElementById('wallet-info').style.display = 'flex';
         }
+
+        // HÀM HIỆN ĐỊA CHỈ VÍ KHI NHẤP CHUỘT
+        window.showWalletAddress = function() {
+            const confirmCopy = confirm(`Địa chỉ ví của bạn:\n${fullWalletAddress}\n\nBạn có muốn Copy địa chỉ này không?`);
+            if (confirmCopy) {
+                navigator.clipboard.writeText(fullWalletAddress);
+                alert("Đã Copy địa chỉ ví!");
+            }
+        };
 
         window.logout = async function() {
             await auth.signOut();
             location.reload();
         };
 
-        // --- Module: Thanh toán & Gửi Đơn hàng ---
+        // --- MODULE: THANH TOÁN & ĐƠN HÀNG ---
         async function initiatePayment(amount, itemName) {
-            if (!fullWalletAddress) {
-                const connected = await handleConnect();
-                if (!connected) return;
-            }
+            if (!fullWalletAddress) return alert("Vui lòng đăng nhập trước!");
             try {
                 const provider = new ethers.providers.Web3Provider(window.ethereum);
                 const signer = provider.getSigner();
@@ -367,22 +359,21 @@
                 document.getElementById('order-item').value = itemName;
                 document.getElementById('order-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
-            } catch (e) { alert("Transaction failed!"); }
+            } catch (e) { alert("Transaction failed hoặc bạn không dùng MetaMask để thanh toán."); }
         }
 
         async function submitOrder() {
             const name = document.getElementById('receiver-name').value.trim();
-            const country = document.getElementById('country').value.trim();
-            const address = document.getElementById('address').value.trim();
+            const addr = document.getElementById('address').value.trim();
             const phone = document.getElementById('phone').value.trim();
-            if (!name || !country || !address || !phone) return alert("Please fill all fields!");
+            if (!name || !addr || !phone) return alert("Vui lòng điền đủ thông tin!");
             
             const orderData = {
                 wallet: fullWalletAddress,
                 item: currentPurchasedItem,
                 receiver: name,
-                country: country,
-                address: address,
+                country: document.getElementById('country').value,
+                address: addr,
                 phone: phone,
                 txHash: lastTxHash || "N/A",
                 status: "Confirmed",
@@ -391,16 +382,14 @@
 
             try {
                 await database.ref('orders/').push(orderData);
-                // Gửi Telegram alert qua Image beacon để tránh CORS
-                const text = `📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*\n👤 *Khách:* ${orderData.receiver}\n🛍️ *Sản phẩm:* ${orderData.item}\n💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})`;
+                const text = `📦 MỚI: ${orderData.item}\n👤 Khách: ${orderData.receiver}\n💸 Tx: https://chainscan.0g.ai/tx/${orderData.txHash}`;
                 new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-                
-                alert("Order Saved Successfully!");
+                alert("Đặt hàng thành công!");
                 closeModal();
-            } catch (error) { alert("Database Error: " + error.message); }
+            } catch (error) { alert("Lỗi lưu đơn hàng."); }
         }
 
-        // --- Module: Ledger (Dữ liệu On-chain real-time) ---
+        // --- MODULE: LEDGER ---
         database.ref('orders/').on('value', (snapshot) => {
             const orders = snapshot.val();
             const listBody = document.getElementById('order-history-list');
@@ -409,7 +398,7 @@
             if (orders) {
                 Object.values(orders).reverse().forEach(o => {
                     const shortWallet = o.wallet ? (o.wallet.substring(0,6) + "..." + o.wallet.substring(o.wallet.length-4)) : "N/A";
-                    listBody.innerHTML += `<tr><td style="font-family: monospace; color: #39d353;">${shortWallet}</td><td>${o.item}</td><td><span style="color: #39d353;">● ${o.status}</span></td><td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color: var(--0g-cyan);">View</a></td></tr>`;
+                    listBody.innerHTML += `<tr><td style="font-family: monospace; color: #39d353;">${shortWallet}</td><td>${o.item}</td><td>● Confirmed</td><td><a href="https://chainscan.0g.ai/tx/${o.txHash}" target="_blank" style="color: var(--0g-cyan);">View</a></td></tr>`;
                 });
             }
         });
@@ -419,7 +408,6 @@
             document.getElementById('modal-overlay').style.display = 'none';
         }
 
-        // --- Module: Token Price Update ---
         setInterval(() => {
             const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
             const priceEl = document.getElementById('token-price');
