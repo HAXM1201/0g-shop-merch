@@ -308,12 +308,10 @@
         };
 
         // --- 6. MODULE: THANH TOÁN ---
-       // --- 6. MODULE: THANH TOÁN (ĐÃ TỐI ƯU GAS & SỬA LỖI RPC) ---
+    
+// --- 6. MODULE: THANH TOÁN (ĐÃ FIX LỖI LƯU ĐƠN) ---
 async function initiatePayment(amount, itemName) {
     if (!state.fullWalletAddress) return alert("Vui lòng đăng nhập!");
-    
-    // Hiện thông báo trạng thái để user yên tâm
-    console.log("Khởi tạo thanh toán cho:", itemName);
     
     try {
         let tx;
@@ -322,66 +320,85 @@ async function initiatePayment(amount, itemName) {
         if (state.isGmailLogin) {
             const password = prompt("Nhập mật khẩu ví ẩn để ký thanh toán:");
             if (!password) return;
-            
             const seed = state.currentUser.email.toLowerCase() + "|" + password + "|SIC-0G-v3";
             const provider = new ethers.providers.StaticJsonRpcProvider(RPC_URL);
             const wallet = new ethers.Wallet(ethers.utils.id(seed), provider);
             
             if (wallet.address !== state.fullWalletAddress) return alert("Sai mật khẩu ví ẩn!");
             
-            alert("Đang ước tính Gas và gửi giao dịch lên Mainnet...");
-
-            // Tối ưu: Tự động lấy giá gas và ước tính gas limit để tránh lỗi RPC
+            alert("Đang gửi giao dịch lên Mainnet...");
             const gasPrice = await provider.getGasPrice();
             tx = await wallet.sendTransaction({ 
                 to: DESTINATION_WALLET, 
                 value: value,
-                gasPrice: gasPrice.mul(12).div(10), // Tăng 20% giá gas để giao dịch nhanh hơn
-                gasLimit: 25000 // Hạn mức gas an toàn cho chuyển token đơn giản
+                gasPrice: gasPrice.mul(12).div(10), // Tăng gas để tránh kẹt lệnh
+                gasLimit: 25000 
             });
         } else {
-            // Thanh toán bằng MetaMask
             const provider = new ethers.providers.Web3Provider(window.ethereum);
-            
-            // Kiểm tra xem có đúng mạng 0G Mainnet không (Chain ID: 16600)
-            const { chainId } = await provider.getNetwork();
-            if (chainId !== 16600) {
-                alert("Vui lòng chuyển ví MetaMask sang mạng 0G Mainnet!");
-                return;
-            }
-
             const signer = provider.getSigner();
             tx = await signer.sendTransaction({ to: DESTINATION_WALLET, value: value });
         }
 
+        // LƯU BIẾN QUAN TRỌNG VÀO STATE NGAY LẬP TỨC
         state.lastTxHash = tx.hash;
         state.currentPurchasedItem = itemName;
+
+        alert("Giao dịch đã gửi! Đang chờ Blockchain xác nhận (khoảng 5-10 giây)...");
         
-        console.log("Tx Hash:", tx.hash);
-        alert("Giao dịch đã gửi thành công! Vui lòng chờ vài giây để hệ thống xác nhận...");
-        
-        // Chờ giao dịch được đưa vào block
+        // Chờ xác nhận thành công
         const receipt = await tx.wait();
-        console.log("Transaction confirmed:", receipt);
-        
-        // Hiện Modal thông tin ship
+        console.log("Thanh toán thành công:", receipt);
+
+        // HIỆN MODAL ĐỂ NHẬP THÔNG TIN SHIP
         document.getElementById('order-item').value = itemName;
         document.getElementById('order-modal').style.display = 'block';
         document.getElementById('modal-overlay').style.display = 'block';
-        
+
     } catch (e) {
-        console.error("Lỗi chi tiết:", e);
+        console.error("Lỗi thanh toán:", e);
+        alert("Lỗi: " + (e.reason || "Giao dịch không thành công hoặc bị hủy."));
+    }
+}
+
+// --- MODULE: LƯU ĐƠN HÀNG (ĐÃ TỐI ƯU) ---
+async function submitOrder() {
+    const name = document.getElementById('receiver-name').value.trim();
+    const addr = document.getElementById('address').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const country = document.getElementById('country').value || "Vietnam";
+
+    // Kiểm tra dữ liệu đầu vào
+    if (!name || !addr || !phone) return alert("Vui lòng điền đủ thông tin giao hàng!");
+    if (!state.lastTxHash) return alert("Không tìm thấy mã giao dịch. Vui lòng thanh toán lại.");
+
+    const orderData = {
+        wallet: state.fullWalletAddress,
+        item: state.currentPurchasedItem,
+        receiver: name,
+        address: addr,
+        phone: phone,
+        country: country,
+        txHash: state.lastTxHash,
+        status: "Confirmed",
+        timestamp: Date.now()
+    };
+
+    try {
+        // 1. Ghi vào Firebase
+        const newOrderRef = database.ref('orders/').push();
+        await newOrderRef.set(orderData);
         
-        // Bắt lỗi thông minh hơn để tránh hiện "processing response error"
-        let errorMsg = "Giao dịch thất bại.";
-        if (e.message.includes("insufficient funds")) {
-            errorMsg = "Ví của bạn không đủ số dư 0G để thanh toán và trả phí gas.";
-        } else if (e.message.includes("user rejected")) {
-            errorMsg = "Bạn đã hủy yêu cầu giao dịch.";
-        } else {
-            errorMsg = "Lỗi kết nối RPC hoặc Gas: " + (e.reason || "Vui lòng thử lại sau giây lát.");
-        }
-        alert(errorMsg);
+        // 2. Gửi Telegram (Image Beacon để tránh lỗi CORS)
+        const text = `📦 ĐƠN HÀNG MỚI: ${orderData.item}\n👤 Khách: ${orderData.receiver}\n📞 SĐT: ${orderData.phone}\n💸 Tx: ${EXPLORER_URL}${orderData.txHash}`;
+        const telegramImg = new Image();
+        telegramImg.src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
+
+        alert("✅ ĐẶT HÀNG THÀNH CÔNG! SIC Community sẽ sớm liên hệ với bạn.");
+        closeModal(); // Đóng modal và xóa form
+    } catch (error) {
+        console.error("Lỗi Firebase:", error);
+        alert("Lỗi hệ thống khi lưu đơn hàng: " + error.message);
     }
 }
 
