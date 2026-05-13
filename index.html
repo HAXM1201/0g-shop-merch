@@ -346,17 +346,41 @@
         }
 
         async function submitOrder() {
-            const name = document.getElementById('receiver-name').value;
-            const addr = document.getElementById('address').value;
-            const phone = document.getElementById('phone').value;
-            const note = document.getElementById('order-note').value || "None";
-            if (!name || !addr || !phone) return alert("Fill fields!");
-            const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, address: addr, phone: phone, note: note, txHash: state.lastTxHash, timestamp: Date.now() };
-            await database.ref('orders/').push(data);
-            const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})`;
-            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
-            alert("Order Submitted!"); closeModals();
-        }
+    const name = document.getElementById('receiver-name').value;
+    const country = document.getElementById('country').value; // Lấy giá trị Quốc gia
+    const addr = document.getElementById('address').value;
+    const phone = document.getElementById('phone').value;
+    const note = document.getElementById('order-note').value || "None";
+
+    if (!name || !country || !addr || !phone) return alert("Please fill in all required fields (Name, Country, Address, Phone)!");
+
+    const data = { 
+        wallet: state.fullWalletAddress, 
+        item: state.currentPurchasedItem, 
+        receiver: name, 
+        country: country, 
+        address: addr, 
+        phone: phone, 
+        note: note, 
+        txHash: state.lastTxHash, 
+        timestamp: Date.now() 
+    };
+
+    try {
+        // 1. Lưu vào Firebase
+        await database.ref('orders/').push(data);
+
+        // 2. Gửi Telegram 
+        const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})\n----------------------------------\n🚀 *Powered by SIC Community*`;
+        
+        new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
+
+        alert("Order Submitted Successfully!"); 
+        closeModals();
+    } catch (e) {
+        alert("Error saving order: " + e.message);
+    }
+}
 
         async function openProfile() {
             if (!state.fullWalletAddress) return alert("Login first!");
