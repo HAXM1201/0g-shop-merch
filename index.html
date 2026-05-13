@@ -12,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-    <!-- 2. GIAO DIỆN (CSS TỐI ƯU) -->
+    <!-- 2. GIAO DIỆN (CSS) -->
     <style>
         :root {
             --0g-cyan: #00f5ff;
@@ -52,22 +52,20 @@
         #connect-btn { background: transparent; border: 1.5px solid var(--0g-cyan); color: var(--0g-cyan); }
         #connect-btn:hover { background: var(--0g-cyan); color: #000; box-shadow: var(--neon-glow); }
 
+        /* HIỂN THỊ VÍ */
         #wallet-address-display {
             cursor: pointer; display: flex; flex-direction: column; align-items: flex-start;
             font-size: 0.95rem; color: #39d353; border: 1px solid #39d353; 
             padding: 8px 20px; border-radius: 50px; font-family: monospace; text-align:left;
+            transition: 0.3s;
         }
+        #wallet-address-display:hover { background: rgba(57, 211, 83, 0.1); }
+        #wallet-gmail { font-weight: bold; }
 
-        /* 1: SỬA GIAO DIỆN 4 VẬT PHẨM 1 HÀNG */
         .product-grid {
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); /* Ép hiển thị đúng 4 cột */
-            gap: 20px; 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; 
             max-width: 1200px; margin: 50px auto; padding: 0 20px;
         }
-
-        @media (max-width: 1024px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .product-grid { grid-template-columns: 1fr; } }
 
         .product-card { 
             border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 15px; 
@@ -76,26 +74,20 @@
         }
         .product-card:hover { transform: translateY(-8px); border-color: var(--0g-cyan); box-shadow: var(--neon-glow); }
         .product-img { width: 100%; height: 200px; object-fit: cover; border-radius: 15px; margin-bottom: 12px; }
-        .product-card h3 { font-size: 1rem; margin: 10px 0; letter-spacing: 1px; }
         .price { font-size: 1.2rem; color: var(--0g-yellow); font-weight: 800; margin-bottom: 15px; }
         .btn-buy { background: var(--0g-cyan); color: #000; border: none; padding: 10px 0; border-radius: 10px; font-weight: 900; cursor: pointer; width: 100%; }
 
-        /* PHẦN LEDGER & PHÂN TRANG */
         .ledger-container {
             max-width: 1000px; margin: 50px auto 100px auto; padding: 20px; 
             background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(0, 245, 255, 0.1); border-radius: 20px;
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { color: var(--0g-yellow); padding: 12px; border-bottom: 1px solid rgba(0, 245, 255, 0.2); text-align: left; }
         td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); text-align: left; }
         
         .pagination { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
-        .page-btn { 
-            background: transparent; border: 1px solid var(--0g-cyan); color: var(--0g-cyan); 
-            padding: 5px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;
-        }
+        .page-btn { background: transparent; border: 1px solid var(--0g-cyan); color: var(--0g-cyan); padding: 5px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .page-btn.active { background: var(--0g-cyan); color: #000; }
-        .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         #order-modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -119,7 +111,8 @@
             </button>          
             <button id="connect-btn" onclick="handleConnect()">CONNECT WALLET</button>
             <div id="wallet-info" style="display:none; align-items: center; gap: 10px;">
-                <div id="wallet-address-display" onclick="copyWalletAddress()"></div>
+                <!-- NHẤN VÀO ĐỂ HIỆN VÍ + SỐ DƯ -->
+                <div id="wallet-address-display" onclick="showWalletInfo()"></div>
                 <button onclick="logout()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold;">LOGOUT</button>
             </div>
         </div>
@@ -127,59 +120,57 @@
 
     <h1 class="main-title" style="margin-top: 50px; color: var(--0g-cyan); letter-spacing: 3px;">0G-PHYSICAL DEAI HUB</h1>
 
-    <!-- 1. GIAO DIỆN 4 VẬT PHẨM 1 HÀNG -->
     <div class="product-grid">
         <div class="product-card">
-            <img src="ao-0g.jpg" class="product-img">
+            <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
             <h3>0G PANDA T-SHIRT</h3>
             <div class="price">0.04 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.04, '0G PANDA T-SHIRT')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="mu-0g.jpg" class="product-img">
+            <img src="mu-0g.jpg" class="product-img" alt="Snapback">
             <h3>0G SNAPBACK</h3>
             <div class="price">0.03 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.03, '0G SNAPBACK')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="lot-chuot-0g.jpg" class="product-img">
+            <img src="lot-chuot-0g.jpg" class="product-img" alt="Deskmat">
             <h3>0G DEAI DESKMAT</h3>
             <div class="price">0.02 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.02, '0G DEAI DESKMAT')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="binh-nuoc.jpg" class="product-img">
+            <img src="binh-nuoc.jpg" class="product-img" alt="Tumbler">
             <h3>0G TUMBLER</h3>
             <div class="price">0.05 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.05, '0G TUMBLER')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="sotay.jpg" class="product-img">
+            <img src="sotay.jpg" class="product-img" alt="Notebook">
             <h3>0G NOTEBOOK</h3>
             <div class="price">0.01 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.01, '0G NOTEBOOK')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="panda.jpg" class="product-img">
+            <img src="panda.jpg" class="product-img" alt="Panda Neon">
             <h3>0G PANDA NEON</h3>
             <div class="price">0.03 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.03, '0G PANDA NEON')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="hoodie.jpg" class="product-img">
+            <img src="hoodie.jpg" class="product-img" alt="Hoodie">
             <h3>0G HOODIE</h3>
             <div class="price">0.05 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.05, '0G HOODIE')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="0gcombo.jpg" class="product-img">
+            <img src="0gcombo.jpg" class="product-img" alt="Combo">
             <h3>COMBO 0G FAN</h3>
             <div class="price">0.1 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.1, 'COMBO 0G FAN')">MINT NOW</button>
         </div>
     </div>
 
-    <!-- 2. DANH SÁCH VÍ 15 TRÊN 1 TRANG -->
     <div class="ledger-container">
         <h2 style="color: var(--0g-cyan); font-size: 1.2rem;">📜 ON-CHAIN ORDER LEDGER</h2>
         <table>
@@ -202,7 +193,7 @@
         <input type="text" id="order-item" readonly style="color:var(--0g-yellow); font-weight:bold; border-color: var(--0g-yellow);">
         <input type="text" id="receiver-name" placeholder="Receiver Name">
         <input type="text" id="country" placeholder="Country" value="Vietnam">
-        <textarea id="address" placeholder="Full Address (Street, City, State)"></textarea>
+        <textarea id="address" placeholder="Full Address"></textarea>
         <input type="tel" id="phone" placeholder="Phone Number">
         <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:15px; border-radius:12px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
     </div>
@@ -232,7 +223,7 @@
             lastTxHash: "",
             allOrders: [],
             currentPage: 1,
-            rowsPerPage: 15 // Đặt 15 ví 1 trang
+            rowsPerPage: 15
         };
 
         // ĐĂNG NHẬP GMAIL
@@ -269,7 +260,7 @@
 
         window.createHiddenWallet = async function() {
             const pw = document.getElementById('u-pw').value;
-            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return alert("Mật khẩu không khớp hoặc quá ngắn!");
+            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return alert("Mật khẩu không hợp lệ!");
             const seed = state.currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-v3";
             const wallet = new ethers.Wallet(ethers.utils.id(seed));
             state.fullWalletAddress = wallet.address;
@@ -279,7 +270,7 @@
             updateUIAfterLogin();
         };
 
-        // METAMASK
+        // KẾT NỐI METAMASK
         async function handleConnect() {
             if (!window.ethereum) return alert("Please install MetaMask!");
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -288,23 +279,46 @@
             updateUIAfterLogin();
         }
 
-        // UI & COPY
+        // CẬP NHẬT UI
         function updateUIAfterLogin() {
             document.getElementById('google-login-btn').style.display = 'none';
             document.getElementById('connect-btn').style.display = 'none';
             let name = state.currentUser ? state.currentUser.email.split('@')[0] : "User";
-            document.getElementById('wallet-address-display').innerHTML = `📧 ${name.substring(0,8)}... 📋`;
+            document.getElementById('wallet-address-display').innerHTML = `
+                <span id="wallet-gmail">📧 ${name.substring(0,8)}...</span>
+                <span style="font-size:0.7rem; opacity:0.7;">(Click to view Balance)</span>
+            `;
             document.getElementById('wallet-info').style.display = 'flex';
         }
 
-        window.copyWalletAddress = function() {
-            const el = document.createElement('textarea');
-            el.value = state.fullWalletAddress;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            alert("Đã Copy địa chỉ ví!");
+        // MODULE: HIỂN THỊ VÍ KÈM SỐ TIỀN TRONG TÀI KHOẢN
+        window.showWalletInfo = async function() {
+            try {
+                // Kết nối provider để lấy số dư
+                const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+                const balance = await provider.getBalance(state.fullWalletAddress);
+                const formattedBalance = ethers.utils.formatEther(balance);
+
+                const confirmCopy = confirm(
+                    `Wallet Info:\n` +
+                    `----------------------------\n` +
+                    `Address: ${state.fullWalletAddress}\n` +
+                    `Balance: ${parseFloat(formattedBalance).toFixed(4)} 0G\n\n` +
+                    `Do you want to COPY this address?`
+                );
+
+                if (confirmCopy) {
+                    const el = document.createElement('textarea');
+                    el.value = state.fullWalletAddress;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    alert("Wallet Address Copied!");
+                }
+            } catch (e) {
+                alert("Could not fetch balance. Check your connection.");
+            }
         };
 
         // THANH TOÁN
@@ -319,7 +333,7 @@
                     const seed = state.currentUser.email.toLowerCase() + "|" + password + "|SIC-0G-v3";
                     const wallet = new ethers.Wallet(ethers.utils.id(seed), new ethers.providers.JsonRpcProvider(RPC_URL));
                     if (wallet.address !== state.fullWalletAddress) return alert("Sai mật khẩu!");
-                    alert("Đang gửi giao dịch...");
+                    alert("Đang gửi giao dịch Mainnet...");
                     tx = await wallet.sendTransaction({ to: DESTINATION_WALLET, value: value });
                 } else {
                     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -327,34 +341,27 @@
                 }
                 state.lastTxHash = tx.hash;
                 state.currentPurchasedItem = itemName;
-                alert("Đang xác nhận...");
+                alert("Processing... Tx: " + tx.hash);
                 await tx.wait();
                 document.getElementById('order-item').value = itemName;
                 document.getElementById('order-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
-            } catch (e) { alert("Lỗi: " + e.message); }
+            } catch (e) { alert("Error: " + e.message); }
         }
 
         async function submitOrder() {
-            const name = document.getElementById('receiver-name').value;
-            const addr = document.getElementById('address').value;
-            const phone = document.getElementById('phone').value;
-            if (!name || !addr || !phone) return alert("Thiếu thông tin!");
-            const order = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, address: addr, phone: phone, txHash: state.lastTxHash, status: "Confirmed", timestamp: Date.now() };
+            const order = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: document.getElementById('receiver-name').value, address: document.getElementById('address').value, phone: document.getElementById('phone').value, txHash: state.lastTxHash, status: "Confirmed", timestamp: Date.now() };
             await database.ref('orders/').push(order);
             const text = `📦 MỚI: ${order.item}\n👤 Khách: ${order.receiver}\n💸 Tx: ${EXPLORER_URL}${order.txHash}`;
             new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-            alert("Thành công!");
+            alert("Success!");
             closeModal();
         }
 
-        // MODULE PHÂN TRANG 15 VÍ
+        // LEDGER & PHÂN TRANG
         database.ref('orders/').on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data) {
-                state.allOrders = Object.values(data).reverse();
-                renderLedger();
-            }
+            if (data) { state.allOrders = Object.values(data).reverse(); renderLedger(); }
         });
 
         function renderLedger() {
@@ -363,7 +370,6 @@
             const start = (state.currentPage - 1) * state.rowsPerPage;
             const end = start + state.rowsPerPage;
             const paginatedItems = state.allOrders.slice(start, end);
-
             paginatedItems.forEach(o => {
                 const short = o.wallet ? o.wallet.substring(0,6) + "..." + o.wallet.slice(-4) : "N/A";
                 listBody.innerHTML += `<tr><td style="font-family:monospace;color:#39d353">${short}</td><td>${o.item}</td><td><span style="color:#39d353">● Confirmed</span></td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:var(--0g-cyan)">View</a></td></tr>`;
@@ -378,8 +384,7 @@
             if (totalPages <= 1) return;
             for (let i = 1; i <= totalPages; i++) {
                 const btn = document.createElement('button');
-                btn.innerText = i;
-                btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`;
+                btn.innerText = i; btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`;
                 btn.onclick = () => { state.currentPage = i; renderLedger(); };
                 controls.appendChild(btn);
             }
