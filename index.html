@@ -352,9 +352,9 @@
             const phone = document.getElementById('phone').value;
             const note = document.getElementById('order-note').value || "None";
             if (!name || !addr || !phone) return alert("Fill fields!");
-            const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, address: addr, phone: phone, note: note, txHash: state.lastTxHash, timestamp: Date.now() };
+            const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, address: addr, phone: phone, country: country, note: note, txHash: state.lastTxHash, timestamp: Date.now() };
             await database.ref('orders/').push(data);
-            const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🌍 *Country:* ${Country}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})`;
+            const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🌍 *Country:* ${country}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})`;
             new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
             alert("Order Submitted!"); closeModals();
         }
