@@ -59,13 +59,8 @@
         }
         #wallet-gmail { font-weight: bold; }
 
-        .live-price-box {
-            background: rgba(0, 245, 255, 0.05); border: 1px solid rgba(0, 245, 255, 0.3);
-            display: inline-flex; align-items: center; padding: 8px 25px; border-radius: 100px; margin: 15px 0;
-        }
-
         .product-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; 
             max-width: 1400px; margin: 0 auto; padding: 30px 50px 120px 50px;
         }
 
@@ -116,12 +111,6 @@
 
     <h1 class="main-title" style="margin-top: 50px;">0G-BRIDGING THE DIGITAL AND PHYSICAL</h1>
 
-    <div class="live-price-box">
-        <span style="color: #848e9c; font-size: 0.8rem; margin-right: 10px;">LIVE 0G/USDT</span>
-        <span id="token-price" style="font-weight: bold; font-family: monospace;">$0.5370</span>
-        <span id="price-change" style="color: #39d353; margin-left: 10px;">+1.32%</span>
-    </div>
-
     <div class="product-grid">
         <div class="product-card">
             <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
@@ -171,7 +160,6 @@
             <div class="price">0.1 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.1, 'COMBO 0G FAN')">MINT NOW</button>
         </div>
-        
     </div>
 
     <div class="ledger-container">
@@ -198,15 +186,16 @@
         <textarea id="address" placeholder="Full Address"></textarea>
         <input type="tel" id="phone" placeholder="Phone Number">
         <button onclick="submitOrder()" style="width:100%; background:var(--0g-cyan); color:#000; border:none; padding:15px; border-radius:12px; font-weight:bold; cursor:pointer;">CONFIRM SHIPPING</button>
-    </header>
+    </div>
 
     <div class="footer-bar">VALIDATOR: SIC | NETWORK: 0G MAINNET | SMART INVESTOR COMMUNITY</div>
 
     <script>
-        // --- 1. CẤU HÌNH BIẾN TOÀN CỤC ---
+        // --- 1. CẤU HÌNH ---
         const DESTINATION_WALLET = "0xA05F0295bF972ecc37f4321A93A47df16ECD30E9"; 
-        const RPC_URL = "https://rpc.0g.ai"; // Cập nhật RPC Mainnet chính thức
+        const RPC_URL = "https://evmrpc.0g.ai"; // RPC chính thức bạn cung cấp
         const EXPLORER_URL = "https://explorer.0g.ai/tx/";
+        const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec'; 
 
         const firebaseConfig = {
             apiKey: "AIzaSyCHEV_Ob-nxZSV23s5j_bFn7iYQIVTKGy8",
@@ -227,7 +216,7 @@
             lastTxHash: ""
         };
 
-        // --- 2. MODULE: ĐĂNG NHẬP GMAIL ---
+        // --- 2. MODULE: ĐĂNG NHẬP ---
         document.getElementById('google-login-btn').addEventListener('click', () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider); 
@@ -247,12 +236,11 @@
             }
         });
 
-        // --- 3. MODULE: LƯU VÍ & TẠO VÍ ẨN ---
+        // --- 3. MODULE: VÍ ẨN ---
         function showPasswordSetupModal(email) {
             const html = `
             <div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:2px solid #00f5ff;padding:30px;border-radius:20px;z-index:3000;width:90%;max-width:420px;">
                 <h3 style="color:#00f5ff;margin-top:0;">🔐 Thiết lập Mật khẩu ví ẩn</h3>
-                <p style="font-size:0.8rem;">Dùng để ký giao dịch cho Gmail: ${email}</p>
                 <input type="password" id="u-pw" placeholder="Mật khẩu (≥8 ký tự)" style="width:100%;padding:10px;margin:10px 0;background:#1a1f2e;color:white;border:1px solid #333;border-radius:8px;">
                 <input type="password" id="u-pw-c" placeholder="Xác nhận mật khẩu" style="width:100%;padding:10px;margin:10px 0;background:#1a1f2e;color:white;border:1px solid #333;border-radius:8px;">
                 <button onclick="createHiddenWallet()" style="width:100%;padding:14px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;margin-top:10px;cursor:pointer;">TẠO VÍ</button>
@@ -263,8 +251,7 @@
 
         window.createHiddenWallet = async function() {
             const pw = document.getElementById('u-pw').value;
-            const pw2 = document.getElementById('u-pw-c').value;
-            if (pw.length < 8 || pw !== pw2) return alert("Mật khẩu không hợp lệ!");
+            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return alert("Mật khẩu không hợp lệ!");
 
             const seed = state.currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-v3";
             const wallet = new ethers.Wallet(ethers.utils.id(seed));
@@ -281,19 +268,16 @@
             updateUIAfterLogin();
         };
 
-        // --- 4. MODULE: ĐĂNG NHẬP METAMASK ---
+        // --- 4. MODULE: KẾT NỐI METAMASK ---
         async function handleConnect() {
-            if (!window.ethereum) return alert("Please install MetaMask!");
-            try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                state.fullWalletAddress = accounts[0];
-                state.isGmailLogin = false;
-                updateUIAfterLogin();
-                return true;
-            } catch (e) { return false; }
+            if (!window.ethereum) return alert("Hãy cài MetaMask!");
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            state.fullWalletAddress = accounts[0];
+            state.isGmailLogin = false;
+            updateUIAfterLogin();
         }
 
-        // --- 5. MODULE: HIỂN THỊ UI & COPY VÍ ---
+        // --- 5. MODULE: COPY ĐỊA CHỈ VÍ ---
         function updateUIAfterLogin() {
             document.getElementById('google-login-btn').style.display = 'none';
             document.getElementById('connect-btn').style.display = 'none';
@@ -323,7 +307,7 @@
             alert("Đã Copy địa chỉ ví: " + state.fullWalletAddress);
         };
 
-        // --- 6. MODULE: THANH TOÁN (KÝ BẰNG PK HOẶC METAMASK) ---
+        // --- 6. MODULE: THANH TOÁN ---
         async function initiatePayment(amount, itemName) {
             if (!state.fullWalletAddress) return alert("Vui lòng đăng nhập!");
             
@@ -336,12 +320,12 @@
                     if (!password) return;
                     
                     const seed = state.currentUser.email.toLowerCase() + "|" + password + "|SIC-0G-v3";
-                    const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+                    const provider = new ethers.providers.StaticJsonRpcProvider(RPC_URL);
                     const wallet = new ethers.Wallet(ethers.utils.id(seed), provider);
                     
                     if (wallet.address !== state.fullWalletAddress) return alert("Sai mật khẩu ví ẩn!");
                     
-                    alert("Đang xử lý giao dịch Mainnet từ ví ẩn...");
+                    alert("Đang gửi giao dịch lên Mainnet...");
                     tx = await wallet.sendTransaction({ to: DESTINATION_WALLET, value: value });
                 } else {
                     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -351,14 +335,15 @@
 
                 state.lastTxHash = tx.hash;
                 state.currentPurchasedItem = itemName;
-                alert("Giao dịch đã gửi! Đang chờ xác nhận...");
+                alert("Giao dịch thành công! Chờ xác nhận đơn hàng...");
                 await tx.wait();
                 
                 document.getElementById('order-item').value = itemName;
                 document.getElementById('order-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
             } catch (e) {
-                alert("Giao dịch thất bại: " + (e.reason || e.message));
+                console.error(e);
+                alert("Lỗi: " + (e.reason || "Vui lòng kiểm tra số dư ví 0G."));
             }
         }
 
@@ -383,12 +368,12 @@
                 await database.ref('orders/').push(orderData);
                 const text = `📦 MỚI: ${orderData.item}\n👤 Khách: ${orderData.receiver}\n💸 Tx: ${EXPLORER_URL}${orderData.txHash}`;
                 new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-                alert("Đặt hàng thành công!");
+                alert("Đơn hàng đã được lưu!");
                 closeModal();
             } catch (error) { alert("Lỗi lưu đơn hàng."); }
         }
 
-        // --- 7. LEDGER REAL-TIME ---
+        // --- 7. MODULE: LEDGER ---
         database.ref('orders/').on('value', (snapshot) => {
             const orders = snapshot.val();
             const listBody = document.getElementById('order-history-list');
@@ -407,11 +392,6 @@
             document.getElementById('order-modal').style.display = 'none';
             document.getElementById('modal-overlay').style.display = 'none';
         }
-        setInterval(() => {
-            const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
-            const el = document.getElementById('token-price');
-            if(el) el.innerText = `$${mockPrice}`;
-        }, 5000);
     </script>
 </body>
 </html>
