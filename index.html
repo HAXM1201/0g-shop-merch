@@ -52,7 +52,6 @@
         #connect-btn { background: transparent; border: 1.5px solid var(--0g-cyan); color: var(--0g-cyan); }
         #connect-btn:hover { background: var(--0g-cyan); color: #000; box-shadow: var(--neon-glow); }
 
-        /* HIỂN THỊ VÍ */
         #wallet-address-display {
             cursor: pointer; display: flex; flex-direction: column; align-items: flex-start;
             font-size: 0.95rem; color: #39d353; border: 1px solid #39d353; 
@@ -111,7 +110,6 @@
             </button>          
             <button id="connect-btn" onclick="handleConnect()">CONNECT WALLET</button>
             <div id="wallet-info" style="display:none; align-items: center; gap: 10px;">
-                <!-- NHẤN VÀO ĐỂ HIỆN VÍ + SỐ DƯ -->
                 <div id="wallet-address-display" onclick="showWalletInfo()"></div>
                 <button onclick="logout()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold;">LOGOUT</button>
             </div>
@@ -122,49 +120,49 @@
 
     <div class="product-grid">
         <div class="product-card">
-            <img src="ao-0g.jpg" class="product-img" alt="T-Shirt">
+            <img src="ao-0g.jpg" class="product-img">
             <h3>0G PANDA T-SHIRT</h3>
             <div class="price">0.04 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.04, '0G PANDA T-SHIRT')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="mu-0g.jpg" class="product-img" alt="Snapback">
+            <img src="mu-0g.jpg" class="product-img">
             <h3>0G SNAPBACK</h3>
             <div class="price">0.03 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.03, '0G SNAPBACK')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="lot-chuot-0g.jpg" class="product-img" alt="Deskmat">
+            <img src="lot-chuot-0g.jpg" class="product-img">
             <h3>0G DEAI DESKMAT</h3>
             <div class="price">0.02 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.02, '0G DEAI DESKMAT')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="binh-nuoc.jpg" class="product-img" alt="Tumbler">
+            <img src="binh-nuoc.jpg" class="product-img">
             <h3>0G TUMBLER</h3>
             <div class="price">0.05 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.05, '0G TUMBLER')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="sotay.jpg" class="product-img" alt="Notebook">
+            <img src="sotay.jpg" class="product-img">
             <h3>0G NOTEBOOK</h3>
             <div class="price">0.01 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.01, '0G NOTEBOOK')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="panda.jpg" class="product-img" alt="Panda Neon">
+            <img src="panda.jpg" class="product-img">
             <h3>0G PANDA NEON</h3>
             <div class="price">0.03 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.03, '0G PANDA NEON')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="hoodie.jpg" class="product-img" alt="Hoodie">
+            <img src="hoodie.jpg" class="product-img">
             <h3>0G HOODIE</h3>
             <div class="price">0.05 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.05, '0G HOODIE')">MINT NOW</button>
         </div>
         <div class="product-card">
-            <img src="0gcombo.jpg" class="product-img" alt="Combo">
+            <img src="0gcombo.jpg" class="product-img">
             <h3>COMBO 0G FAN</h3>
             <div class="price">0.1 0G</div>
             <button class="btn-buy" onclick="initiatePayment(0.1, 'COMBO 0G FAN')">MINT NOW</button>
@@ -286,78 +284,154 @@
             let name = state.currentUser ? state.currentUser.email.split('@')[0] : "User";
             document.getElementById('wallet-address-display').innerHTML = `
                 <span id="wallet-gmail">📧 ${name.substring(0,8)}...</span>
-                <span style="font-size:0.7rem; opacity:0.7;">(Click to view Balance)</span>
+                <span style="font-size:0.7rem; color: var(--0g-cyan); text-decoration: underline;">Balance & Copy</span>
             `;
             document.getElementById('wallet-info').style.display = 'flex';
         }
 
-        // MODULE: HIỂN THỊ VÍ KÈM SỐ TIỀN TRONG TÀI KHOẢN
+        // MODULE HIỂN THỊ VÍ & SỬA LỖI COPY
         window.showWalletInfo = async function() {
             try {
-                // Kết nối provider để lấy số dư
                 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
                 const balance = await provider.getBalance(state.fullWalletAddress);
                 const formattedBalance = ethers.utils.formatEther(balance);
 
-                const confirmCopy = confirm(
-                    `Wallet Info:\n` +
-                    `----------------------------\n` +
-                    `Address: ${state.fullWalletAddress}\n` +
-                    `Balance: ${parseFloat(formattedBalance).toFixed(4)} 0G\n\n` +
-                    `Do you want to COPY this address?`
-                );
-
-                if (confirmCopy) {
+                const msg = `Wallet: ${state.fullWalletAddress}\nBalance: ${parseFloat(formattedBalance).toFixed(4)} 0G\n\nClick OK to COPY address.`;
+                
+                if (confirm(msg)) {
                     const el = document.createElement('textarea');
                     el.value = state.fullWalletAddress;
+                    el.setAttribute('readonly', '');
+                    el.style.position = 'absolute';
+                    el.style.left = '-9999px';
                     document.body.appendChild(el);
                     el.select();
                     document.execCommand('copy');
                     document.body.removeChild(el);
-                    alert("Wallet Address Copied!");
+                    alert("Copied to clipboard!");
                 }
-            } catch (e) {
-                alert("Could not fetch balance. Check your connection.");
-            }
+            } catch (e) { alert("Connection Error."); }
         };
 
-        // THANH TOÁN
-        async function initiatePayment(amount, itemName) {
-            if (!state.fullWalletAddress) return alert("Vui lòng đăng nhập!");
-            try {
-                let tx;
-                const value = ethers.utils.parseEther(amount.toString());
-                if (state.isGmailLogin) {
-                    const password = prompt("Nhập mật khẩu ví ẩn:");
-                    if (!password) return;
-                    const seed = state.currentUser.email.toLowerCase() + "|" + password + "|SIC-0G-v3";
-                    const wallet = new ethers.Wallet(ethers.utils.id(seed), new ethers.providers.JsonRpcProvider(RPC_URL));
-                    if (wallet.address !== state.fullWalletAddress) return alert("Sai mật khẩu!");
-                    alert("Đang gửi giao dịch Mainnet...");
-                    tx = await wallet.sendTransaction({ to: DESTINATION_WALLET, value: value });
-                } else {
-                    const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    tx = await provider.getSigner().sendTransaction({ to: DESTINATION_WALLET, value: value });
-                }
-                state.lastTxHash = tx.hash;
-                state.currentPurchasedItem = itemName;
-                alert("Processing... Tx: " + tx.hash);
-                await tx.wait();
-                document.getElementById('order-item').value = itemName;
-                document.getElementById('order-modal').style.display = 'block';
-                document.getElementById('modal-overlay').style.display = 'block';
-            } catch (e) { alert("Error: " + e.message); }
+        // --- 6. MODULE: THANH TOÁN (TỐI ƯU GAS CHO MAINNET) ---
+async function initiatePayment(amount, itemName) {
+    if (!state.fullWalletAddress) return alert("Please Login!");
+    
+    try {
+        let tx;
+        const value = ethers.utils.parseEther(amount.toString());
+        // Mức phí ưu tiên tối thiểu 2 Gwei để tránh lỗi gas price below minimum
+        const minTip = ethers.BigNumber.from("2000000000"); 
+
+        if (state.isGmailLogin) {
+            const password = prompt("Hidden Wallet Password:");
+            if (!password) return;
+            
+            const seed = state.currentUser.email.toLowerCase() + "|" + password + "|SIC-0G-v3";
+            const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+            const wallet = new ethers.Wallet(ethers.utils.id(seed), provider);
+            
+            if (wallet.address !== state.fullWalletAddress) return alert("Wrong Password!");
+            
+            const feeData = await provider.getFeeData();
+            alert("Sending transaction to Mainnet...");
+
+            tx = await wallet.sendTransaction({ 
+                to: DESTINATION_WALLET, 
+                value: value,
+                maxPriorityFeePerGas: minTip,
+                // Tính toán maxFeePerGas dựa trên dữ liệu mạng thực tế + phí ưu tiên
+                maxFeePerGas: feeData.maxFeePerGas ? feeData.maxFeePerGas.add(minTip) : minTip.mul(2),
+                gasLimit: 25000 
+            });
+        } else {
+            // Thanh toán qua MetaMask
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            
+            tx = await signer.sendTransaction({ 
+                to: DESTINATION_WALLET, 
+                value: value,
+                maxPriorityFeePerGas: minTip
+            });
         }
 
-        async function submitOrder() {
-            const order = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: document.getElementById('receiver-name').value, address: document.getElementById('address').value, phone: document.getElementById('phone').value, txHash: state.lastTxHash, status: "Confirmed", timestamp: Date.now() };
-            await database.ref('orders/').push(order);
-            const text = `📦 MỚI: ${order.item}\n👤 Khách: ${order.receiver}\n💸 Tx: ${EXPLORER_URL}${order.txHash}`;
-            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
-            alert("Success!");
-            closeModal();
-        }
+        state.lastTxHash = tx.hash;
+        state.currentPurchasedItem = itemName;
+        
+        alert("Giao dịch thành công! Đang chờ xác nhận...");
+        await tx.wait();
+        
+        // Hiển thị Modal để nhập thông tin ship sau khi thanh toán thành công
+        document.getElementById('order-item').value = itemName;
+        document.getElementById('order-modal').style.display = 'block';
+        document.getElementById('modal-overlay').style.display = 'block';
 
+    } catch (e) {
+        console.error("Lỗi giao dịch:", e);
+        alert("Transaction Failed. Check console for details.");
+    }
+}
+
+// --- MODULE: THÔNG BÁO TELEGRAM ---
+async function sendTelegramAlert(orderData) {
+    const text = `
+📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*
+----------------------------------
+👤 *Khách:* ${orderData.receiver}
+📱 *SĐT:* ${orderData.phone}
+🌍 *Quốc gia:* ${orderData.country}
+🏠 *Địa chỉ:* ${orderData.address}
+🛍️ *Sản phẩm:* ${orderData.item}
+💸 [Xem Giao Dịch](https://chainscan.0g.ai/tx/${orderData.txHash})
+----------------------------------
+🚀 *Vận hành bởi SIC Community*`;
+
+    try {
+        const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
+        const img = new Image();
+        img.src = finalUrl; 
+        console.log("Đã kích hoạt lệnh gửi thông báo Telegram...");
+    } catch (error) { 
+        console.error("Telegram error:", error); 
+    }
+}
+
+// --- MODULE: XỬ LÝ LƯU ĐƠN HÀNG ---
+async function submitOrder() {
+    const name = document.getElementById('receiver-name').value.trim();
+    const country = document.getElementById('country').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    
+    if (!name || !country || !address || !phone) return alert("Please fill all fields!");
+    
+    const orderData = {
+        wallet: state.fullWalletAddress,
+        item: state.currentPurchasedItem,
+        receiver: name,
+        country: country,
+        address: address,
+        phone: phone,
+        txHash: state.lastTxHash || "N/A",
+        status: "Confirmed",
+        timestamp: Date.now()
+    };
+
+    try {
+        // 1. Lưu vào Database Firebase
+        await database.ref('orders/').push(orderData);
+        
+        // 2. Gửi thông báo đến Telegram
+        await sendTelegramAlert(orderData); 
+        
+        alert("Order Saved Successfully!");
+        closeModal(); // Đóng Modal và overlay
+    } catch (error) { 
+        console.error("Lỗi lưu đơn:", error);
+        alert("Database Error: " + error.message); 
+    }
+}
         // LEDGER & PHÂN TRANG
         database.ref('orders/').on('value', (snapshot) => {
             const data = snapshot.val();
