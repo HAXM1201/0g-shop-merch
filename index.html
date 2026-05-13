@@ -6,7 +6,6 @@
     <title>0G Shop - Premium DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -62,6 +61,16 @@
             margin-top: 50px; font-weight: 900;
             text-shadow: 3px 3px 0px #ff00ff, -3px -3px 0px #00ffff;
         }
+
+        #wallet-address-box {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 0.95rem;
+        }
+
+        #wallet-gmail { color: #39d353; font-weight: bold; }
+        #wallet-hidden { color: #00f5ff; font-size: 0.85rem; }
 
         .live-price-box {
             background: rgba(0, 245, 255, 0.05);
@@ -132,8 +141,10 @@
             </button>          
             <button id="connect-btn" onclick="handleConnect()">CONNECT WALLET</button>
             <div id="wallet-info" style="display:none; align-items: center; gap: 10px;">
-                <div id="wallet-address" style="color: #39d353; border: 1px solid #39d353; padding: 8px 20px; border-radius: 50px; font-family: monospace;"></div>
-                <button id="disconnect-btn" onclick="logout()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s;">DISCONNECT</button>
+                <div id="wallet-address-box" style="color: #39d353; border: 1px solid #39d353; padding: 8px 20px; border-radius: 50px; font-family: monospace; text-align:left;">
+                    <!-- Gmail + Wallet sẽ được JS chèn vào -->
+                </div>
+                <button onclick="logout()" style="background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold;">LOGOUT</button>
             </div>
         </div>
     </header>
@@ -247,14 +258,15 @@
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const auth = firebase.auth();
-        
+        const auth = firebase.auth(); // ĐÃ SỬA: Khai báo auth
+
         let currentPurchasedItem = "";
         let lastTxHash = "";
         let fullWalletAddress = ""; 
-        let currentUser = null;
+        let currentUser = null; // ĐÃ SỬA: Khai báo currentUser
+        let hiddenWallet = null;
 
-        // ==================== META MASK ====================
+        // ==================== metamask ====================
         async function handleConnect() {
             if (!window.ethereum) return alert("Please install MetaMask!");
             try {
@@ -263,16 +275,9 @@
                 const shortenedAddress = fullWalletAddress.substring(0, 6) + "..." + fullWalletAddress.substring(fullWalletAddress.length - 4);
                 document.getElementById('connect-btn').style.display = 'none';
                 document.getElementById('wallet-info').style.display = 'flex';
-                document.getElementById('wallet-address').innerText = shortenedAddress;
+                document.getElementById('wallet-address-box').innerText = shortenedAddress;
                 return true;
             } catch (e) { return false; }
-        }
-
-        function handleDisconnect() {
-            fullWalletAddress = "";
-            document.getElementById('connect-btn').style.display = 'block';
-            document.getElementById('wallet-info').style.display = 'none';
-            alert("Wallet Disconnected!");
         }
 
         async function initiatePayment(amount, itemName) {
@@ -319,11 +324,10 @@
         function showPasswordSetupModal(email) {
             const html = `
             <div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:2px solid #00f5ff;padding:30px;border-radius:20px;z-index:3000;width:90%;max-width:420px;">
-                <h3 style="color:#00f5ff;margin-top:0;">🔐 Tạo Ví Ẩn</h3>
-                <p>Email: <strong>${email}</strong></p>
-                <input type="password" id="u-pw" placeholder="Mật khẩu (≥8 ký tự)" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f2e;color:white;">
+                <h3 style="color:#00f5ff;margin-top:0;">🔐 Tạo Ví Ẩn cho ${email}</h3>
+                <input type="password" id="u-pw" placeholder="Mật khẩu (tối thiểu 8 ký tự)" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f2e;color:white;">
                 <input type="password" id="u-pw-c" placeholder="Nhập lại mật khẩu" style="width:100%;padding:12px;margin:10px 0;border-radius:8px;background:#1a1f2e;color:white;">
-                <button onclick="createHiddenWallet()" style="width:100%;padding:14px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;margin-top:10px;">TẠO VÍ</button>
+                <button onclick="createHiddenWallet()" style="width:100%;padding:14px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;margin-top:15px;">TẠO VÍ ẨN</button>
             </div>
             <div id="pw-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:2999;"></div>`;
             document.body.insertAdjacentHTML('beforeend', html);
@@ -332,10 +336,10 @@
         window.createHiddenWallet = async function() {
             const pw = document.getElementById('u-pw').value;
             const pw2 = document.getElementById('u-pw-c').value;
-            if (pw.length < 8 || pw !== pw2) return alert("Mật khẩu phải ≥ 8 ký tự và khớp nhau!");
+            if (pw.length < 8 || pw !== pw2) return alert("Mật khẩu phải ≥ 8 ký tự và phải khớp nhau!");
 
             const seed = currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-v3";
-            const hiddenWallet = new ethers.Wallet(ethers.utils.id(seed));
+            hiddenWallet = new ethers.Wallet(ethers.utils.id(seed));
             fullWalletAddress = hiddenWallet.address;
 
             await database.ref('users/' + currentUser.uid).set({
@@ -349,11 +353,20 @@
             updateUIAfterLogin();
         };
 
+        function getShortGmail(email) {
+            const name = email.split('@')[0];
+            return name.length > 10 ? name.substring(0,6) + "..." : name;
+        }
+
         function updateUIAfterLogin() {
-            const short = fullWalletAddress.substring(0,6) + "..." + fullWalletAddress.slice(-4);
+            const gmailShort = getShortGmail(currentUser.email);
+            const walletShort = fullWalletAddress.substring(0,6) + "..." + fullWalletAddress.slice(-4);
             document.getElementById('google-login-btn').style.display = 'none';
             document.getElementById('connect-btn').style.display = 'none';
-            document.getElementById('wallet-address').innerText = short;
+            document.getElementById('wallet-address-box').innerHTML = `
+                <div id="wallet-gmail">${gmailShort}@gmail.com</div>
+                <div id="wallet-hidden">${walletShort}</div>
+            `;
             document.getElementById('wallet-info').style.display = 'flex';
         }
 
@@ -380,7 +393,6 @@
                 const finalUrl = `${PROXY_URL}?message=${encodeURIComponent(text)}`;
                 const img = new Image();
                 img.src = finalUrl; 
-                console.log("Đã kích hoạt lệnh gửi thông báo Telegram...");
             } catch (error) {
                 console.error("Lỗi gửi thông báo Telegram:", error);
             }
@@ -447,7 +459,8 @@
 
         setInterval(() => {
             const mockPrice = (0.5370 + (Math.random() * 0.002)).toFixed(4);
-            document.getElementById('token-price').innerText = `$${mockPrice}`;
+            const priceEl = document.getElementById('token-price');
+            if(priceEl) priceEl.innerText = `$${mockPrice}`;
         }, 5000);
     </script>
 </body>
