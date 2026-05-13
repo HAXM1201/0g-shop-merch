@@ -1,3 +1,5 @@
+The Seamless Web3 Commerce Protocol.
+
 🚀 SIC-0G Gateway: Bridging the Digital and Physical
 SIC-0G Gateway is a high-performance, decentralized e-commerce protocol designed for the 0G Ecosystem. We eliminate the complexity of Web3 onboarding by allowing anyone to own and trade physical merchandise (Merch) using only a Gmail account, powered by our proprietary Embedded Hidden Wallet technology.
 
