@@ -28,6 +28,7 @@
         header { position: sticky; top: 0; z-index: 1000; background: rgba(10, 12, 20, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 245, 255, 0.15); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
         .logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(90deg, #00f5ff, #c026d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
+        /* SLOGAN MỚI NỔI BẬT */
         .slogan { 
             font-size: 1.1rem; font-weight: 900; color: var(--cyan); letter-spacing: 3px; text-transform: uppercase;
             text-shadow: 0 0 10px rgba(0, 245, 255, 0.6), 0 0 20px rgba(0, 245, 255, 0.2);
@@ -41,8 +42,8 @@
         #connect-btn:hover { background: var(--cyan); color: #000; }
 
         .sidebar { position: fixed; left: 0; top: 68px; bottom: 0; width: 220px; background: rgba(10, 12, 20, 0.95); border-right: 1px solid rgba(0, 245, 255, 0.15); padding: 20px 15px; }
-        .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 15px; border-radius: 10px; margin-bottom: 5px; color: #94a3b8; cursor: pointer; font-size: 0.9rem; }
-        .nav-item.active { background: rgba(0,245,255,0.1); color: var(--cyan); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 15px; border-radius: 10px; margin-bottom: 5px; color: #94a3b8; cursor: pointer; font-size: 0.9rem; transition: 0.3s; }
+        .nav-item:hover, .nav-item.active { background: rgba(0,245,255,0.1); color: var(--cyan); }
 
         .main { margin-left: 220px; padding: 25px 30px; }
         .dashboard-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 24px; align-items: start; }
@@ -58,7 +59,6 @@
         .product-img { width: 100%; height: 180px; object-fit: cover; }
         .btn-buy { width: 100%; padding: 12px; background: linear-gradient(90deg, var(--cyan), #67e8f9); color: #000; font-weight: 900; border: none; border-radius: 10px; cursor: pointer; margin-top: 10px; }
 
-        .disclaimer-box { background: rgba(240, 185, 11, 0.05); border: 1px solid rgba(240, 185, 11, 0.2); border-radius: 12px; padding: 15px; margin-bottom: 20px; font-size: 0.75rem; line-height: 1.5; color: #94a3b8; }
         .ledger-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
         .ledger-table th { text-align: left; padding: 10px; color: var(--yellow); border-bottom: 1px solid rgba(0,245,255,0.2); font-size: 0.8rem; }
         .ledger-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.75rem; }
@@ -68,20 +68,21 @@
         .page-btn.active { background: var(--cyan); color: #000; }
 
         /* MODALS */
-        #order-modal, #profile-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0f172a; border: 2px solid var(--cyan); padding: 30px; border-radius: 20px; width: 90%; max-width: 460px; z-index: 3000; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        #order-modal, #profile-modal, #security-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0f172a; border: 2px solid var(--cyan); padding: 30px; border-radius: 20px; width: 90%; max-width: 480px; z-index: 3000; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2999; backdrop-filter: blur(5px); }
         input, textarea { width: 100%; padding: 12px; background: #1e2937; border: 1px solid #334155; color: white; border-radius: 10px; margin-bottom: 12px; outline: none; }
         
-        /* PROFILE SPECIFIC */
         .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.9rem; }
         .my-orders-list { max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px; margin-top: 10px; }
         .order-item-mini { font-size: 0.8rem; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; }
+        .security-point { margin-bottom: 15px; font-size: 0.85rem; line-height: 1.4; color: #94a3b8; text-align: justify; }
+        .security-point strong { color: var(--cyan); }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">Ogshop.online</div>
+        <div class="logo" onclick="location.reload()">Ogshop.online</div>
         <div class="slogan">0G-BRIDGING THE DIGITAL AND PHYSICAL</div>
         <div class="auth-buttons">
             <button id="google-login-btn" class="btn-auth">
@@ -98,10 +99,11 @@
 
     <div class="sidebar">
         <div class="nav-item active" onclick="location.reload()">🏠 Dashboard</div>
+        <!-- PROFILE ĐƯA LÊN THỨ 2 -->
+        <div class="nav-item" onclick="openProfile()">👤 My Profile & Wallet</div>
         <div class="nav-item">🛒 Marketplace</div>
+        <div class="nav-item" onclick="openSecurity()">🛡️ Security Center</div>
         <div class="nav-item">⚡ 0G Pay</div>
-        <div class="nav-item">💼 Wallet</div>
-        <div class="nav-item" onclick="openProfile()">👤 Profile</div>
     </div>
 
     <div class="main">
@@ -111,23 +113,27 @@
                     <div style="color:var(--cyan); font-weight:bold; font-size:0.9rem;">💎 Embedded Wallet (0G Mainnet)</div>
                     <div class="wallet-info-box">
                         <div style="color:#94a3b8; font-size:0.8rem;">Available Balance</div>
+                        <!-- SỐ DƯ MÀU ĐUỔI -->
                         <div class="balance-val gradient-text" id="balance-og">0.0000 OG</div>
                         <div style="color:#94a3b8; font-size:0.8rem; margin-top:12px;">Active Address</div>
+                        <!-- ĐỊA CHỈ VÍ MÀU ĐUỔI -->
                         <div class="address-val gradient-text" id="address-full">Not Connected</div>
                     </div>
                 </div>
                 <div class="card">
-                    <div style="color:var(--cyan); margin-bottom:15px; font-weight:bold;">🛒 Marketplace</div>
+                    <div style="color:var(--cyan); margin-bottom:15px; font-weight:bold;">🛒 Exclusive Marketplace</div>
                     <div class="product-grid" id="product-grid"></div>
                 </div>
             </div>
 
             <div>
-                <div class="disclaimer-box">
-                    <strong>IMPORTANT NOTICE:</strong> This project is a blockchain technology experiment dedicated to the SIC community. All product listings and prices are for testing purposes only.
-                    <br><br> <strong>VALIDATOR:</strong> SIC 
-                    <br><br> <strong>STORAGE:</strong> 0x3cF588f1d8987635e18C34A78FDCf52ba21bC8D0
-                    <br><br> <strong>NETWORK:</strong> 0G MAINNET
+                <div class="card" style="background: rgba(240, 185, 11, 0.05); border-color: rgba(240, 185, 11, 0.2); margin-bottom: 20px;">
+                    <div style="color:var(--yellow); font-weight:bold; font-size:0.8rem; margin-bottom: 8px;">IMPORTANT NOTICE:</div>
+                    <p style="font-size:0.75rem; color:#94a3b8; line-height:1.5;">This project is a blockchain technology experiment dedicated to the SIC community. All product listings and prices are for testing purposes only.</p>
+                    <div style="font-size:0.7rem; color:var(--cyan); margin-top:10px; font-family:monospace;">
+                        VALIDATOR: SIC | NETWORK: 0G MAINNET<br>
+                        STORAGE: 0x3cF588...C8D0
+                    </div>
                 </div>
                 <div class="card">
                     <div style="color:var(--cyan); margin-bottom:15px; font-weight:bold;">📜 On-chain Order Ledger</div>
@@ -164,6 +170,15 @@
         <div style="margin-top:20px; color:var(--cyan); font-weight:bold; font-size:0.9rem;">📦 My Orders History</div>
         <div class="my-orders-list" id="my-orders-history"></div>
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 20px;">CLOSE PROFILE</button>
+    </div>
+
+    <!-- SECURITY MODAL -->
+    <div id="security-modal">
+        <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">🛡️ Why Trust Ogshop?</h2>
+        <div class="security-point"><strong>Embedded Hidden Wallet:</strong> No need to remember 12-word seed phrases. Your Gmail account acts as an intelligent key to access your wallet safely.</div>
+        <div class="security-point"><strong>Absolute Ownership:</strong> Your wallet is generated from a unique combination of your email and personal password. Even we cannot access your funds.</div>
+        <div class="security-point"><strong>0G Storage Protection:</strong> Order details are encrypted and distributed across the <strong>0G Storage</strong> network, ensuring privacy and data immortality.</div>
+        <button onclick="closeModals()" class="btn-buy">UNDERSTOOD</button>
     </div>
 
     <script>
@@ -278,7 +293,7 @@
                     tx = await new ethers.providers.Web3Provider(window.ethereum).getSigner().sendTransaction({ to: DESTINATION_WALLET, value: val, maxPriorityFeePerGas: tip });
                 }
                 state.lastTxHash = tx.hash; state.currentPurchasedItem = itemName;
-                alert("Processing..."); await tx.wait(); syncBalance(); openOrderModal(itemName);
+                alert("Processing... Please wait for confirmation."); await tx.wait(); syncBalance(); openOrderModal(itemName);
             } catch (e) { alert("Error: " + e.message); }
         }
 
@@ -288,10 +303,8 @@
             const phone = document.getElementById('phone').value;
             const note = document.getElementById('order-note').value || "None";
             if (!name || !addr || !phone) return alert("Fill fields!");
-
             const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, address: addr, phone: phone, note: note, txHash: state.lastTxHash, timestamp: Date.now() };
             await database.ref('orders/').push(data);
-            
             const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})\n----------------------------------\n🚀 *Powered by SIC Community*`;
             new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
             alert("Order Submitted!"); closeModals();
@@ -303,48 +316,20 @@
             document.getElementById('prof-wallet').innerText = state.fullWalletAddress;
             const bal = await new ethers.providers.JsonRpcProvider(RPC_URL).getBalance(state.fullWalletAddress);
             document.getElementById('prof-balance').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + " OG";
-            
             database.ref('orders/').once('value', snap => {
                 const data = snap.val(); const list = document.getElementById('my-orders-history'); list.innerHTML = "";
-                if (data) {
-                    Object.values(data).reverse().forEach(o => {
-                        if (o.wallet.toLowerCase() === state.fullWalletAddress.toLowerCase()) {
-                            list.innerHTML += `<div class="order-item-mini"><span>${o.item}</span><span style="color:#94a3b8">${new Date(o.timestamp).toLocaleDateString()}</span></div>`;
-                        }
-                    });
-                }
+                if (data) { Object.values(data).reverse().forEach(o => { if (o.wallet.toLowerCase() === state.fullWalletAddress.toLowerCase()) { list.innerHTML += `<div class="order-item-mini"><span>${o.item}</span><span style="color:#94a3b8">${new Date(o.timestamp).toLocaleDateString()}</span></div>`; } }); }
             });
             document.getElementById('profile-modal').style.display = 'block';
             document.getElementById('modal-overlay').style.display = 'block';
         }
 
-        function listenOrders() {
-            database.ref('orders/').on('value', snap => {
-                const data = snap.val();
-                if (data) { state.allOrders = Object.values(data).reverse(); renderLedger(); }
-            });
-        }
-
-        function renderLedger() {
-            const start = (state.currentPage - 1) * state.itemsPerPage;
-            const list = document.getElementById('order-history-list');
-            list.innerHTML = state.allOrders.slice(start, start + state.itemsPerPage).map(o => `<tr><td style="color:var(--cyan); font-family:monospace;">${o.wallet.substring(0,6)}...</td><td>${o.item}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join('');
-            renderPagination();
-        }
-
-        function renderPagination() {
-            const total = Math.ceil(state.allOrders.length / state.itemsPerPage);
-            const container = document.getElementById('pagination'); container.innerHTML = "";
-            if (total <= 1) return;
-            for (let i = 1; i <= total; i++) {
-                const btn = document.createElement('button'); btn.innerText = i; btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`;
-                btn.onclick = () => { state.currentPage = i; renderLedger(); };
-                container.appendChild(btn);
-            }
-        }
-
+        function openSecurity() { document.getElementById('security-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
+        function listenOrders() { database.ref('orders/').on('value', snap => { const data = snap.val(); if (data) { state.allOrders = Object.values(data).reverse(); renderLedger(); } }); }
+        function renderLedger() { const start = (state.currentPage - 1) * state.itemsPerPage; const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(start, start + state.itemsPerPage).map(o => `<tr><td style="color:var(--cyan); font-family:monospace;">${o.wallet.substring(0,6)}...</td><td>${o.item}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join(''); renderPagination(); }
+        function renderPagination() { const total = Math.ceil(state.allOrders.length / state.itemsPerPage); const container = document.getElementById('pagination'); container.innerHTML = ""; if (total <= 1) return; for (let i = 1; i <= total; i++) { const btn = document.createElement('button'); btn.innerText = i; btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`; btn.onclick = () => { state.currentPage = i; renderLedger(); }; container.appendChild(btn); } }
         function openOrderModal(item) { document.getElementById('order-item').value = item; document.getElementById('order-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
-        function closeModals() { document.getElementById('order-modal').style.display = 'none'; document.getElementById('profile-modal').style.display = 'none'; document.getElementById('modal-overlay').style.display = 'none'; }
+        function closeModals() { document.getElementById('order-modal').style.display = 'none'; document.getElementById('profile-modal').style.display = 'none'; document.getElementById('security-modal').style.display = 'none'; document.getElementById('modal-overlay').style.display = 'none'; }
         function logout() { auth.signOut(); location.reload(); }
         window.onload = initApp;
     </script>
