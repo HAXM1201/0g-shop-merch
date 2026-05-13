@@ -326,29 +326,68 @@
             } catch(e) {}
         }
 
-        async function initiatePayment(amount, itemName) {
-            if (!state.fullWalletAddress) return alert("Login first!");
-            try {
-                let tx; const val = ethers.utils.parseEther(amount.toString());
-                const tip = ethers.BigNumber.from("2000000000");
-                const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-                if (state.isGmailLogin) {
-                    const pass = prompt("Wallet Password:"); if (!pass) return;
-                    const wallet = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), provider);
-                    if (wallet.address !== state.fullWalletAddress) return alert("Wrong password!");
-                    const fee = await provider.getFeeData();
-                    tx = await wallet.sendTransaction({ to: DESTINATION_WALLET, value: val, maxPriorityFeePerGas: tip, maxFeePerGas: fee.maxFeePerGas ? fee.maxFeePerGas.add(tip) : tip.mul(2), gasLimit: 25000 });
-                } else {
-                    tx = await new ethers.providers.Web3Provider(window.ethereum).getSigner().sendTransaction({ to: DESTINATION_WALLET, value: val, maxPriorityFeePerGas: tip });
-                }
-                state.lastTxHash = tx.hash; state.currentPurchasedItem = itemName;
-                alert("Processing..."); await tx.wait(); syncBalance(); openOrderModal(itemName);
-            } catch (e) { alert("Error: " + e.message); }
+       // --- HÀM THANH TOÁN TỰ ĐỘNG
+async function initiatePayment(amount, itemName) {
+    if (!state.fullWalletAddress) return alert("Login first!");
+    
+    try {
+        const val = ethers.utils.parseEther(amount.toString());
+        const provider = new ethers.providers.JsonRpcProvider(CONFIG.rpcUrl);
+        
+        // 1. Tự động lấy dữ liệu phí gas thời gian thực từ mạng 0G
+        const feeData = await provider.getFeeData();
+        
+        // 2. Thiết lập phí ưu tiên tự động
+        const autoPriorityFee = feeData.maxPriorityFeePerGas || ethers.utils.parseUnits("2", "gwei");
+        
+        // 3. Tính toán phí tối đa tự động 
+        const autoMaxFee = feeData.maxFeePerGas 
+            ? feeData.maxFeePerGas.mul(120).div(100) 
+            : autoPriorityFee.mul(2);
+
+        let tx;
+        if (state.isGmailLogin) {
+            // Thanh toán qua Ví Ẩn (Gmail)
+            const pass = prompt("Wallet Password:"); if (!pass) return;
+            const wallet = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), provider);
+            if (wallet.address !== state.fullWalletAddress) return alert("Wrong password!");
+            
+            tx = await wallet.sendTransaction({ 
+                to: CONFIG.targetWallet, 
+                value: val, 
+                gasLimit: 30000, 
+                maxFeePerGas: autoMaxFee,
+                maxPriorityFeePerGas: autoPriorityFee
+            });
+        } else {
+            // Thanh toán qua MetaMask - Để MetaMask tự động tính theo mạng lưới (Ổn định nhất cho ví ngoài)
+            const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = web3Provider.getSigner();
+            
+            tx = await signer.sendTransaction({ 
+                to: CONFIG.targetWallet, 
+                value: val 
+                
+            });
         }
+
+        alert("Giao dịch đã được gửi! Hệ thống đang tự động tối ưu phí gas...");
+        state.lastTxHash = tx.hash; 
+        state.currentPurchasedItem = itemName;
+        
+        await tx.wait(); 
+        syncBalance(); 
+        openOrderModal(itemName);
+
+    } catch (e) { 
+        console.error(e);
+        alert("Lỗi thanh toán: " + (e.data?.message || e.message)); 
+    }
+}
 
         async function submitOrder() {
           const name = document.getElementById('receiver-name').value;
-          const country = document.getElementById('country').value; // Lấy giá trị Quốc gia
+          const country = document.getElementById('country').value; 
           const addr = document.getElementById('address').value;
           const phone = document.getElementById('phone').value;
           const note = document.getElementById('order-note').value || "None";
