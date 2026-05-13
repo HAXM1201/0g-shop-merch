@@ -63,7 +63,6 @@
         #order-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0f172a; border: 2px solid var(--cyan); padding: 30px; border-radius: 20px; width: 90%; max-width: 420px; z-index: 3000; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2999; backdrop-filter: blur(5px); }
         input, textarea { width: 100%; padding: 12px; background: #1e2937; border: 1px solid #334155; color: white; border-radius: 10px; margin-bottom: 12px; outline: none; }
-        input:focus { border-color: var(--cyan); }
     </style>
 </head>
 <body>
@@ -141,8 +140,9 @@
         <h2 style="color:var(--cyan); margin-bottom:15px; font-size:1.1rem;">📦 Shipping Info</h2>
         <input type="text" id="order-item" readonly style="color:var(--yellow); font-weight:bold;">
         <input type="text" id="receiver-name" placeholder="Receiver Name">
-        <textarea id="address" rows="3" placeholder="Full Address"></textarea>
+        <textarea id="address" rows="2" placeholder="Full Address"></textarea>
         <input type="tel" id="phone" placeholder="Phone Number">
+        <textarea id="order-note" rows="2" placeholder="Note (Size, Color, Special request...)"></textarea>
         <button onclick="submitOrder()" class="btn-buy">CONFIRM ORDER</button>
     </div>
 
@@ -161,11 +161,7 @@
         const database = firebase.database();
         const auth = firebase.auth();
 
-        let state = { 
-            fullWalletAddress: "", currentUser: null, isGmailLogin: false, 
-            currentPurchasedItem: "", lastTxHash: "", allOrders: [], 
-            currentPage: 1, itemsPerPage: 15 
-        };
+        let state = { fullWalletAddress: "", currentUser: null, isGmailLogin: false, currentPurchasedItem: "", lastTxHash: "", allOrders: [], currentPage: 1, itemsPerPage: 15 };
 
         const products = [
             {name: "0G PANDA T-SHIRT", price: "0.04", img: "ao-0g.jpg"},
@@ -193,7 +189,6 @@
             `).join('');
         }
 
-        // --- GMAIL LOGIN ---
         document.getElementById('google-login-btn').addEventListener('click', () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider);
@@ -216,7 +211,7 @@
                 <h3 style="color:#00f5ff;margin-bottom:10px;">🔐 Thiết lập Ví ẩn cho ${email}</h3>
                 <input type="password" id="u-pw" placeholder="Mật khẩu (≥8 ký tự)">
                 <input type="password" id="u-pw-c" placeholder="Xác nhận mật khẩu">
-                <button onclick="createHiddenWallet()" style="width:100%;padding:14px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;cursor:pointer;">TẠO VÍ</button>
+                <button onclick="createHiddenWallet()" style="width:100%;padding:14px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;margin-top:10px;cursor:pointer;">TẠO VÍ</button>
             </div>
             <div id="pw-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:2999;"></div>`;
             document.body.insertAdjacentHTML('beforeend', html);
@@ -229,12 +224,10 @@
             const wallet = new ethers.Wallet(ethers.utils.id(seed));
             state.fullWalletAddress = wallet.address;
             await database.ref('users/' + state.currentUser.uid).set({ email: state.currentUser.email, walletAddress: wallet.address, createdAt: Date.now() });
-            document.getElementById('pw-modal').remove();
-            document.getElementById('pw-overlay').remove();
+            document.getElementById('pw-modal').remove(); document.getElementById('pw-overlay').remove();
             updateUIAfterLogin();
         };
 
-        // --- METAMASK ---
         async function handleConnect() {
             if (!window.ethereum) return alert("Hãy cài đặt MetaMask!");
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -256,15 +249,14 @@
                 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
                 const bal = await provider.getBalance(state.fullWalletAddress);
                 document.getElementById('balance-og').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + " OG";
-            } catch(e) { console.error("Balance error", e); }
+            } catch(e) {}
         }
 
-        // --- PAYMENT ---
         async function initiatePayment(amount, itemName) {
             if (!state.fullWalletAddress) return alert("Vui lòng đăng nhập!");
             try {
                 let tx; const val = ethers.utils.parseEther(amount.toString());
-                const tip = ethers.BigNumber.from("2000000000"); // 2 Gwei
+                const tip = ethers.BigNumber.from("2000000000"); 
                 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 
                 if (state.isGmailLogin) {
@@ -284,19 +276,29 @@
             } catch (e) { alert("Lỗi: " + (e.reason || e.message)); }
         }
 
-        // --- ORDER & TELEGRAM ---
         async function submitOrder() {
             const name = document.getElementById('receiver-name').value.trim();
             const addr = document.getElementById('address').value.trim();
             const phone = document.getElementById('phone').value.trim();
+            const note = document.getElementById('order-note').value.trim() || "None";
             if (!name || !addr || !phone) return alert("Vui lòng điền đủ thông tin!");
 
-            const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, address: addr, phone: phone, txHash: state.lastTxHash, timestamp: Date.now() };
+            const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, address: addr, phone: phone, note: note, txHash: state.lastTxHash, timestamp: Date.now() };
             await database.ref('orders/').push(data);
             
-            const msg = `📦 ĐƠN MỚI: ${data.item}\n👤 Khách: ${data.receiver}\n📞 SĐT: ${data.phone}\n🔗 TX: ${EXPLORER_URL}${data.txHash}`;
-            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
-            
+            const telegramMsg = `
+📦 *ĐƠN HÀNG MỚI - SIC-0G SHOP*
+----------------------------------
+👤 *Khách:* ${name}
+📱 *SĐT:* ${phone}
+🏠 *Địa chỉ:* ${addr}
+🛍️ *Sản phẩm:* ${state.currentPurchasedItem}
+📝 *Ghi chú:* ${note}
+💸 [Xem Giao Dịch](${EXPLORER_URL}${state.lastTxHash})
+----------------------------------
+🚀 *Vận hành bởi SIC Community*`;
+
+            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(telegramMsg)}`;
             alert("Đã xác nhận đơn hàng!"); closeModal();
         }
 
@@ -318,12 +320,10 @@
 
         function renderPagination() {
             const totalPages = Math.ceil(state.allOrders.length / state.itemsPerPage);
-            const container = document.getElementById('pagination');
-            container.innerHTML = "";
+            const container = document.getElementById('pagination'); container.innerHTML = "";
             if (totalPages <= 1) return;
             for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
-                btn.innerText = i; btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`;
+                const btn = document.createElement('button'); btn.innerText = i; btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`;
                 btn.onclick = () => { state.currentPage = i; renderLedger(); };
                 container.appendChild(btn);
             }
