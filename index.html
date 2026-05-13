@@ -25,8 +25,8 @@
             display: inline-block;
         }
 
-        /* VIỀN NEON BO CONG 24PX - DÀY & SÁNG CHÉO */
-        .card, #order-modal {
+        /* VIỀN NEON */
+        .card {
             position: relative;
             background: var(--card);
             padding: 20px;
@@ -47,8 +47,9 @@
         .logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(90deg, #00f5ff, #c026d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .slogan { 
-            font-size: 2.2rem; font-weight: 900; color: var(--cyan); letter-spacing: 3px; text-transform: uppercase;
-            border: none; text-shadow: none;
+            font-size: 1.1rem; font-weight: 900; color: var(--cyan); letter-spacing: 3px; text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 245, 255, 0.6), 0 0 20px rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan); padding-left: 15px; margin: 0 20px;
         }
 
         .auth-buttons { display: flex; gap: 10px; align-items: center; }
@@ -57,7 +58,7 @@
         #connect-btn { background: transparent; border: 1.5px solid var(--cyan); color: var(--cyan); width: 180px; }
         #connect-btn:hover { background: var(--cyan); color: #000; }
 
-        .sidebar { position: fixed; left: 0; top: 85px; bottom: 0; width: 220px; background: rgba(10, 12, 20, 0.95); border-right: 1px solid rgba(0, 245, 255, 0.15); padding: 20px 15px; }
+        .sidebar { position: fixed; left: 0; top: 68px; bottom: 0; width: 220px; background: rgba(10, 12, 20, 0.95); border-right: 1px solid rgba(0, 245, 255, 0.15); padding: 20px 15px; }
         .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 15px; border-radius: 10px; margin-bottom: 5px; color: #94a3b8; cursor: pointer; font-size: 0.9rem; }
         .nav-item.active { background: rgba(0,245,255,0.1); color: var(--cyan); }
 
@@ -82,51 +83,44 @@
         .page-btn { padding: 5px 12px; background: rgba(0,245,255,0.1); border: 1px solid var(--cyan); color: var(--cyan); border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
         .page-btn.active { background: var(--cyan); color: #000; }
 
-        /* MODALS & INPUTS SYNC (FIXED FOR IMAGE_2D1E38) */
-        #order-modal, #profile-modal, #security-modal, #pay-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 3000; width: 90%; max-width: 480px; }
+        /* MODALS */
+        #order-modal, #profile-modal, #security-modal, #pay-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0f172a; border: 2px solid var(--cyan); padding: 30px; border-radius: 20px; width: 90%; max-width: 480px; z-index: 3000; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2999; backdrop-filter: blur(5px); }
-        
-        /* Chỉnh màu input tối để chữ trắng nổi bật */
-        input, textarea { 
-            width: 100%; padding: 12px; 
-            background: #1e293b !important; /* Màu tối như ảnh 2d1e38 */
-            border: 1px solid #334155; 
-            color: white !important; 
-            border-radius: 10px; 
-            margin-bottom: 12px; 
-            outline: none; 
-        }
-        input[readonly] { color: var(--yellow) !important; font-weight: bold; }
+        input, textarea { width: 100%; padding: 12px; background: #1e2937; border: 1px solid #334155; color: white; border-radius: 10px; margin-bottom: 12px; outline: none; }
         
         .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.9rem; }
         .my-orders-list { max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px; margin-top: 10px; }
         .order-item-mini { font-size: 0.8rem; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; }
         .security-point { margin-bottom: 15px; font-size: 0.85rem; line-height: 1.4; color: #94a3b8; text-align: justify; }
+        .pay-step { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
 
     <!-- MODULE 3: HEADER -->
     <header>
-        <div class="logo" onclick="location.reload()">Ogshop.online</div>
-        <div class="slogan gradient-text">0G-BRIDGING THE DIGITAL AND PHYSICAL</div>
-        <div class="auth-buttons">
-            <button id="google-login-btn" class="btn-auth">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Gmail Login
-            </button>
-            <button id="connect-btn" class="btn-auth" onclick="handleConnect()">CONNECT WALLET</button>
-            <div id="wallet-info" style="display:none; align-items:center; gap:10px;">
-                <div id="gmail-display" style="font-size:0.85rem; background:rgba(0,245,255,0.1); padding:8px 15px; border-radius:9999px; color:var(--cyan); font-weight: bold;"></div>
-                <button onclick="logout()" style="background:none; border:1px solid #f43f5e; color:#f43f5e; padding:6px 12px; border-radius:9999px; font-size:0.7rem; cursor:pointer;">LOGOUT</button>
-            </div>
+    <div class="logo" onclick="location.reload()">Ogshop.online</div>
+    <div class="slogan gradient-text" style="font-size: 2.2rem; border: none; text-shadow: none;">
+        0G-BRIDGING THE DIGITAL AND PHYSICAL
+    </div>
+
+    <div class="auth-buttons">
+        <button id="google-login-btn" class="btn-auth">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Gmail Login
+        </button>
+        <button id="connect-btn" class="btn-auth" onclick="handleConnect()">CONNECT WALLET</button>
+        
+        <div id="wallet-info" style="display:none; align-items:center; gap:10px;">
+            <div id="gmail-display" style="font-size:0.85rem; background:rgba(0,245,255,0.1); padding:8px 15px; border-radius:9999px; color:var(--cyan); font-weight: bold;"></div>
+            <button onclick="logout()" style="background:none; border:1px solid #f43f5e; color:#f43f5e; padding:6px 12px; border-radius:9999px; font-size:0.7rem; cursor:pointer;">LOGOUT</button>
         </div>
-    </header>
+    </div>
+</header>
 
     <!-- MODULE 4: SIDEBAR -->
     <div class="sidebar">
         <div class="nav-item active" onclick="location.reload()">🏠 Dashboard</div>
         <div class="nav-item" onclick="openProfile()">👤 My Profile & Wallet</div>
-        <div class="nav-item">🛒 Marketplace</div>
         <div class="nav-item" onclick="openSecurity()">🛡️ Security Center</div>
         <div class="nav-item" onclick="openPay()">⚡ 0G Pay Center</div>
     </div>
@@ -153,9 +147,10 @@
             <div>
                 <div class="card" style="background: rgba(240, 185, 11, 0.05); border-color: rgba(240, 185, 11, 0.2); margin-bottom: 20px;">
                     <div style="color:var(--yellow); font-weight:bold; font-size:1.2rem; margin-bottom: 8px;">IMPORTANT NOTICE:</div>
-                    <p style="font-size:1rem; color:var(--cyan); line-height:1.5;">This project is a blockchain technology experiment dedicated to the SIC community.</p>
+                    <p style="font-size:1rem; color:var(--cyan); line-height:1.5;">This project is a blockchain technology experiment dedicated to the SIC community. All product listings and prices are for testing purposes only.</p>
                     <div style="font-size:1.2rem; color:var(--cyan); margin-top:10px; font-family:monospace;">
-                        VALIDATOR: SIC | NETWORK: 0G MAINNET
+                        VALIDATOR: SIC | NETWORK: 0G MAINNET<br>
+                        STORAGE: 0x3cF588f1d8987635e18C34A78FDCf52ba21bC8D0
                     </div>
                 </div>
                 <div class="card">
@@ -173,49 +168,65 @@
     <!-- MODULE 6: MODALS -->
     <div class="modal-overlay" id="modal-overlay" onclick="closeModals()"></div>
 
-    <!-- ORDER MODAL (UPDATED WITH COUNTRY & SYNCED UI) -->
+    <!-- ORDER MODAL -->
     <div id="order-modal">
         <h2 style="color:var(--cyan); margin-bottom:15px; font-size:1.1rem;">📦 Shipping & Customization</h2>
-        <input type="text" id="order-item" readonly>
+        <input type="text" id="order-item" readonly style="color:var(--yellow); font-weight:bold;">
         <input type="text" id="receiver-name" placeholder="Recipient Full Name">
-        <!-- TRƯỜNG QUỐC GIA MỚI -->
-        <input type="text" id="country" placeholder="Country (English)">
         <textarea id="address" rows="2" placeholder="Full Delivery Address"></textarea>
         <input type="tel" id="phone" placeholder="Phone Number">
         <textarea id="order-note" rows="2" placeholder="Note (Size, Color, Special request...)"></textarea>
         <button onclick="submitOrder()" class="btn-buy">COMPLETE ORDER</button>
     </div>
 
+    <!-- PROFILE MODAL -->
     <div id="profile-modal">
-        <div class="card" style="border:none; box-shadow:none;">
-            <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">👤 User Profile</h2>
-            <div class="info-row"><span style="color:var(--cyan)">Gmail:</span><span id="prof-email" class="gradient-text" style="font-weight:bold"></span></div>
-            <div class="info-row"><span style="color:var(--cyan)">Wallet:</span><span id="prof-wallet" class="gradient-text" style="font-size:1rem; font-family:monospace"></span></div>
-            <div class="info-row"><span style="color:var(--cyan)">Balance:</span><span id="prof-balance" class="gradient-text" style="font-weight:bold"></span></div>
-            <div style="margin-top:20px; color:var(--cyan); font-weight:bold; font-size:0.9rem;">📦 My Orders History</div>
-            <div class="my-orders-list" id="my-orders-history"></div>
-            <button onclick="closeModals()" class="btn-buy" style="margin-top: 20px;">CLOSE PROFILE</button>
-        </div>
+        <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">👤 User Profile</h2>
+        <div class="info-row"><span style="color:var(--cyan)">Gmail:</span><span id="prof-email" class="gradient-text" style="font-weight:bold"></span></div>
+        <div class="info-row"><span style="color:var(--cyan)">Wallet:</span><span id="prof-wallet" class="gradient-text" style="font-size:1rem; font-family:monospace"></span></div>
+        <div class="info-row"><span style="color:var(--cyan)">Balance:</span><span id="prof-balance" class="gradient-text" style="font-weight:bold"></span></div>
+        <div style="margin-top:20px; color:var(--cyan); font-weight:bold; font-size:0.9rem;">📦 My Orders History</div>
+        <div class="my-orders-list" id="my-orders-history"></div>
+        <button onclick="closeModals()" class="btn-buy" style="margin-top: 20px;">CLOSE PROFILE</button>
     </div>
 
+    <!-- SECURITY MODAL -->
     <div id="security-modal">
-        <div class="card" style="border:none; box-shadow:none;">
-            <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">🛡️ Why Trust Ogshop?</h2>
-            <div class="security-point"><strong style="color: var(--yellow);">Embedded Hidden Wallet:</strong> No phrases needed. Gmail is your key.</div>
-            <div class="security-point"><strong style="color: var(--yellow);">Absolute Ownership:</strong> Your password, your funds.</div>
-            <div class="security-point"><strong style="color: var(--yellow);">0G Storage Protection:</strong> Encrypted on the 0G Network.</div>
-            <button onclick="closeModals()" class="btn-buy">UNDERSTOOD</button>
-        </div>
+    <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">🛡️ Why Trust Ogshop?</h2>
+    
+    <div class="security-point">
+        <strong style="color: var(--yellow);">Embedded Hidden Wallet:</strong> 
+        No need to remember 12-word seed phrases. Your Gmail account acts as an intelligent key to access your wallet safely.
     </div>
+    
+    <div class="security-point">
+        <strong style="color: var(--yellow);">Absolute Ownership:</strong> 
+        Your wallet is generated from a unique combination of your email and personal password. Even we cannot access your funds.
+    </div>
+    
+    <div class="security-point">
+        <strong style="color: var(--yellow);">0G Storage Protection:</strong> 
+        Order details are encrypted and distributed across the <strong>0G Storage</strong> network, ensuring privacy and data immortality.
+    </div>
+    
+    <button onclick="closeModals()" class="btn-buy">UNDERSTOOD</button>
+</div>
 
+    <!-- 0G PAY MODAL -->
     <div id="pay-modal">
-        <div class="card" style="border:none; box-shadow:none;">
-            <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">⚡ 0G Pay Center</h2>
-            <div style="margin-bottom:15px;"><a href="https://pc.0g.ai/dashboard/overview" target="_blank" style="color:var(--cyan); text-decoration:none; font-weight:bold;">🌐 Go to 0G Portal</a></div>
-            <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px dashed var(--cyan); font-family:monospace; font-size:0.75rem; word-break:break-all;" id="pay-deposit-addr">Not Connected</div>
-            <button onclick="copyDepositAddr()" class="btn-auth" style="margin-top:10px; border:1px solid var(--cyan); color:var(--cyan);">📋 Copy Shopping Address</button>
-            <button onclick="closeModals()" class="btn-buy" style="margin-top:10px;">CLOSE</button>
+        <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">⚡ 0G Pay Center</h2>
+        <div class="pay-step">
+            <div style="color:var(--cyan); font-weight:bold; margin-bottom:5px;">Step 1: Top up Primary Wallet</div>
+            <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:10px;">Login to 0G Official Portal to get tokens to your main Gmail wallet.</p>
+            <a href="https://pc.0g.ai/dashboard/overview" target="_blank" style="display:inline-block; background:var(--cyan); color:#000; padding:8px 15px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:0.8rem;">🌐 Go to 0G Portal</a>
         </div>
+        <div class="pay-step" style="border:none;">
+            <div style="color:var(--yellow); font-weight:bold; margin-bottom:5px;">Step 2: Transfer to Shopping Wallet</div>
+            <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:10px;">Send tokens from your 0G Main Wallet to your SIC Hub address below:</p>
+            <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px dashed var(--cyan); font-family:monospace; font-size:0.75rem; word-break:break-all;" id="pay-deposit-addr">Not Connected</div>
+            <button onclick="copyDepositAddr()" style="margin-top:10px; background:none; border:1px solid var(--cyan); color:var(--cyan); padding:5px 12px; border-radius:5px; font-size:0.7rem; cursor:pointer;">📋 Copy Shopping Address</button>
+        </div>
+        <button onclick="closeModals()" class="btn-buy" style="margin-top:10px;">CLOSE CENTER</button>
     </div>
 
     <!-- MODULE 7: LOGIC ENGINE -->
@@ -334,45 +345,40 @@
             } catch (e) { alert("Error: " + e.message); }
         }
 
-        // --- SUBMIT ORDER (UPDATED WITH COUNTRY & TELEGRAM SYNC) ---
         async function submitOrder() {
             const name = document.getElementById('receiver-name').value;
-            const country = document.getElementById('country').value;
             const addr = document.getElementById('address').value;
             const phone = document.getElementById('phone').value;
             const note = document.getElementById('order-note').value || "None";
-            
-            if (!name || !country || !addr || !phone) return alert("Fill Name, Country, Address, Phone!");
-            
-            const data = { 
-                wallet: state.fullWalletAddress, 
-                item: state.currentPurchasedItem, 
-                receiver: name, 
-                country: country,
-                address: addr, 
-                phone: phone, 
-                note: note, 
-                txHash: state.lastTxHash, 
-                timestamp: Date.now() 
-            };
-
+            if (!name || !addr || !phone) return alert("Fill fields!");
+            const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, address: addr, phone: phone, note: note, txHash: state.lastTxHash, timestamp: Date.now() };
             await database.ref('orders/').push(data);
-            
-            const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})\n----------------------------------\n🚀 *Powered by SIC Community*`;
-            
+            const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})`;
             new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
-            alert("Order Submitted!"); 
-            closeModals();
+            alert("Order Submitted!"); closeModals();
         }
 
+        async function openProfile() {
+            if (!state.fullWalletAddress) return alert("Login first!");
+            document.getElementById('prof-email').innerText = state.currentUser ? state.currentUser.email : "MetaMask User";
+            document.getElementById('prof-wallet').innerText = state.fullWalletAddress;
+            const bal = await new ethers.providers.JsonRpcProvider(RPC_URL).getBalance(state.fullWalletAddress);
+            document.getElementById('prof-balance').innerText = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + " OG";
+            database.ref('orders/').once('value', snap => {
+                const data = snap.val(); const list = document.getElementById('my-orders-history'); list.innerHTML = "";
+                if (data) { Object.values(data).reverse().forEach(o => { if (o.wallet.toLowerCase() === state.fullWalletAddress.toLowerCase()) { list.innerHTML += `<div class="order-item-mini"><span>${o.item}</span><span style="color:#94a3b8">${new Date(o.timestamp).toLocaleDateString()}</span></div>`; } }); }
+            });
+            document.getElementById('profile-modal').style.display = 'block';
+            document.getElementById('modal-overlay').style.display = 'block';
+        }
+
+        function openSecurity() { document.getElementById('security-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
+        function openPay() { document.getElementById('pay-deposit-addr').innerText = state.fullWalletAddress || "Please Login First"; document.getElementById('pay-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
+        function copyDepositAddr() { if(!state.fullWalletAddress) return alert("Login first!"); navigator.clipboard.writeText(state.fullWalletAddress); alert("Address Copied!"); }
         function listenOrders() { database.ref('orders/').on('value', snap => { const data = snap.val(); if (data) { state.allOrders = Object.values(data).reverse(); renderLedger(); } }); }
         function renderLedger() { const start = (state.currentPage - 1) * state.itemsPerPage; const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(start, start + state.itemsPerPage).map(o => `<tr><td style="color:var(--cyan); font-family:monospace;">${o.wallet.substring(0,6)}...</td><td>${o.item}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join(''); renderPagination(); }
         function renderPagination() { const total = Math.ceil(state.allOrders.length / state.itemsPerPage); const container = document.getElementById('pagination'); container.innerHTML = ""; if (total <= 1) return; for (let i = 1; i <= total; i++) { const btn = document.createElement('button'); btn.innerText = i; btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`; btn.onclick = () => { state.currentPage = i; renderLedger(); }; container.appendChild(btn); } }
         function openOrderModal(item) { document.getElementById('order-item').value = item; document.getElementById('order-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
-        function openProfile() { if (!state.fullWalletAddress) return alert("Login first!"); document.getElementById('prof-email').innerText = state.currentUser ? state.currentUser.email : "Web3 User"; document.getElementById('prof-wallet').innerText = state.fullWalletAddress; const bal = document.getElementById('balance-og').innerText; document.getElementById('prof-balance').innerText = bal; document.getElementById('profile-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
-        function openSecurity() { document.getElementById('security-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
-        function openPay() { document.getElementById('pay-deposit-addr').innerText = state.fullWalletAddress || "Login First"; document.getElementById('pay-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
-        function copyDepositAddr() { if(!state.fullWalletAddress) return alert("Login first!"); navigator.clipboard.writeText(state.fullWalletAddress); alert("Address Copied!"); }
         function closeModals() { document.querySelectorAll('#order-modal, #profile-modal, #security-modal, #pay-modal, #modal-overlay').forEach(el => el.style.display = 'none'); }
         function logout() { auth.signOut(); location.reload(); }
         window.onload = initApp;
