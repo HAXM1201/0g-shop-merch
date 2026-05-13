@@ -346,11 +346,11 @@
         }
 
         async function submitOrder() {
-    const name = document.getElementById('receiver-name').value;
-    const country = document.getElementById('country').value; // Lấy giá trị Quốc gia
-    const addr = document.getElementById('address').value;
-    const phone = document.getElementById('phone').value;
-    const note = document.getElementById('order-note').value || "None";
+          const name = document.getElementById('receiver-name').value;
+          const country = document.getElementById('country').value; // Lấy giá trị Quốc gia
+          const addr = document.getElementById('address').value;
+          const phone = document.getElementById('phone').value;
+          const note = document.getElementById('order-note').value || "None";
 
     if (!name || !country || !addr || !phone) return alert("Please fill in all required fields (Name, Country, Address, Phone)!");
 
