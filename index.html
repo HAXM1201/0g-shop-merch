@@ -327,20 +327,22 @@
         }
 
        // --- HÀM THANH TOÁN TỰ ĐỘNG
+// --- HÀM THANH TOÁN TỰ ĐỘNG GAS (FIXED REFERENCE ERROR) ---
 async function initiatePayment(amount, itemName) {
     if (!state.fullWalletAddress) return alert("Login first!");
     
     try {
         const val = ethers.utils.parseEther(amount.toString());
-        const provider = new ethers.providers.JsonRpcProvider(CONFIG.rpcUrl);
+        // Sử dụng RPC_URL trực tiếp từ khai báo đầu file của sếp
+        const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
         
-        // 1. Tự động lấy dữ liệu phí gas thời gian thực từ mạng 0G
+        // 1. Tự động lấy dữ liệu phí gas thời gian thực
         const feeData = await provider.getFeeData();
         
-        // 2. Thiết lập phí ưu tiên tự động
+        // 2. Thiết lập phí ưu tiên tự động (Tip)
         const autoPriorityFee = feeData.maxPriorityFeePerGas || ethers.utils.parseUnits("2", "gwei");
         
-        // 3. Tính toán phí tối đa tự động 
+        // 3. Tính toán phí tối đa tự động + 20% dự phòng
         const autoMaxFee = feeData.maxFeePerGas 
             ? feeData.maxFeePerGas.mul(120).div(100) 
             : autoPriorityFee.mul(2);
@@ -353,21 +355,20 @@ async function initiatePayment(amount, itemName) {
             if (wallet.address !== state.fullWalletAddress) return alert("Wrong password!");
             
             tx = await wallet.sendTransaction({ 
-                to: CONFIG.targetWallet, 
+                to: DESTINATION_WALLET, 
                 value: val, 
-                gasLimit: 30000, 
+                gasLimit: 35000, // Tăng nhẹ hạn mức gas
                 maxFeePerGas: autoMaxFee,
                 maxPriorityFeePerGas: autoPriorityFee
             });
         } else {
-            // Thanh toán qua MetaMask - Để MetaMask tự động tính theo mạng lưới (Ổn định nhất cho ví ngoài)
+            // Thanh toán qua MetaMask (Để MetaMask tự xử lý Gas là ổn định nhất)
             const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = web3Provider.getSigner();
             
             tx = await signer.sendTransaction({ 
-                to: CONFIG.targetWallet, 
+                to: DESTINATION_WALLET, 
                 value: val 
-                
             });
         }
 
@@ -384,7 +385,6 @@ async function initiatePayment(amount, itemName) {
         alert("Lỗi thanh toán: " + (e.data?.message || e.message)); 
     }
 }
-
         async function submitOrder() {
           const name = document.getElementById('receiver-name').value;
           const country = document.getElementById('country').value; 
