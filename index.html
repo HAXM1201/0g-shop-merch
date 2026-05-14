@@ -417,26 +417,84 @@
 }
         /* --- CÁC HÀM CŨ GIỮ NGUYÊN --- */
         async function initiatePayment(amount, itemName) {
-            if (!state.fullWalletAddress) return alert("Please login first!");
-            try {
-                const val = ethers.utils.parseEther(amount.toString());
-                const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-                let tx;
-                if (state.isGmailLogin) {
-                    const pass = prompt("Wallet Password:"); 
-                    if (!pass) return;
-                    const wallet = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), provider);
-                    tx = await wallet.sendTransaction({ to: DESTINATION_WALLET, value: val, gasLimit: 50000 });
-                } else {
-                    const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-                    const signer = web3Provider.getSigner();
-                    tx = await signer.sendTransaction({ to: DESTINATION_WALLET, value: val });
-                }
-                state.lastTxHash = tx.hash; state.currentPurchasedItem = itemName;
-                await tx.wait(); 
-                syncBalance(); openOrderModal(itemName);
-            } catch (e) { alert("Payment Error: " + (e.reason || e.message)); }
+    if (!state.fullWalletAddress) return alert("Please login first!");
+    
+    try {
+        const val = ethers.utils.parseEther(amount.toString());
+        const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+        
+        
+        const currentGasPrice = await provider.getGasPrice();
+        
+        const optimizedGasPrice = currentGasPrice.mul(120).div(100);
+
+        let tx;
+        if (state.isGmailLogin) {
+            
+            const pass = prompt("Wallet Password:"); 
+            if (!pass) return;
+
+            const wallet = new ethers.Wallet(
+                ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), 
+                provider
+            );
+
+            if (wallet.address !== state.fullWalletAddress) return alert("Wrong password!");
+
+            alert("Preparing transaction from Hidden Wallet...");
+
+            tx = await wallet.sendTransaction({
+                to: DESTINATION_WALLET,
+                value: val,
+                gasLimit: 50000, 
+                gasPrice: optimizedGasPrice 
+            });
+        } else {
+            
+            const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = web3Provider.getSigner();
+            
+            tx = await signer.sendTransaction({
+                to: DESTINATION_WALLET,
+                value: val
+            });
         }
+
+        alert("Transaction sent! Waiting for 0G Mainnet confirmation...");
+        state.lastTxHash = tx.hash;
+        state.currentPurchasedItem = itemName;
+        
+        await tx.wait(); 
+        syncBalance(); 
+        openOrderModal(itemName);
+
+    } catch (e) {
+        console.error("Payment Error:", e);
+        // Return a more user-friendly error message
+        const errorMsg = e.reason || e.message || "Unknown error";
+        alert("Payment Error: " + errorMsg);
+    }
+}
+        async function submitOrder() {
+          const name = document.getElementById('receiver-name').value;
+          const country = document.getElementById('country').value; 
+          const addr = document.getElementById('address').value;
+          const phone = document.getElementById('phone').value;
+          const note = document.getElementById('order-note').value || "None";
+
+    if (!name || !country || !addr || !phone) return alert("Please fill in all required fields (Name, Country, Address, Phone)!");
+
+    const data = { 
+        wallet: state.fullWalletAddress, 
+        item: state.currentPurchasedItem, 
+        receiver: name, 
+        country: country, 
+        address: addr, 
+        phone: phone, 
+        note: note, 
+        txHash: state.lastTxHash, 
+        timestamp: Date.now() 
+    };
 
         async function submitOrder() {
             const name = document.getElementById('receiver-name').value;
