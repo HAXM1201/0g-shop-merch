@@ -356,34 +356,65 @@
         }
 
         async function executeTransfer() {
-            const to = document.getElementById('transfer-to').value.trim();
-            const amt = document.getElementById('transfer-amount').value;
-            if (!ethers.utils.isAddress(to)) return alert("Invalid Address!");
-            if (amt <= 0) return alert("Invalid Amount!");
+    const to = document.getElementById('transfer-to').value.trim();
+    const amt = document.getElementById('transfer-amount').value;
+    
+    if (!ethers.utils.isAddress(to)) return alert("Địa chỉ ví không hợp lệ!");
+    if (amt <= 0) return alert("Số tiền phải lớn hơn 0!");
 
-            try {
-                const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-                const val = ethers.utils.parseEther(amt.toString());
-                let tx;
+    try {
+        const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+        const val = ethers.utils.parseEther(amt.toString());
+        
+        // Lấy Gas Price hiện tại và tăng thêm 20% để đảm bảo giao dịch trôi chảy
+        const currentGasPrice = await provider.getGasPrice();
+        const optimizedGasPrice = currentGasPrice.mul(120).div(100);
 
-                if (state.isGmailLogin) {
-                    const pass = prompt("Enter Wallet Password:");
-                    if (!pass) return;
-                    const wallet = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), provider);
-                    if (wallet.address !== state.fullWalletAddress) return alert("Wrong Password!");
-                    tx = await wallet.sendTransaction({ to, value: val, gasLimit: 50000 });
-                } else {
-                    const signer = (new ethers.providers.Web3Provider(window.ethereum)).getSigner();
-                    tx = await signer.sendTransaction({ to, value: val });
-                }
+        let tx;
 
-                alert("Transaction Sent! Hash: " + tx.hash);
-                await tx.wait();
-                alert("Transfer Successful!");
-                syncBalance(); closeModals();
-            } catch (e) { alert("Error: " + (e.reason || e.message)); }
+        if (state.isGmailLogin) {
+            const pass = prompt("Nhập mật khẩu ví Hidden Wallet:");
+            if (!pass) return;
+
+            const wallet = new ethers.Wallet(
+                ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), 
+                provider
+            );
+
+            if (wallet.address !== state.fullWalletAddress) return alert("Mật khẩu sai!");
+
+            // Bổ sung GasLimit và GasPrice thủ công để tránh lỗi "processing response"
+            tx = await wallet.sendTransaction({
+                to: to,
+                value: val,
+                gasLimit: 60000, 
+                gasPrice: optimizedGasPrice
+            });
+        } else {
+            const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = web3Provider.getSigner();
+            
+            tx = await signer.sendTransaction({
+                to: to,
+                value: val,
+                gasPrice: optimizedGasPrice
+            });
         }
 
+        alert("Giao dịch đã được gửi! Đang chờ xác nhận...");
+        await tx.wait();
+        alert(`Chuyển thành công ${amt} OG!`);
+        
+        syncBalance();
+        closeModals();
+
+    } catch (e) {
+        console.error("Transfer Error:", e);
+        // Hiển thị thông báo lỗi chi tiết hơn nếu có
+        const errorMsg = e.reason || e.message || "Lỗi không xác định";
+        alert("Chuyển tiền thất bại: " + errorMsg);
+    }
+}
         /* --- CÁC HÀM CŨ GIỮ NGUYÊN --- */
         async function initiatePayment(amount, itemName) {
             if (!state.fullWalletAddress) return alert("Please login first!");
