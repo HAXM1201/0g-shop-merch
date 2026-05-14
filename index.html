@@ -21,11 +21,15 @@
     /* TYPOGRAPHY & GRADIENT */
     .gradient-text { background: linear-gradient(90deg, #00f5ff, #c026d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
     
-    /* HEADER & SLOGAN */
-    header { position: sticky; top: 0; z-index: 1000; background: rgba(10, 12, 20, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 245, 255, 0.15); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
-    .logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(90deg, #00f5ff, #c026d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
-    .slogan { font-size: 1.8rem; font-weight: 900; text-align: center; flex-grow: 1; margin: 0 20px; letter-spacing: 2px; text-transform: uppercase; }
-
+    <header>
+    <div class="logo" onclick="location.reload()">Ogshop.online</div>
+    <div class="slogan gradient-text">0G-BRIDGING THE DIGITAL AND PHYSICAL</div>
+    <div class="auth-buttons">
+        <!-- Sếp giữ nguyên các nút Google Login và Connect Wallet cũ của sếp ở đây -->
+        <button id="google-login-btn" class="btn-auth">...</button>
+        <button id="connect-btn" class="btn-auth">...</button>
+    </div>
+</header>
     /* AUTH BUTTONS */
     .auth-buttons { display: flex; gap: 10px; align-items: center; }
     .btn-auth { padding: 10px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 0.85rem; border: none; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -63,7 +67,29 @@
     #order-modal, #profile-modal, #security-modal, #pay-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0f172a; border: 2px solid var(--cyan); padding: 30px; border-radius: 20px; width: 90%; max-width: 480px; z-index: 3000; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2999; backdrop-filter: blur(5px); }
     input, textarea { width: 100%; padding: 12px; background: #1e2937; border: 1px solid #334155; color: white; border-radius: 10px; margin-bottom: 12px; outline: none; }
-</style>
+
+   /* 1. Cố định dải chữ ở đáy màn hình */
+.ticker-wrap { 
+    position: fixed; 
+    bottom: 0; 
+    left: 0; 
+    width: 100%; 
+    z-index: 2000; 
+    background: rgba(10, 12, 20, 0.95); 
+    border-top: 1px solid rgba(0, 245, 255, 0.3);
+    padding: 10px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+/* 2. Trả Sidebar về vị trí chuẩn dưới Header */
+.sidebar { top: 70px; bottom: 45px; }
+
+/* 3. Tạo khoảng trống ở đáy trang để nội dung không bị Ticker che */
+.main { margin-bottom: 60px; }
+   
+   </style>
 
 <header>
     <div class="logo" onclick="location.reload()">Ogshop.online</div>
@@ -103,14 +129,30 @@
             <button onclick="logout()" style="background:none; border:1px solid #f43f5e; color:#f43f5e; padding:6px 12px; border-radius:9999px; font-size:0.7rem; cursor:pointer;">LOGOUT</button>
         </div>
         <!-- RECENT MINTS TICKER -->
-<div class="ticker-wrap">
-    <div class="ticker-move" id="recent-mints-ticker">
-        <div class="ticker-item">Waiting for new on-chain activities...</div>
-    </div>
-</div>
-        
-    </div>
-</header>
+.ticker-wrap { 
+    width: 100%; 
+    overflow: hidden; 
+    background: rgba(10, 12, 20, 0.95); 
+    border-top: 1px solid rgba(0, 245, 255, 0.3); /* Đổi thành viền trên */
+    padding: 10px 0; 
+    position: fixed; /* Cố định */
+    bottom: 0; /* Nằm dưới cùng */
+    left: 0;
+    z-index: 2000; 
+    white-space: nowrap; 
+    backdrop-filter: blur(10px);
+}
+
+.ticker-move { display: inline-block; padding-right: 100%; animation: ticker 30s linear infinite; }
+.ticker-item { display: inline-block; padding: 0 40px; font-size: 0.85rem; color: #94a3b8; }
+.ticker-item strong { color: var(--cyan); }
+.ticker-item span { color: var(--yellow); font-weight: bold; }
+@keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+.ticker-wrap:hover .ticker-move { animation-play-state: paused; }
+
+
+.sidebar { position: fixed; left: 0; top: 70px; bottom: 45px; width: 220px; background: rgba(10, 12, 20, 0.95); border-right: 1px solid rgba(0, 245, 255, 0.15); padding: 20px 15px; }
+.main { margin-left: 220px; padding: 25px 30px; margin-bottom: 60px; } /* Thêm margin-bottom để không bị Ticker che mất nội dung cuối */
 
     <!-- MODULE 4: SIDEBAR -->
     <div class="sidebar">
@@ -442,6 +484,11 @@ async function initiatePayment(amount, itemName) {
         function closeModals() { document.querySelectorAll('#order-modal, #profile-modal, #security-modal, #pay-modal, #modal-overlay').forEach(el => el.style.display = 'none'); }
         function logout() { auth.signOut(); location.reload(); }
         window.onload = initApp;
-    </script>
+ </script>
+       
+    <div class="ticker-wrap">
+        <div class="ticker-move" id="recent-mints-ticker"></div>
+    </div>
+
 </body>
 </html>
