@@ -192,7 +192,33 @@
         <div class="my-orders-list" id="my-orders-history"></div>
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 20px;">CLOSE PROFILE</button>
     </div>
+    <div id="transfer-modal">
+        <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">📤 Transfer Funds</h2>
+        <div class="pay-step">
+            <label style="color:var(--cyan); font-weight:bold; display:block; margin-bottom:8px;">Recipient Address</label>
+            <input type="text" id="transfer-to" placeholder="0x...">
+        </div>
+        <div class="pay-step" style="border:none;">
+            <label style="color:var(--cyan); font-weight:bold; display:block; margin-bottom:8px;">Amount (OG)</label>
+            <input type="number" id="transfer-amount" step="0.0001" placeholder="0.00">
+        </div>
+        <button onclick="startTransferAuth()" class="btn-buy" style="background: var(--yellow); color:#000;">NEXT: AUTHENTICATE</button>
+        <button onclick="closeModals()" style="background:none; border:none; color:#94a3b8; width:100%; margin-top:10px; cursor:pointer;">Cancel</button>
+    </div>
 
+    <!-- MỚI: MODAL XÁC THỰC MẬT KHẨU CÓ HIỆN/ẨN -->
+    <div id="verify-pw-modal">
+        <h2 class="gradient-text" style="font-size: 1.2rem; margin-bottom:20px;">🔐 Authenticate Transaction</h2>
+        <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:15px;">Enter your Hidden Wallet password to confirm this transfer.</p>
+        
+        <div class="pw-container">
+            <input type="password" id="transfer-pw" placeholder="Enter Wallet Password">
+            <span class="pw-toggle" onclick="togglePwVisibility('transfer-pw')">SHOW</span>
+        </div>
+
+        <button onclick="executeTransferWithAuth()" class="btn-buy" style="background: var(--cyan); color:#000; margin-top:10px;">SIGN & SEND</button>
+        <button onclick="closeModals()" style="background:none; border:none; color:#94a3b8; width:100%; margin-top:10px; cursor:pointer;">Back</button>
+    </div>
     <div id="security-modal">
         <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">🛡️ Why Trust Ogshop?</h2>
         <div class="security-point"><strong style="color: var(--yellow);">Embedded Hidden Wallet:</strong> No need to remember 12-word seed phrases. Your Gmail account acts as an intelligent key to access your wallet safely.</div>
