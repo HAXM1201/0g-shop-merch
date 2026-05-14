@@ -231,16 +231,37 @@
     </div>
 
     <div id="security-modal">
-        <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">🛡️ Why Trust Ogshop?</h2>
-        <div class="security-point"><strong style="color: var(--yellow);">Embedded Hidden Wallet:</strong> Your Gmail acts as an intelligent key to your wallet.</div>
-        <div class="security-point"><strong style="color: var(--yellow);">Absolute Ownership:</strong> Wallet generated from unique Gmail + Password combination.</div>
-        <button onclick="closeModals()" class="btn-buy">UNDERSTOOD</button>
+    <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">🛡️ Why Trust Ogshop?</h2>
+    
+    <div class="security-point">
+        <strong style="color: var(--yellow);">Embedded Hidden Wallet:</strong> 
+        No need to remember 12-word seed phrases. Your Gmail account acts as an intelligent key to access your wallet safely.
+    </div>
+    
+    <div class="security-point">
+        <strong style="color: var(--yellow);">Absolute Ownership:</strong> 
+        Your wallet is generated from a unique combination of your email and personal password. Even we cannot access your funds.
+    </div>
+    
+    <div class="security-point">
+        <strong style="color: var(--yellow);">0G Storage Protection:</strong> 
+        Order details are encrypted and distributed across the <strong>0G Storage</strong> network, ensuring privacy and data immortality.
     </div>
 
+    <!-- 0G PAY MODAL -->
     <div id="pay-modal">
         <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">⚡ 0G Pay Center</h2>
-        <div id="pay-deposit-addr" style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px dashed var(--cyan); font-family:monospace; font-size:0.75rem; word-break:break-all;">Not Connected</div>
-        <button onclick="copyDepositAddr()" style="margin-top:10px; background:none; border:1px solid var(--cyan); color:var(--cyan); padding:5px 12px; border-radius:5px; font-size:0.7rem; cursor:pointer;">📋 Copy Shopping Address</button>
+        <div class="pay-step">
+            <div style="color:var(--cyan); font-weight:bold; margin-bottom:5px;">Step 1: Top up Primary Wallet</div>
+            <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:10px;">Login to 0G Official Portal to get tokens to your main Gmail wallet.</p>
+            <a href="https://pc.0g.ai/dashboard/overview" target="_blank" style="display:inline-block; background:var(--cyan); color:#000; padding:8px 15px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:0.8rem;">🌐 Go to 0G Portal</a>
+        </div>
+        <div class="pay-step" style="border:none;">
+            <div style="color:var(--yellow); font-weight:bold; margin-bottom:5px;">Step 2: Transfer to Shopping Wallet</div>
+            <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:10px;">Send tokens from your 0G Main Wallet to your SIC Hub address below:</p>
+            <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px dashed var(--cyan); font-family:monospace; font-size:0.75rem; word-break:break-all;" id="pay-deposit-addr">Not Connected</div>
+            <button onclick="copyDepositAddr()" style="margin-top:10px; background:none; border:1px solid var(--cyan); color:var(--cyan); padding:5px 12px; border-radius:5px; font-size:0.7rem; cursor:pointer;">📋 Copy Shopping Address</button>
+        </div>
         <button onclick="closeModals()" class="btn-buy" style="margin-top:10px;">CLOSE CENTER</button>
     </div>
 
