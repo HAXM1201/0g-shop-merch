@@ -195,7 +195,7 @@
     <!-- AUTH ACTION MODAL 
     <div id="auth-action-modal">
         <h2 id="auth-title" class="gradient-text" style="font-size: 1.3rem; margin-bottom:10px;">🔐 Verify Wallet</h2>
-        <p id="auth-desc" style="font-size:0.85rem; color:#94a3b8; margin-bottom:20px;">Xác nhận bảo mật bằng mật khẩu ví của bạn.</p>
+        <p id="auth-desc" style="font-size:0.85rem; color:#94a3b8; margin-bottom:20px;">Confirm security using your wallet password.</p>
         <div class="pw-container">
             <input type="password" id="action-pw" placeholder="Enter Wallet Password">
             <span class="pw-toggle" onclick="togglePwVisibility('action-pw')">SHOW</span>
@@ -209,7 +209,7 @@
         <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">📤 Transfer Funds</h2>
         <input type="text" id="transfer-to" placeholder="Recipient Address (0x...)">
         <input type="number" id="transfer-amount" step="0.0001" placeholder="Amount (OG)">
-        <button onclick="startTransferAuth()" class="btn-buy" style="background: var(--yellow); color:#000;">XÁC NHẬN CHUYỂN</button>
+        <button onclick="startTransferAuth()" class="btn-buy" style="background: var(--yellow); color:#000;">CONFIRM TRANSFER</button>
     </div>
 
     <!-- ORDER MODAL -->
@@ -354,13 +354,13 @@
             } catch(e) {}
         }
 
-        // PHẦN LOGIC XÁC THỰC MỚI (THAY CHO PROMPT)
+        // PHẦN LOGIC XÁC THỰC
         function prepareAuthForAction(type, amount, target) {
-            if (!state.fullWalletAddress) return alert("Vui lòng đăng nhập!");
+            if (!state.fullWalletAddress) return alert("Please Log In!");
             state.pendingAction = { type, amount, target };
             if (state.isGmailLogin) {
                 document.getElementById('auth-title').innerText = (type === 'PAYMENT') ? '🛒 Confirm Purchase' : '📤 Confirm Transfer';
-                document.getElementById('auth-desc').innerText = `Bạn đang chuẩn bị gửi ${amount} OG. Vui lòng nhập mật khẩu ví để ký giao dịch.`;
+                document.getElementById('auth-desc').innerText = `You Are Preparing To Send ! ${amount} OG. Please enter your wallet password to sign the transaction.`;
                 document.getElementById('action-pw').value = "";
                 document.getElementById('auth-action-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
@@ -381,10 +381,10 @@
 
                 if (state.isGmailLogin) {
                     const pass = document.getElementById('action-pw').value;
-                    if (!pass) return alert("Chưa nhập mật khẩu!");
+                    if (!pass) return alert("Password Not Entered!");
                     btn.disabled = true; btn.innerText = "SIGNING...";
                     const wallet = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), provider);
-                    if (wallet.address.toLowerCase() !== state.fullWalletAddress.toLowerCase()) throw new Error("Mật khẩu không chính xác!");
+                    if (wallet.address.toLowerCase() !== state.fullWalletAddress.toLowerCase()) throw new Error("The Password Is Incorrect!");
                     const toAddr = (type === 'PAYMENT') ? DESTINATION_WALLET : target;
                     tx = await wallet.sendTransaction({ to: toAddr, value: val, gasLimit: 60000, gasPrice });
                 } else {
@@ -393,7 +393,7 @@
                 }
 
                 closeModals();
-                alert("Giao dịch đã gửi! Đang chờ xác nhận...");
+                alert("Transaction Submitted! Awaiting Confirmation...");
                 state.lastTxHash = tx.hash;
                 await tx.wait();
                 if (type === 'PAYMENT') {
@@ -413,8 +413,8 @@
         function startTransferAuth() {
             const to = document.getElementById('transfer-to').value.trim();
             const amt = document.getElementById('transfer-amount').value;
-            if (!ethers.utils.isAddress(to)) return alert("Địa chỉ ví không hợp lệ!");
-            if (!amt || amt <= 0) return alert("Số tiền không hợp lệ!");
+            if (!ethers.utils.isAddress(to)) return alert("Invalid Wallet Address!");
+            if (!amt || amt <= 0) return alert("Invalid Amount!");
             document.getElementById('transfer-modal').style.display = 'none';
             prepareAuthForAction('TRANSFER', amt, to);
         }
