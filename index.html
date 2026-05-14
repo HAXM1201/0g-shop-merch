@@ -93,6 +93,48 @@
         .order-item-mini { font-size: 0.8rem; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; }
         .security-point { margin-bottom: 15px; font-size: 0.85rem; line-height: 1.4; color: #94a3b8; text-align: justify; }
         .pay-step { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+         /* RECENT MINTS TICKER STYLES */
+.ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    background: rgba(10, 12, 20, 0.8);
+    border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+    padding: 10px 0;
+    white-space: nowrap;
+}
+
+.ticker-move {
+    display: inline-block;
+    padding-right: 100%;
+    animation: ticker 30s linear infinite;
+}
+
+.ticker-item {
+    display: inline-block;
+    padding: 0 40px;
+    font-size: 0.9rem;
+    color: #94a3b8;
+}
+
+.ticker-item strong {
+    color: var(--cyan);
+    text-shadow: 0 0 5px rgba(0, 245, 255, 0.3);
+}
+
+.ticker-item span {
+    color: var(--yellow);
+    font-weight: bold;
+}
+
+@keyframes ticker {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}
+
+.ticker-wrap:hover .ticker-move {
+    animation-play-state: paused; /* Dừng lại khi di chuột vào để khách dễ đọc */
+}
+    
     </style>
 </head>
 <body>
@@ -114,6 +156,13 @@
             <div id="gmail-display" style="font-size:0.85rem; background:rgba(0,245,255,0.1); padding:8px 15px; border-radius:9999px; color:var(--cyan); font-weight: bold;"></div>
             <button onclick="logout()" style="background:none; border:1px solid #f43f5e; color:#f43f5e; padding:6px 12px; border-radius:9999px; font-size:0.7rem; cursor:pointer;">LOGOUT</button>
         </div>
+        <!-- RECENT MINTS TICKER -->
+<div class="ticker-wrap">
+    <div class="ticker-move" id="recent-mints-ticker">
+        <div class="ticker-item">Waiting for new on-chain activities...</div>
+    </div>
+</div>
+        
     </div>
 </header>
 
@@ -439,9 +488,9 @@ async function initiatePayment(amount, itemName) {
 
         function openSecurity() { document.getElementById('security-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
         function openPay() { document.getElementById('pay-deposit-addr').innerText = state.fullWalletAddress || "Please Login First"; document.getElementById('pay-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
-        function copyDepositAddr() { if(!state.fullWalletAddress) return alert("Login first!"); navigator.clipboard.writeText(state.fullWalletAddress); alert("Address Copied!"); }
-        function listenOrders() { database.ref('orders/').on('value', snap => { const data = snap.val(); if (data) { state.allOrders = Object.values(data).reverse(); renderLedger(); } }); }
-        function renderLedger() { const start = (state.currentPage - 1) * state.itemsPerPage; const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(start, start + state.itemsPerPage).map(o => `<tr><td style="color:var(--cyan); font-family:monospace;">${o.wallet.substring(0,6)}...</td><td>${o.item}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join(''); renderPagination(); }
+        function copyDepositAddr() { if(!state.fullWalletAddress) return alert("Please login first!"); navigator.clipboard.writeText(state.fullWalletAddress); alert("Address Copied!"); }
+        function listenOrders() { database.ref('orders/').on('value', snap => { const data = snap.val(); if (data) { state.allOrders = Object.values(data).reverse(); renderLedger(); const tk = document.getElementById('recent-mints-ticker'); if (tk) { const items = state.allOrders.slice(0, 10).map(o => `<div class="ticker-item">🚀 User <strong>${o.wallet?.substring(0,6)}...</strong> just minted <span>${o.item}</span></div>`).join(''); tk.innerHTML = items + items; } } }); }
+        function renderLedger() { const start = (state.currentPage - 1) * state.itemsPerPage; const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(start, start + state.itemsPerPage).map(o => `<tr><td style="color:var(--cyan); font-family:monospace;">${o.wallet?.substring(0,6)}...</td><td>${o.item}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join(''); renderPagination(); }
         function renderPagination() { const total = Math.ceil(state.allOrders.length / state.itemsPerPage); const container = document.getElementById('pagination'); container.innerHTML = ""; if (total <= 1) return; for (let i = 1; i <= total; i++) { const btn = document.createElement('button'); btn.innerText = i; btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`; btn.onclick = () => { state.currentPage = i; renderLedger(); }; container.appendChild(btn); } }
         function openOrderModal(item) { document.getElementById('order-item').value = item; document.getElementById('order-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
         function closeModals() { document.querySelectorAll('#order-modal, #profile-modal, #security-modal, #pay-modal, #modal-overlay').forEach(el => el.style.display = 'none'); }
