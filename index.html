@@ -447,7 +447,7 @@
             if (!name || !country || !addr || !phone) return alert("Fill required fields!");
             const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, country, address: addr, phone, note, txHash: state.lastTxHash, timestamp: Date.now() };
             await database.ref('orders/').push(data);
-            const msg = `📦 NEW ORDER: ${name} | ${state.currentPurchasedItem}`;
+            const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})\n----------------------------------\n🚀 *Powered by SIC Community*`;
             new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
             alert("Order Submitted!"); closeModals();
         }
