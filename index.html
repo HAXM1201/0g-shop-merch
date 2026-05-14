@@ -25,7 +25,6 @@
             display: inline-block;
         }
 
-        /* VIỀN NEON - GIỮ NGUYÊN */
         .card {
             position: relative;
             background: var(--card);
@@ -44,7 +43,7 @@
         }
 
         header { position: sticky; top: 0; z-index: 1000; background: rgba(10, 12, 20, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 245, 255, 0.15); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
-        .logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(90deg, #00f5ff, #c026d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
+        .logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(90deg, #00f5ff, #c026d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .slogan { 
             font-size: 1.1rem; font-weight: 900; color: var(--cyan); letter-spacing: 3px; text-transform: uppercase;
@@ -66,11 +65,9 @@
         .dashboard-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 24px; align-items: start; }
         
         .wallet-info-box { margin-top: 10px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px dashed rgba(0,245,255,0.2); }
-        .balance-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
         .balance-val { font-size: 2.5rem; font-weight: 800; margin: 5px 0; }
         .address-val { font-family: monospace; font-size: 0.85rem; word-break: break-all; margin-top: 8px; font-weight: 600; }
 
-        /* NÚT TRANSFER MỚI THÊM */
         .transfer-btn { background: var(--yellow); color: #000; font-weight: bold; padding: 8px 20px; border-radius: 9999px; font-size: 0.85rem; border: none; cursor: pointer; transition: 0.3s; }
         .transfer-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
 
@@ -88,12 +85,7 @@
         .page-btn { padding: 5px 12px; background: rgba(0,245,255,0.1); border: 1px solid var(--cyan); color: var(--cyan); border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
         .page-btn.active { background: var(--cyan); color: #000; }
 
-        /* MODALS */
-        #order-modal, #profile-modal, #security-modal, #pay-modal, #transfer-modal { 
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: #0f172a; border: 2px solid var(--cyan); padding: 30px; border-radius: 20px; 
-            width: 90%; max-width: 480px; z-index: 3000; box-shadow: 0 0 50px rgba(0,0,0,0.8); 
-        }
+        #order-modal, #profile-modal, #security-modal, #pay-modal, #transfer-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0f172a; border: 2px solid var(--cyan); padding: 30px; border-radius: 20px; width: 90%; max-width: 480px; z-index: 3000; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2999; backdrop-filter: blur(5px); }
         input, textarea { width: 100%; padding: 12px; background: #1e2937; border: 1px solid #334155; color: white; border-radius: 10px; margin-bottom: 12px; outline: none; }
         
@@ -106,18 +98,12 @@
 </head>
 <body>
 
-    <!-- HEADER -->
     <header>
         <div class="logo" onclick="location.reload()">Ogshop.online</div>
-        <div class="slogan gradient-text" style="font-size: 2.2rem; border: none; text-shadow: none;">
-            0G-BRIDGING THE DIGITAL AND PHYSICAL
-        </div>
+        <div class="slogan gradient-text" style="font-size: 2.2rem; border: none; text-shadow: none;">0G-BRIDGING THE DIGITAL AND PHYSICAL</div>
         <div class="auth-buttons">
-            <button id="google-login-btn" class="btn-auth">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Gmail Login
-            </button>
+            <button id="google-login-btn" class="btn-auth"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Gmail Login</button>
             <button id="connect-btn" class="btn-auth" onclick="handleConnect()">CONNECT WALLET</button>
-            
             <div id="wallet-info" style="display:none; align-items:center; gap:10px;">
                 <div id="gmail-display" style="font-size:0.85rem; background:rgba(0,245,255,0.1); padding:8px 15px; border-radius:9999px; color:var(--cyan); font-weight: bold;"></div>
                 <button onclick="logout()" style="background:none; border:1px solid #f43f5e; color:#f43f5e; padding:6px 12px; border-radius:9999px; font-size:0.7rem; cursor:pointer;">LOGOUT</button>
@@ -125,7 +111,6 @@
         </div>
     </header>
 
-    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="nav-item active" onclick="location.reload()">🏠 Dashboard</div>
         <div class="nav-item" onclick="openProfile()">👤 My Profile & Wallet</div>
@@ -136,39 +121,28 @@
     <div class="main">
         <div class="dashboard-grid">
             <div>
-                <!-- WALLET BOX -->
                 <div class="card" style="margin-bottom: 20px;">
                     <div style="color:var(--cyan); font-weight:bold; font-size:0.9rem;">💎 Embedded Wallet (0G Mainnet)</div>
                     <div class="wallet-info-box">
                         <div style="color:#94a3b8; font-size:0.8rem;">Available Balance</div>
-                        
                         <div class="balance-row">
                             <div class="balance-val gradient-text" id="balance-og">0.0000 OG</div>
-                            <!-- NÚT CHUYỂN TIỀN -->
-                            <button onclick="openTransferModal()" class="transfer-btn">
-                                📤 TRANSFER
-                            </button>
+                            <button onclick="openTransferModal()" class="transfer-btn">📤 TRANSFER</button>
                         </div>
-
                         <div style="color:#94a3b8; font-size:0.8rem; margin-top:12px;">Active Address</div>
                         <div class="address-val gradient-text" id="address-full">Not Connected</div>
                     </div>
                 </div>
-
                 <div class="card">
                     <div style="color:var(--cyan); margin-bottom:15px; font-weight:bold;">🛒 Exclusive Marketplace</div>
                     <div class="product-grid" id="product-grid"></div>
                 </div>
             </div>
-
             <div>
                 <div class="card" style="background: rgba(240, 185, 11, 0.05); border-color: rgba(240, 185, 11, 0.2); margin-bottom: 20px;">
                     <div style="color:var(--yellow); font-weight:bold; font-size:1.2rem; margin-bottom: 8px;">IMPORTANT NOTICE:</div>
                     <p style="font-size:1rem; color:var(--cyan); line-height:1.5;">This is a blockchain experimental project by the SIC community. All items and prices are for testing purposes regarding technology and transaction processes.</p>
-                    <div style="font-size:1.2rem; color:var(--cyan); margin-top:10px; font-family:monospace;">
-                        VALIDATOR: SIC | NETWORK: 0G MAINNET<br>
-                        STORAGE: 0x3cF588f1d8987635e18C34A78FDCf52ba21bC8D0
-                    </div>
+                    <div style="font-size:1.2rem; color:var(--cyan); margin-top:10px; font-family:monospace;">VALIDATOR: SIC | NETWORK: 0G MAINNET<br>STORAGE: 0x3cF588f1d8987635e18C34A78FDCf52ba21bC8D0</div>
                 </div>
                 <div class="card">
                     <div style="color:var(--cyan); margin-bottom:15px; font-weight:bold;">📜 On-chain Order Ledger</div>
@@ -182,30 +156,22 @@
         </div>
     </div>
 
-    <!-- MODALS -->
     <div class="modal-overlay" id="modal-overlay" onclick="closeModals()"></div>
 
-    <!-- TRANSFER MODAL MỚI -->
     <div id="transfer-modal">
         <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">📤 Transfer Funds</h2>
-        
         <div class="pay-step">
             <label style="color:var(--cyan); font-weight:bold; display:block; margin-bottom:8px;">Recipient Address</label>
             <input type="text" id="transfer-to" placeholder="0x...">
         </div>
-
         <div class="pay-step" style="border:none;">
             <label style="color:var(--cyan); font-weight:bold; display:block; margin-bottom:8px;">Amount (OG)</label>
-            <input type="number" id="transfer-amount" step="0.0001" placeholder="0.00" style="font-size:1.1rem;">
+            <input type="number" id="transfer-amount" step="0.0001" placeholder="0.00">
         </div>
-
-        <button onclick="executeTransfer()" class="btn-buy" style="background: var(--yellow); color:#000; margin-top:15px;">
-            CONFIRM TRANSFER
-        </button>
+        <button onclick="executeTransfer()" class="btn-buy" style="background: var(--yellow); color:#000;">CONFIRM TRANSFER</button>
         <button onclick="closeModals()" style="background:none; border:none; color:#94a3b8; width:100%; margin-top:10px; cursor:pointer;">Cancel</button>
     </div>
 
-    <!-- ORDER MODAL - GIỮ NGUYÊN -->
     <div id="order-modal">
         <h2 style="color:var(--cyan); margin-bottom:15px; font-size:1.1rem;">📦 Shipping & Customization</h2>
         <input type="text" id="order-item" readonly style="color:var(--yellow); font-weight:bold;">
@@ -217,7 +183,6 @@
         <button onclick="submitOrder()" class="btn-buy">COMPLETE ORDER</button>
     </div>
 
-    <!-- PROFILE MODAL - GIỮ NGUYÊN -->
     <div id="profile-modal">
         <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">👤 User Profile</h2>
         <div class="info-row"><span style="color:var(--cyan)">Gmail:</span><span id="prof-email" class="gradient-text" style="font-weight:bold"></span></div>
@@ -228,15 +193,14 @@
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 20px;">CLOSE PROFILE</button>
     </div>
 
-    <!-- SECURITY MODAL - GIỮ NGUYÊN -->
     <div id="security-modal">
         <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">🛡️ Why Trust Ogshop?</h2>
         <div class="security-point"><strong style="color: var(--yellow);">Embedded Hidden Wallet:</strong> No need to remember 12-word seed phrases...</div>
         <div class="security-point"><strong style="color: var(--yellow);">Absolute Ownership:</strong> Your wallet is generated from a unique combination...</div>
+        <div class="security-point"><strong style="color: var(--yellow);">0G Storage Protection:</strong> Order details are encrypted...</div>
         <button onclick="closeModals()" class="btn-buy">UNDERSTOOD</button>
     </div>
 
-    <!-- 0G PAY MODAL - GIỮ NGUYÊN -->
     <div id="pay-modal">
         <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">⚡ 0G Pay Center</h2>
         <div class="pay-step">
@@ -346,7 +310,6 @@
             } catch(e) {}
         }
 
-        /* --- LOGIC CHUYỂN TIỀN MỚI THÊM --- */
         function openTransferModal() {
             if (!state.fullWalletAddress) return alert("Please login first!");
             document.getElementById('transfer-to').value = "";
@@ -356,145 +319,48 @@
         }
 
         async function executeTransfer() {
-    const to = document.getElementById('transfer-to').value.trim();
-    const amt = document.getElementById('transfer-amount').value;
-    
-    if (!ethers.utils.isAddress(to)) return alert("Địa chỉ ví không hợp lệ!");
-    if (amt <= 0) return alert("Số tiền phải lớn hơn 0!");
-
-    try {
-        const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-        const val = ethers.utils.parseEther(amt.toString());
-        
-        // Lấy Gas Price hiện tại và tăng thêm 20% để đảm bảo giao dịch trôi chảy
-        const currentGasPrice = await provider.getGasPrice();
-        const optimizedGasPrice = currentGasPrice.mul(120).div(100);
-
-        let tx;
-
-        if (state.isGmailLogin) {
-            const pass = prompt("Nhập mật khẩu ví Hidden Wallet:");
-            if (!pass) return;
-
-            const wallet = new ethers.Wallet(
-                ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), 
-                provider
-            );
-
-            if (wallet.address !== state.fullWalletAddress) return alert("Mật khẩu sai!");
-
-            // Bổ sung GasLimit và GasPrice thủ công để tránh lỗi "processing response"
-            tx = await wallet.sendTransaction({
-                to: to,
-                value: val,
-                gasLimit: 60000, 
-                gasPrice: optimizedGasPrice
-            });
-        } else {
-            const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer = web3Provider.getSigner();
-            
-            tx = await signer.sendTransaction({
-                to: to,
-                value: val,
-                gasPrice: optimizedGasPrice
-            });
+            const to = document.getElementById('transfer-to').value.trim();
+            const amt = document.getElementById('transfer-amount').value;
+            if (!ethers.utils.isAddress(to)) return alert("Địa chỉ không hợp lệ!");
+            if (amt <= 0) return alert("Số tiền phải lớn hơn 0!");
+            try {
+                const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+                const val = ethers.utils.parseEther(amt.toString());
+                const gasPrice = (await provider.getGasPrice()).mul(120).div(100);
+                let tx;
+                if (state.isGmailLogin) {
+                    const pass = prompt("Nhập mật khẩu ví Hidden Wallet:");
+                    if (!pass) return;
+                    const wallet = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), provider);
+                    if (wallet.address !== state.fullWalletAddress) return alert("Sai mật khẩu!");
+                    tx = await wallet.sendTransaction({ to, value: val, gasLimit: 60000, gasPrice });
+                } else {
+                    tx = await (new ethers.providers.Web3Provider(window.ethereum)).getSigner().sendTransaction({ to, value: val, gasPrice });
+                }
+                alert("Đã gửi! Hash: " + tx.hash);
+                await tx.wait(); alert("Thành công!"); syncBalance(); closeModals();
+            } catch (e) { alert("Lỗi: " + (e.reason || e.message)); }
         }
 
-        alert("Giao dịch đã được gửi! Đang chờ xác nhận...");
-        await tx.wait();
-        alert(`Chuyển thành công ${amt} OG!`);
-        
-        syncBalance();
-        closeModals();
-
-    } catch (e) {
-        console.error("Transfer Error:", e);
-        // Hiển thị thông báo lỗi chi tiết hơn nếu có
-        const errorMsg = e.reason || e.message || "Lỗi không xác định";
-        alert("Chuyển tiền thất bại: " + errorMsg);
-    }
-}
-        /* --- CÁC HÀM CŨ GIỮ NGUYÊN --- */
         async function initiatePayment(amount, itemName) {
-    if (!state.fullWalletAddress) return alert("Please login first!");
-    
-    try {
-        const val = ethers.utils.parseEther(amount.toString());
-        const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-        
-        
-        const currentGasPrice = await provider.getGasPrice();
-        
-        const optimizedGasPrice = currentGasPrice.mul(120).div(100);
-
-        let tx;
-        if (state.isGmailLogin) {
-            
-            const pass = prompt("Wallet Password:"); 
-            if (!pass) return;
-
-            const wallet = new ethers.Wallet(
-                ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), 
-                provider
-            );
-
-            if (wallet.address !== state.fullWalletAddress) return alert("Wrong password!");
-
-            alert("Preparing transaction from Hidden Wallet...");
-
-            tx = await wallet.sendTransaction({
-                to: DESTINATION_WALLET,
-                value: val,
-                gasLimit: 50000, 
-                gasPrice: optimizedGasPrice 
-            });
-        } else {
-            
-            const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-            const signer = web3Provider.getSigner();
-            
-            tx = await signer.sendTransaction({
-                to: DESTINATION_WALLET,
-                value: val
-            });
+            if (!state.fullWalletAddress) return alert("Please login first!");
+            try {
+                const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+                const val = ethers.utils.parseEther(amount.toString());
+                const gasPrice = (await provider.getGasPrice()).mul(120).div(100);
+                let tx;
+                if (state.isGmailLogin) {
+                    const pass = prompt("Wallet Password:");
+                    if (!pass) return;
+                    const wallet = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), provider);
+                    tx = await wallet.sendTransaction({ to: DESTINATION_WALLET, value: val, gasLimit: 60000, gasPrice });
+                } else {
+                    tx = await (new ethers.providers.Web3Provider(window.ethereum)).getSigner().sendTransaction({ to: DESTINATION_WALLET, value: val, gasPrice });
+                }
+                state.lastTxHash = tx.hash; state.currentPurchasedItem = itemName;
+                await tx.wait(); syncBalance(); openOrderModal(itemName);
+            } catch (e) { alert("Error: " + (e.reason || e.message)); }
         }
-
-        alert("Transaction sent! Waiting for 0G Mainnet confirmation...");
-        state.lastTxHash = tx.hash;
-        state.currentPurchasedItem = itemName;
-        
-        await tx.wait(); 
-        syncBalance(); 
-        openOrderModal(itemName);
-
-    } catch (e) {
-        console.error("Payment Error:", e);
-        // Return a more user-friendly error message
-        const errorMsg = e.reason || e.message || "Unknown error";
-        alert("Payment Error: " + errorMsg);
-    }
-}
-        async function submitOrder() {
-          const name = document.getElementById('receiver-name').value;
-          const country = document.getElementById('country').value; 
-          const addr = document.getElementById('address').value;
-          const phone = document.getElementById('phone').value;
-          const note = document.getElementById('order-note').value || "None";
-
-    if (!name || !country || !addr || !phone) return alert("Please fill in all required fields (Name, Country, Address, Phone)!");
-
-    const data = { 
-        wallet: state.fullWalletAddress, 
-        item: state.currentPurchasedItem, 
-        receiver: name, 
-        country: country, 
-        address: addr, 
-        phone: phone, 
-        note: note, 
-        txHash: state.lastTxHash, 
-        timestamp: Date.now() 
-    };
 
         async function submitOrder() {
             const name = document.getElementById('receiver-name').value;
@@ -502,12 +368,14 @@
             const addr = document.getElementById('address').value;
             const phone = document.getElementById('phone').value;
             const note = document.getElementById('order-note').value || "None";
-            if (!name || !country || !addr || !phone) return alert("Fill required fields!");
+            if (!name || !country || !addr || !phone) return alert("Fill all required fields!");
             const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, country, address: addr, phone, note, txHash: state.lastTxHash, timestamp: Date.now() };
-            await database.ref('orders/').push(data);
-            const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})\n----------------------------------\n🚀 *Powered by SIC Community*`;
-            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
-            alert("Order Submitted!"); closeModals();
+            try {
+                await database.ref('orders/').push(data);
+                const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n👤 *Customer:* ${name}\n🛍️ *Product:* ${state.currentPurchasedItem}\n💸 [Transaction](${EXPLORER_URL}${state.lastTxHash})`;
+                new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
+                alert("Order Submitted Successfully!"); closeModals();
+            } catch (e) { alert("Error: " + e.message); }
         }
 
         async function openProfile() {
@@ -524,8 +392,8 @@
             document.getElementById('modal-overlay').style.display = 'block';
         }
 
-        function listenOrders() { database.ref('orders/').on('value', snap => { const data = snap.val(); if (data) { state.allOrders = Object.values(data).reverse(); renderLedger(); } }); }
-        function renderLedger() { const start = (state.currentPage - 1) * state.itemsPerPage; const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(start, start + state.itemsPerPage).map(o => `<tr><td style="color:var(--cyan);">${o.wallet.substring(0,6)}...</td><td>${o.item}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join(''); renderPagination(); }
+        function listenOrders() { database.ref('orders/').on('value', snap => { if (snap.val()) { state.allOrders = Object.values(snap.val()).reverse(); renderLedger(); } }); }
+        function renderLedger() { const start = (state.currentPage - 1) * state.itemsPerPage; document.getElementById('order-history-list').innerHTML = state.allOrders.slice(start, start + state.itemsPerPage).map(o => `<tr><td style="color:var(--cyan);">${o.wallet.substring(0,6)}...</td><td>${o.item}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank">View</a></td></tr>`).join(''); renderPagination(); }
         function renderPagination() { const total = Math.ceil(state.allOrders.length / state.itemsPerPage); const container = document.getElementById('pagination'); container.innerHTML = ""; if (total <= 1) return; for (let i = 1; i <= total; i++) { const btn = document.createElement('button'); btn.innerText = i; btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`; btn.onclick = () => { state.currentPage = i; renderLedger(); }; container.appendChild(btn); } }
         function openOrderModal(item) { document.getElementById('order-item').value = item; document.getElementById('order-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
         function openSecurity() { document.getElementById('security-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
