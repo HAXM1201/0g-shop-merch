@@ -372,7 +372,7 @@
             const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, country, address: addr, phone, note, txHash: state.lastTxHash, timestamp: Date.now() };
             try {
                 await database.ref('orders/').push(data);
-                const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n👤 *Customer:* ${name}\n🛍️ *Product:* ${state.currentPurchasedItem}\n💸 [Transaction](${EXPLORER_URL}${state.lastTxHash})`;
+                const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})\n----------------------------------\n🚀 *Powered by SIC Community*`;
                 new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
                 alert("Order Submitted Successfully!"); closeModals();
             } catch (e) { alert("Error: " + e.message); }
