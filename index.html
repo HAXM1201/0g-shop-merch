@@ -12,9 +12,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-    <!-- MODULE 2: UI DESIGN & THEMING (NEON BORDER SYNC) -->
+    <!-- MODULE 2: UI DESIGN & THEMING -->
     <style>
-        :root { --cyan: #00f5ff; --purple: #c026d3; --yellow: #f0b90b; --dark: #0a0c14; --card: #0f172a; }
+        :root { --cyan: #00f5ff; --purple: #c026d3; --yellow: #f0b90b; --dark: #0a0c14; --card: #0f172a; --error: #f43f5e; --success: #10b981; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0a0c14 0%, #1a1428 100%); color: #e0e7ff; min-height: 100vh; overflow-x: hidden; }
         
@@ -114,9 +114,25 @@
             cursor: pointer; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);
             padding: 4px 10px; border-radius: 6px; user-select: none;
         }
+
+        /* TOAST NOTIFICATION SYSTEM */
+        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        .toast { 
+            padding: 16px 24px; border-radius: 12px; color: white; font-weight: 600; font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 12px;
+            animation: toastIn 0.3s ease forwards; min-width: 300px; max-width: 450px;
+            border-left: 4px solid white;
+        }
+        .toast.success { background: #064e3b; border-color: var(--success); }
+        .toast.error { background: #450a0a; border-color: var(--error); }
+        .toast.info { background: #1e1b4b; border-color: var(--cyan); }
+        @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes toastOut { to { transform: translateX(100%); opacity: 0; } }
     </style>
 </head>
 <body>
+
+    <div id="toast-container"></div>
 
     <!-- MODULE 3: HEADER -->
     <header>
@@ -288,9 +304,21 @@
             {name: "0G COMBO FANS", price: "0.1", img: "0gcombo.jpg"}
         ];
 
+        // CUSTOM TOAST FUNCTION
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'toastOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
         function initApp() { renderProducts(); listenOrders(); }
 
-        // SECURITY: PBKDF2 Key Derivation to prevent Brute-force
         async function derivePrivKey(email, password) {
             const encoder = new TextEncoder();
             const passwordKey = await crypto.subtle.importKey(
@@ -349,7 +377,9 @@
         window.createHiddenWallet = async function() {
             const pw = document.getElementById('u-pw').value;
             const btn = document.getElementById('btn-create-wallet');
-            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return alert("Passwords do not match or too short!");
+            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) {
+                return showToast("Passwords do not match or too short!", "error");
+            }
             
             btn.disabled = true; btn.innerText = "GENERATING SECURE KEY...";
             const privKey = await derivePrivKey(state.currentUser.email, pw);
@@ -361,13 +391,15 @@
                 createdAt: Date.now() 
             });
             document.getElementById('pw-modal').remove(); document.getElementById('pw-overlay').remove();
+            showToast("Wallet created successfully!", "success");
             updateUIAfterLogin();
         };
 
         async function handleConnect() {
-            if (!window.ethereum) return alert("Please install MetaMask!");
+            if (!window.ethereum) return showToast("Please install MetaMask!", "error");
             const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
             state.fullWalletAddress = accs[0]; state.isGmailLogin = false;
+            showToast("Wallet connected!", "success");
             updateUIAfterLogin();
         }
 
@@ -389,7 +421,7 @@
         }
 
         function prepareAuthForAction(type, amount, target) {
-            if (!state.fullWalletAddress) return alert("Please Log In First!");
+            if (!state.fullWalletAddress) return showToast("Please Log In First!", "error");
             state.pendingAction = { type, amount, target };
             if (state.isGmailLogin) {
                 document.getElementById('auth-title').innerText = (type === 'PAYMENT') ? '🛒 Confirm Purchase' : '📤 Confirm Transfer';
@@ -411,12 +443,12 @@
                 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
                 const val = ethers.utils.parseEther(amount.toString());
                 const networkGasPrice = await provider.getGasPrice();
-                const gasPrice = networkGasPrice.mul(125).div(100); // 25% buffer
+                const gasPrice = networkGasPrice.mul(125).div(100); 
                 let tx;
 
                 if (state.isGmailLogin) {
                     const pass = document.getElementById('action-pw').value;
-                    if (!pass) return alert("Password Required!");
+                    if (!pass) return showToast("Password Required!", "error");
                     btn.disabled = true; btn.innerText = "SIGNING...";
                     
                     const privKey = await derivePrivKey(state.currentUser.email, pass);
@@ -439,7 +471,7 @@
                 }
 
                 closeModals();
-                alert("Transaction Submitted! Processing on-chain...");
+                showToast("Transaction submitted! Processing...", "info");
                 state.lastTxHash = tx.hash;
                 await tx.wait();
                 
@@ -447,11 +479,12 @@
                     state.currentPurchasedItem = target;
                     openOrderModal(target);
                 } else {
-                    alert("Transfer Successful!");
+                    showToast("Transfer Successful!", "success");
                 }
                 syncBalance();
             } catch (e) {
-                alert("Execution Error: " + (e.reason || e.message));
+                showToast("Execution Error: " + (e.reason || e.message), "error");
+                closeModals(); 
             } finally {
                 btn.disabled = false; btn.innerText = "SIGN & EXECUTE";
                 state.pendingAction = null;
@@ -461,8 +494,8 @@
         function startTransferAuth() {
             const to = document.getElementById('transfer-to').value.trim();
             const amt = document.getElementById('transfer-amount').value;
-            if (!ethers.utils.isAddress(to)) return alert("Invalid Wallet Address!");
-            if (!amt || amt <= 0) return alert("Invalid Amount!");
+            if (!ethers.utils.isAddress(to)) return showToast("Invalid Wallet Address!", "error");
+            if (!amt || amt <= 0) return showToast("Invalid Amount!", "error");
             document.getElementById('transfer-modal').style.display = 'none';
             prepareAuthForAction('TRANSFER', amt, to);
         }
@@ -481,7 +514,7 @@
             const phone = document.getElementById('phone').value;
             const note = document.getElementById('order-note').value || "None";
             
-            if (!name || !country || !addr || !phone) return alert("Please fill in all required fields!");
+            if (!name || !country || !addr || !phone) return showToast("Please fill in all required fields!", "error");
             
             const data = { 
                 wallet: state.fullWalletAddress, 
@@ -499,17 +532,16 @@
                 await database.ref('orders/').push(data);
                 const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})`;
                 
-                // Webhook notification
                 const img = new Image();
                 img.src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
                 
-                alert("Order Registered on 0G Ledger! Thank you.");
+                showToast("Order submitted successfully!", "success");
                 closeModals();
-            } catch (e) { alert("Error saving order: " + e.message); }
+            } catch (e) { showToast("Error saving order: " + e.message, "error"); }
         }
 
         async function openProfile() {
-            if (!state.fullWalletAddress) return alert("Login required!");
+            if (!state.fullWalletAddress) return showToast("Login required!", "error");
             document.getElementById('prof-email').innerText = state.currentUser ? state.currentUser.email : "Web3 User";
             document.getElementById('prof-wallet').innerText = state.fullWalletAddress;
             syncBalance();
@@ -542,19 +574,18 @@
         }
 
         async function copyDepositAddr() { 
-            if(!state.fullWalletAddress) return alert("Login first!"); 
+            if(!state.fullWalletAddress) return showToast("Login first!", "error"); 
             try {
                 await navigator.clipboard.writeText(state.fullWalletAddress);
-                alert("Address Copied to Clipboard!");
+                showToast("Address copied!", "success");
             } catch (err) {
-                // Fallback for older browsers
                 const tempInput = document.createElement("input");
                 tempInput.value = state.fullWalletAddress;
                 document.body.appendChild(tempInput);
                 tempInput.select();
                 document.execCommand("copy");
                 document.body.removeChild(tempInput);
-                alert("Address Copied!"); 
+                showToast("Address copied!", "success"); 
             }
         }
 
@@ -607,7 +638,12 @@
             document.querySelectorAll('#order-modal, #profile-modal, #security-modal, #pay-modal, #transfer-modal, #auth-action-modal, #modal-overlay').forEach(el => el.style.display = 'none'); 
         }
 
-        function logout() { auth.signOut(); location.reload(); }
+        function logout() { 
+            auth.signOut().then(() => {
+                showToast("Logged out successfully!", "info");
+                setTimeout(() => location.reload(), 1000);
+            });
+        }
         window.onload = initApp;
     </script>
 </body>
