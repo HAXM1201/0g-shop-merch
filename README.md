@@ -47,9 +47,12 @@ Ogshop is a private eligibility firewall and a seamless gateway for the **SIC Co
 ## 👥 Built by the SIC Community
 We currently own a **SIC validator** and two storage devices.
 
+**Storage wallet** 
 https://storagescan.0g.ai/miner/0x3cF588f1d8987635e18C34A78FDCf52ba21bC8D0
 https://storagescan.0g.ai/miner/0xDD7548148A3dC74334e0DD89b05a2c4C411eDDFa
-Validator Community: https://explorer.0g.ai/mainnet/validators/0x52523d99643ca0dc99c98034543380dff2250339/delegators
+
+**Validator SIC:**
+https://explorer.0g.ai/mainnet/validators/0x52523d99643ca0dc99c98034543380dff2250339/delegators
 
 ---
 *Developed by HALN & SIC Community for 0G APAC Hackathon 2026.*
