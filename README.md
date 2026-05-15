@@ -6,7 +6,7 @@
 
 ## 📺 Project Demo Video
 **[Click to Watch our 3-min Pitch & Demo]**
-[*(Sếp dán link video X hoặc Youtube của sếp vào đây)*](https://x.com/haxmln/status/2054851721634238713?s=20)
+https://x.com/haxmln/status/2054851721634238713?s=20
 
 ---
 
