@@ -461,15 +461,16 @@
             const country = document.getElementById('country').value; 
             const addr = document.getElementById('address').value;
             const phone = document.getElementById('phone').value;
-            if (!name || !country || !addr || !phone) return showToast("Fill all fields!", "error");
-            const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, country, address: addr, phone, note: document.getElementById('order-note').value, txHash: state.lastTxHash, timestamp: Date.now() };
+            const note = document.getElementById('order-note').value || "None";
+            if (!name || !country || !addr || !phone) return alert("Please fill in all required fields!");
+            const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, country, address: addr, phone, note, txHash: state.lastTxHash, timestamp: Date.now() };
             try {
                 await database.ref('orders/').push(data);
-                const msg = `📦 *NEW ORDER*\n👤 *Customer:* ${name}\n🛍️ *Item:* ${state.currentPurchasedItem}\n💸 [TX](${EXPLORER_URL}${state.lastTxHash})`;
+                const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})`;
                 new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
-                showToast("Order Successful!", "success");
+                alert("Order Submitted Successfully!");
                 closeModals();
-            } catch (e) { showToast("Save Error!", "error"); }
+            } catch (e) { alert("Error saving order: " + e.message); }
         }
 
         async function openProfile() {
