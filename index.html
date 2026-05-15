@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/@0glabs/0g-storage-js@0.2.1/dist/index.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@0glabs/0g-storage-js@0.2.1/dist/index.umd.min.js"></script>
 
     <style>
         :root { --cyan: #00f5ff; --purple: #c026d3; --yellow: #f0b90b; --dark: #0a0c14; --card: #0f172a; --error: #f43f5e; --success: #10b981; }
@@ -25,6 +25,7 @@
             display: inline-block;
         }
 
+        /* NEON BORDER */
         .card {
             position: relative;
             background: var(--card);
@@ -304,6 +305,7 @@
                 </div>
             </div>
         </div>
+
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 30px;">CLOSE CLOUD CENTER</button>
     </div>
 
@@ -325,6 +327,12 @@
                 <span style="color: #e0e7ff;">0G Private Cloud is currently in <strong>Alpha stage</strong>. Direct file uploading to SIC Miner nodes via 0G Storage SDK is operational, but advanced features like "Folder Sync" and "File Preview" are still under active construction.</span>
             </div>
         </div>
+        <div class="security-point">
+            <strong style="color: var(--yellow);">On-chain Transparency:</strong> 
+            All transactions are executed on the <strong>0G Mainnet</strong>. 100% transparency is ensured via the public Ledger, providing both buyers and sellers with indisputable proof of transaction.
+        </div>
+        <button onclick="closeModals()" class="btn-buy" style="margin-top: 10px;">EXPLORE NOW</button>
+    </div>
         <div class="security-point">
             <strong style="color: var(--yellow);">On-chain Transparency:</strong> 
             All transactions are executed on the <strong>0G Mainnet</strong>. 100% transparency is ensured via the public Ledger, providing both buyers and sellers with indisputable proof of transaction.
@@ -538,8 +546,14 @@
 
         async function performActual0GUpload(file, wallet) {
             const status = document.getElementById('upload-status');
+            
+            // KIỂM TRA SDK CÓ TẢI ĐƯỢC KHÔNG TRƯỚC KHI CHẠY
             const ZgSDK = window.ZgStorage;
-            if (!ZgSDK) { status.innerHTML = `<span style="color:var(--error)">❌ SDK Error.</span>`; return; }
+            if (!ZgSDK) { 
+                status.innerHTML = `<span style="color:var(--error)">❌ SDK Error: Library not detected. Please refresh.</span>`; 
+                return; 
+            }
+
             try {
                 status.innerHTML = `<span style="color:var(--cyan)">⏳ Uploading file: ${file.name}...</span>`;
                 const storage = new ZgSDK.Indexer(MINER_NODES[0]); 
