@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/@0glabs/0g-storage-js@0.2.1/dist/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@0glabs/0g-storage-js@0.2.1/dist/index.umd.js"></script>
 
     <style>
         :root { --cyan: #00f5ff; --purple: #c026d3; --yellow: #f0b90b; --dark: #0a0c14; --card: #0f172a; --error: #f43f5e; --success: #10b981; }
@@ -37,51 +38,49 @@
                               linear-gradient(135deg, var(--cyan), var(--purple));
             background-origin: border-box;
             background-clip: padding-box, border-box;       
-            box-shadow: inset 0 0 15px rgba(0, 245, 255, 0.1), 0 0 25px rgba(0, 245, 255, 0.2) !important;
+            box-shadow: 
+                inset 0 0 15px rgba(0, 245, 255, 0.1), 
+                0 0 25px rgba(0, 245, 255, 0.2) !important;
             transition: 0.3s;
         }
 
-        /* HEADER OPTIMIZED - PILL STYLE & BLUR */
-        header { 
-            position: sticky; top: 0; z-index: 2000; 
-            background: rgba(10, 12, 20, 0.8); 
-            backdrop-filter: blur(20px); 
-            border-bottom: 1px solid rgba(0, 245, 255, 0.15); 
-            padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; 
-        }
+        header { position: sticky; top: 0; z-index: 1000; background: rgba(10, 12, 20, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0, 245, 255, 0.15); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
         .logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(90deg, #00f5ff, #c026d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
         
-        .slogan { font-size: 1.1rem; font-weight: 900; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; border-left: 3px solid var(--cyan); padding-left: 15px; }
+        .slogan { 
+            font-size: 1.1rem; font-weight: 900; color: var(--cyan); letter-spacing: 3px; text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 245, 255, 0.6), 0 0 20px rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan); padding-left: 15px; margin: 0 20px;
+        }
 
         .auth-buttons { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .btn-auth { 
-            padding: 8px 18px; border-radius: 99px; /* Pill Shape */
-            font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 0.8rem; border: none; height: 40px; display: flex; align-items: center; justify-content: center; gap: 8px; 
-        }
-        #google-login-btn { background: #fff; color: #000; box-shadow: 0 4px 15px rgba(255,255,255,0.1); }
-        #connect-btn { background: transparent; border: 1.5px solid var(--cyan); color: var(--cyan); }
+        .btn-auth { padding: 10px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 0.85rem; border: none; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        #google-login-btn { background: #4285F4; color: white; min-width: 130px; }
+        #connect-btn { background: transparent; border: 1.5px solid var(--cyan); color: var(--cyan); min-width: 150px; }
+        #connect-btn:hover { background: var(--cyan); color: #000; }
 
-        /* SIDEBAR - HIGH CONTRAST & ICONS */
-        .sidebar { position: fixed; left: 0; top: 70px; bottom: 0; width: 220px; background: rgba(10, 12, 20, 0.95); border-right: 1px solid rgba(0, 245, 255, 0.15); padding: 25px 15px; transition: 0.3s; z-index: 1000; }
-        .nav-item { 
-            display: flex; align-items: center; gap: 12px; 
-            padding: 14px 15px; border-radius: 12px; margin-bottom: 8px; 
-            color: #fff; /* White text for clarity */
-            cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: 0.2s; 
-        }
-        .nav-item i { font-style: normal; font-size: 1.2rem; }
-        .nav-item:hover, .nav-item.active { background: rgba(0,245,255,0.1); color: var(--cyan); }
+        /* SIDEBAR & NAVIGATION */
+        .sidebar { position: fixed; left: 0; top: 68px; bottom: 0; width: 220px; background: rgba(10, 12, 20, 0.95); border-right: 1px solid rgba(0, 245, 255, 0.15); padding: 20px 15px; transition: 0.3s; z-index: 999; }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 15px; border-radius: 10px; margin-bottom: 5px; color: #94a3b8; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+        .nav-item.active { background: rgba(0,245,255,0.1); color: var(--cyan); }
 
         .main { margin-left: 220px; padding: 25px 30px; transition: 0.3s; }
         .dashboard-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 24px; align-items: start; }
         
-        /* WALLET BOX */
         .wallet-info-box { margin-top: 10px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px dashed rgba(0,245,255,0.2); }
-        .balance-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
-        .balance-val { font-size: 2.5rem; font-weight: 800; }
-        .address-val { font-family: monospace; font-size: 0.85rem; word-break: break-all; margin-top: 8px; font-weight: 600; opacity: 0.9; }
+        .balance-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 100%; flex-wrap: wrap; }
+        .balance-val { font-size: 2.5rem; font-weight: 800; margin: 5px 0; }
+        .address-val { font-family: monospace; font-size: 0.85rem; word-break: break-all; margin-top: 8px; font-weight: 600; }
 
-        .transfer-btn { background: var(--yellow); color: #000; font-weight: 900; padding: 12px 25px; border-radius: 15px; font-size: 0.9rem; border: none; cursor: pointer; }
+        .transfer-btn { 
+            background: var(--yellow); color: #000; font-weight: 900; 
+            padding: 12px 25px; border-radius: 15px; font-size: 0.9rem; 
+            border: none; cursor: pointer; transition: 0.3s; 
+            box-shadow: 0 4px 15px rgba(240, 185, 11, 0.3);
+            text-transform: uppercase;
+        }
+        .transfer-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
         /* PRODUCT GRID */
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-top: 20px; }
@@ -100,20 +99,6 @@
         .page-btn { padding: 5px 12px; background: rgba(0,245,255,0.1); border: 1px solid var(--cyan); color: var(--cyan); border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
         .page-btn.active { background: var(--cyan); color: #000; }
 
-        /* RESPONSIVE - MOBILE OPTIMIZATION */
-        @media (max-width: 992px) {
-            .sidebar { width: 70px; padding: 20px 5px; }
-            .sidebar span { display: none; } /* Hide text, show only icons on mobile */
-            .nav-item { justify-content: center; padding: 18px 0; }
-            .main { margin-left: 70px; padding: 15px; }
-            .dashboard-grid { grid-template-columns: 1fr; }
-            header { padding: 10px 15px; }
-            .slogan { display: none; } 
-            .balance-val { font-size: 1.8rem; }
-            .logo { font-size: 1.2rem; }
-            .cloud-container { grid-template-columns: 1fr; }
-        }
-
         /* MODALS */
         [id$="-modal"] { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
@@ -126,6 +111,19 @@
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2999; backdrop-filter: blur(5px); }
         input, textarea { width: 100%; padding: 12px; background: #1e2937; border: 1px solid #334155; color: white; border-radius: 10px; margin-bottom: 12px; outline: none; }
         
+        /* RESPONSIVE OPTIMIZATION */
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); width: 0; padding: 0; }
+            .main { margin-left: 0; padding: 15px; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .slogan { display: none; }
+            header { padding: 10px 15px; }
+            .balance-val { font-size: 1.8rem; }
+            .logo { font-size: 1.2rem; }
+            .auth-buttons { gap: 5px; }
+            .btn-auth { padding: 5px 12px; font-size: 0.75rem; height: 36px; }
+        }
+
         .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.9rem; }
         .my-orders-list { max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px; margin-top: 10px; }
         .order-item-mini { font-size: 0.8rem; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; }
@@ -141,6 +139,8 @@
 
         /* CLOUD STORAGE UI */
         .cloud-container { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; margin-top: 20px; }
+        @media (max-width: 768px) { .cloud-container { grid-template-columns: 1fr; } }
+        
         .upload-zone { 
             border: 2px dashed var(--cyan); border-radius: 20px; padding: 40px 20px; 
             text-align: center; background: rgba(0, 245, 255, 0.05); transition: 0.3s;
@@ -161,6 +161,7 @@
 
         /* TOAST SYSTEM */
         #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        @media (max-width: 768px) { #toast-container { left: 24px; right: 24px; bottom: 10px; } }
         .toast { padding: 16px 24px; border-radius: 12px; color: white; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: toastIn 0.3s ease forwards; min-width: 250px; border-left: 4px solid white; }
         .toast.success { background: #064e3b; border-color: var(--success); }
         .toast.error { background: #450a0a; border-color: var(--error); }
@@ -174,45 +175,44 @@
     <div id="toast-container"></div>
 
     <header>
-        <div class="logo gradient-text" onclick="location.reload()">Ogshop.online</div>
+        <div class="logo" onclick="location.reload()">Ogshop.online</div>
         <div class="slogan gradient-text" style="border: none; text-shadow: none;">
             0G-BRIDGING THE DIGITAL AND PHYSICAL
         </div>
 
         <div class="auth-buttons">
             <button id="google-login-btn" class="btn-auth">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> <span>Gmail Login</span>
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16"> Gmail Login
             </button>
-            <button id="connect-btn" class="btn-auth" onclick="handleConnect()">Wallet</button>
+            <button id="connect-btn" class="btn-auth" onclick="handleConnect()">CONNECT WALLET</button>
             
             <div id="wallet-info" style="display:none; align-items:center; gap:10px;">
-                <div id="gmail-display" style="font-size:0.75rem; background:rgba(0,245,255,0.1); padding:8px 15px; border-radius:9999px; color:var(--cyan); font-weight: bold;"></div>
-                <button onclick="logout()" style="border:none; color:#f43f5e; background:none; font-size:0.75rem; font-weight:bold; cursor:pointer;">Sign Out</button>
+                <div id="gmail-display" style="font-size:0.85rem; background:rgba(0,245,255,0.1); padding:8px 15px; border-radius:9999px; color:var(--cyan); font-weight: bold;"></div>
+                <button onclick="logout()" style="background:none; border:1px solid #f43f5e; color:#f43f5e; padding:6px 12px; border-radius:9999px; font-size:0.7rem; cursor:pointer;">LOGOUT</button>
             </div>
         </div>
     </header>
 
     <div class="sidebar">
-        <div class="nav-item active" onclick="location.reload()"><i>🏠</i> <span>Dashboard</span></div>
-        <div class="nav-item" onclick="openCloudModal()"><i>☁️</i> <span>0G Private Cloud</span></div>
-        <div class="nav-item" onclick="openProfile()"><i>👤</i> <span>My Profile</span></div>
-        <div class="nav-item" onclick="openSecurity()"><i>🛡️</i> <span>Security Center</span></div>
-        <div class="nav-item" onclick="openPay()"><i>⚡</i> <span>0G Pay Center</span></div>
+        <div class="nav-item active" onclick="location.reload()">🏠 Dashboard</div>
+        <div class="nav-item" onclick="openCloudModal()">☁️ 0G Private Cloud</div>
+        <div class="nav-item" onclick="openProfile()">👤 My Profile & Wallet</div>
+        <div class="nav-item" onclick="openSecurity()">🛡️ Security Center</div>
+        <div class="nav-item" onclick="openPay()">⚡ 0G Pay Center</div>
     </div>
 
     <div class="main">
         <div class="dashboard-grid">
-            <div class="left-col">
+            <div>
                 <div class="card" style="margin-bottom: 20px;">
                     <div style="color:var(--cyan); font-weight:bold; font-size:0.9rem;">💎 Embedded Wallet (0G Mainnet)</div>
                     <div class="wallet-info-box">
+                        <div style="color:#94a3b8; font-size:0.8rem;">Available Balance</div>
                         <div class="balance-row">
-                            <div>
-                                <div style="color:#94a3b8; font-size:0.8rem;">Available Balance</div>
-                                <div class="balance-val gradient-text" id="balance-og">0.0000 OG</div>
-                            </div>
+                            <div class="balance-val gradient-text" id="balance-og">0.0000 OG</div>
                             <button onclick="openTransferModal()" class="transfer-btn">📤 TRANSFER</button>
                         </div>
+                        <div style="color:#94a3b8; font-size:0.8rem; margin-top:12px;">Active Address</div>
                         <div class="address-val gradient-text" id="address-full">Not Connected</div>
                     </div>
                 </div>
@@ -222,7 +222,7 @@
                 </div>
             </div>
 
-            <div class="right-col">
+            <div>
                 <div class="card" style="background: rgba(240, 185, 11, 0.05); border-color: rgba(240, 185, 11, 0.2); margin-bottom: 20px;">
                     <div style="color:var(--yellow); font-weight:bold; font-size:1.2rem; margin-bottom: 8px;">IMPORTANT NOTICE:</div>
                     <p style="font-size:1rem; color:var(--cyan); line-height:1.5;">This is a blockchain experimental project by the SIC community. All items and prices are for testing purposes regarding technology and transaction processes.</p>
@@ -309,6 +309,44 @@
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 30px;">CLOSE CLOUD CENTER</button>
     </div>
 
+    <div id="auth-action-modal">
+        <h2 id="auth-title" class="gradient-text" style="font-size: 1.3rem; margin-bottom:10px;">🔐 Verify Wallet</h2>
+        <p id="auth-desc" style="font-size:0.85rem; color:#94a3b8; margin-bottom:20px;">Confirm security using your wallet password.</p>
+        <div class="pw-container">
+            <input type="password" id="action-pw" placeholder="Enter Wallet Password">
+            <span class="pw-toggle" onclick="togglePwVisibility(event, 'action-pw')">SHOW</span>
+        </div>
+        <button id="btn-confirm-action" class="btn-buy" style="background: var(--cyan); color:#000; margin-top:10px;">SIGN & EXECUTE</button>
+        <button onclick="closeModals()" style="background:none; border:none; color:#94a3b8; width:100%; margin-top:10px; cursor:pointer;">Cancel</button>
+    </div>
+
+    <div id="transfer-modal">
+        <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">📤 Transfer Funds</h2>
+        <input type="text" id="transfer-to" placeholder="Recipient Address (0x...)">
+        <input type="number" id="transfer-amount" step="0.0001" placeholder="Amount (OG)">
+        <button onclick="startTransferAuth()" class="btn-buy" style="background: var(--yellow); color:#000;">CONFIRM TRANSFER</button>
+    </div>
+
+    <div id="order-modal">
+        <h2 style="color:var(--cyan); margin-bottom:15px; font-size:1.1rem;">📦 Shipping & Customization</h2>
+        <input type="text" id="order-item" readonly style="color:var(--yellow); font-weight:bold;">
+        <input type="text" id="receiver-name" placeholder="Recipient Full Name">
+        <input type="text" id="country" placeholder="Country (e.g. Vietnam, USA...)">
+        <textarea id="address" rows="2" placeholder="Full Delivery Address"></textarea>
+        <input type="tel" id="phone" placeholder="Phone Number">
+        <textarea id="order-note" rows="2" placeholder="Note (Size, Color, Special request...)"></textarea>
+        <button onclick="submitOrder()" class="btn-buy">COMPLETE ORDER</button>
+    </div>
+
+    <div id="profile-modal">
+        <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">👤 User Profile</h2>
+        <div class="info-row"><span style="color:var(--cyan)">Gmail:</span><span id="prof-email" class="gradient-text" style="font-weight:bold"></span></div>
+        <div class="info-row"><span style="color:var(--cyan)">Wallet:</span><span id="prof-wallet" class="gradient-text" style="font-size:1rem; font-family:monospace"></span></div>
+        <div style="margin-top:20px; color:var(--cyan); font-weight:bold; font-size:0.9rem;">📦 My Orders History</div>
+        <div class="my-orders-list" id="my-orders-history"></div>
+        <button onclick="closeModals()" class="btn-buy" style="margin-top: 20px;">CLOSE PROFILE</button>
+    </div>
+
     <div id="security-modal">
         <h2 class="gradient-text" style="font-size: 1.5rem; margin-bottom:20px;">🛡️ Ogshop Tech & Security</h2>
         <div class="security-point">
@@ -333,50 +371,6 @@
         </div>
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 10px;">EXPLORE NOW</button>
     </div>
-        <div class="security-point">
-            <strong style="color: var(--yellow);">On-chain Transparency:</strong> 
-            All transactions are executed on the <strong>0G Mainnet</strong>. 100% transparency is ensured via the public Ledger, providing both buyers and sellers with indisputable proof of transaction.
-        </div>
-        <button onclick="closeModals()" class="btn-buy" style="margin-top: 10px;">EXPLORE NOW</button>
-    </div>
-
-    <div id="auth-action-modal">
-        <h2 id="auth-title" class="gradient-text" style="font-size: 1.3rem; margin-bottom:10px;">🔐 Verify Wallet</h2>
-        <p id="auth-desc" style="font-size:0.85rem; color:#94a3b8; margin-bottom:20px;">Confirm security using your wallet password.</p>
-        <div class="pw-container">
-            <input type="password" id="action-pw" placeholder="Enter Wallet Password">
-            <span class="pw-toggle" onclick="togglePwVisibility(event, 'action-pw')">SHOW</span>
-        </div>
-        <button id="btn-confirm-action" class="btn-buy" style="background: var(--cyan); color:#000; margin-top:10px;">SIGN & EXECUTE</button>
-        <button onclick="closeModals()" style="background:none; border:none; color:#94a3b8; width:100%; margin-top:10px; cursor:pointer;">Cancel</button>
-    </div>
-
-    <div id="transfer-modal">
-        <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">📤 Transfer Funds</h2>
-        <input type="text" id="transfer-to" placeholder="Recipient Address (0x...)">
-        <input type="number" id="transfer-amount" step="0.0001" placeholder="Amount (OG)">
-        <button onclick="startTransferAuth()" class="btn-buy" style="background: var(--yellow); color:#000;">CONFIRM TRANSFER</button>
-    </div>
-
-    <div id="order-modal">
-        <h2 style="color:var(--cyan); margin-bottom:15px; font-size:1.1rem;">📦 Shipping & Customization</h2>
-        <input type="text" id="order-item" readonly style="color:var(--yellow); font-weight:bold;">
-        <input type="text" id="receiver-name" placeholder="Recipient Full Name">
-        <input type="text" id="country" placeholder="Country">
-        <textarea id="address" rows="2" placeholder="Full Delivery Address"></textarea>
-        <input type="tel" id="phone" placeholder="Phone Number">
-        <textarea id="order-note" rows="2" placeholder="Note (Size, Color, Special request...)"></textarea>
-        <button onclick="submitOrder()" class="btn-buy">COMPLETE ORDER</button>
-    </div>
-
-    <div id="profile-modal">
-        <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">👤 User Profile</h2>
-        <div class="info-row"><span style="color:var(--cyan)">Gmail:</span><span id="prof-email" class="gradient-text" style="font-weight:bold"></span></div>
-        <div class="info-row"><span style="color:var(--cyan)">Wallet:</span><span id="prof-wallet" class="gradient-text" style="font-size:1rem; font-family:monospace"></span></div>
-        <div style="margin-top:20px; color:var(--cyan); font-weight:bold; font-size:0.9rem;">📦 My Orders History</div>
-        <div class="my-orders-list" id="my-orders-history"></div>
-        <button onclick="closeModals()" class="btn-buy" style="margin-top: 20px;">CLOSE PROFILE</button>
-    </div>
 
     <div id="pay-modal">
         <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">⚡ 0G Pay Center</h2>
@@ -397,6 +391,8 @@
         const RPC_URL = "https://evmrpc.0g.ai";
         const EXPLORER_URL = "https://explorer.0g.ai/tx/";
         const PROXY_URL = 'https://script.google.com/macros/s/AKfycbzoPZZbkaCE4lNjfiUNbwpPgKlIDIKgt54Udv_IVCLICoZb0RYsV3ZTTFxXqISq0ajKLw/exec';
+        
+        // MINER NODES SIC COMMUNITY
         const MINER_NODES = ["http://rpc.0gshop.online"];
 
         firebase.initializeApp({
@@ -424,17 +420,20 @@
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `toast ${type === 'success' ? 'success' : 'info'}`;
-            toast.style.background = type === 'success' ? '#064e3b' : (type === 'error' ? '#450a0a' : '#1e1b4b');
+            toast.className = `toast ${type}`;
             toast.innerText = message;
             container.appendChild(toast);
             setTimeout(() => {
-                toast.style.opacity = '0';
+                toast.style.animation = 'toastOut 0.3s ease forwards';
                 setTimeout(() => toast.remove(), 300);
             }, 4000);
         }
 
         function initApp() { renderProducts(); listenOrders(); setupDragAndDrop(); }
+
+        function derivePrivKey(email, password) {
+            return ethers.utils.id(email.toLowerCase() + "|" + password + "|SIC-0G-v3");
+        }
 
         function renderProducts() {
             document.getElementById('product-grid').innerHTML = products.map(p => `
@@ -471,7 +470,7 @@
         window.createHiddenWallet = async function() {
             const pw = document.getElementById('u-pw').value;
             if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return showToast("Invalid Password!", "error");
-            state.fullWalletAddress = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-v3")).address;
+            state.fullWalletAddress = new ethers.Wallet(derivePrivKey(state.currentUser.email, pw)).address;
             await database.ref('users/' + state.currentUser.uid).set({ email: state.currentUser.email, walletAddress: state.fullWalletAddress, createdAt: Date.now() });
             document.getElementById('pw-modal').remove(); document.getElementById('pw-overlay').remove();
             showToast("Wallet created!", "success");
@@ -507,6 +506,9 @@
             if (!state.fullWalletAddress) return showToast("Login first!", "error");
             state.pendingAction = { type, amount, target };
             if (state.isGmailLogin) {
+                document.getElementById('auth-title').innerText = (type === 'PAYMENT') ? '🛒 Confirm Purchase' : (type === 'UPLOAD' ? '☁️ Confirm Cloud Upload' : '📤 Confirm Transfer');
+                document.getElementById('auth-desc').innerText = (type === 'UPLOAD') ? `Authorize 0G Storage fees for your file.` : `Send ${amount} OG. Enter password to sign.`;
+                document.getElementById('action-pw').value = "";
                 document.getElementById('auth-action-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
                 document.getElementById('btn-confirm-action').onclick = () => executeFinalAction();
@@ -519,6 +521,7 @@
             const btn = document.getElementById('btn-confirm-action');
             try {
                 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+                const val = ethers.utils.parseEther(amount.toString());
                 const gasPrice = (await provider.getGasPrice()).mul(120).div(100);
                 let tx;
                 const pass = document.getElementById('action-pw').value;
@@ -526,13 +529,13 @@
                 btn.disabled = true; btn.innerText = "SIGNING...";
 
                 if (state.isGmailLogin) {
-                    const wallet = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), provider);
+                    const wallet = new ethers.Wallet(derivePrivKey(state.currentUser.email, pass), provider);
                     if (wallet.address.toLowerCase() !== state.fullWalletAddress.toLowerCase()) throw new Error("Incorrect Password!");
                     if (type === 'UPLOAD') { await performActual0GUpload(target, wallet); closeModals(); return; }
-                    tx = await wallet.sendTransaction({ to: (type === 'PAYMENT') ? DESTINATION_WALLET : target, value: ethers.utils.parseEther(amount.toString()), gasLimit: 80000, gasPrice });
+                    tx = await wallet.sendTransaction({ to: (type === 'PAYMENT') ? DESTINATION_WALLET : target, value: val, gasLimit: 80000, gasPrice });
                 } else {
                     const signer = (new ethers.providers.Web3Provider(window.ethereum)).getSigner();
-                    tx = await signer.sendTransaction({ to: (type === 'PAYMENT') ? DESTINATION_WALLET : target, value: ethers.utils.parseEther(amount.toString()), gasPrice });
+                    tx = await signer.sendTransaction({ to: (type === 'PAYMENT') ? DESTINATION_WALLET : target, value: val, gasPrice });
                 }
 
                 closeModals(); showToast("Transaction Submitted!", "info");
@@ -546,29 +549,22 @@
 
         async function performActual0GUpload(file, wallet) {
             const status = document.getElementById('upload-status');
-            
-            // KIỂM TRA SDK CÓ TẢI ĐƯỢC KHÔNG TRƯỚC KHI CHẠY
             const ZgSDK = window.ZgStorage;
-            if (!ZgSDK) { 
-                status.innerHTML = `<span style="color:var(--error)">❌ SDK Error: Library not detected. Please refresh.</span>`; 
-                return; 
-            }
-
+            if (!ZgSDK) { status.innerHTML = `<span style="color:var(--error)">❌ SDK Error. Trying to reload...</span>`; return; }
             try {
-                status.innerHTML = `<span style="color:var(--cyan)">⏳ Uploading file: ${file.name}...</span>`;
+                status.innerHTML = `<span style="color:var(--cyan)">⏳ Chunking file: ${file.name}...</span>`;
                 const storage = new ZgSDK.Indexer(MINER_NODES[0]); 
                 const uint8Data = new Uint8Array(await file.arrayBuffer());
+                status.innerHTML = `<span style="color:var(--yellow)">📝 Requesting Receipt...</span>`;
                 const result = await (await storage.upload(uint8Data, wallet)).wait();
-                status.innerHTML = `<div style="background:rgba(16,185,129,0.1); padding:15px; border-radius:10px; border:1px solid var(--success); margin-top:10px;"><span style="color:var(--success); font-weight:bold;">✅ SUCCESS!</span><br><small style="color:#94a3b8; word-break:break-all;">Hash: ${result.rootHash.substring(0,20)}...</small></div>`;
-                showToast("File secured on 0G!", "success");
-            } catch (err) { status.innerHTML = `<span style="color:var(--error)">❌ Failed: ${err.message}</span>`; }
+                status.innerHTML = `<div style="background:rgba(16,185,129,0.1); padding:15px; border-radius:10px; border:1px solid var(--success); margin-top:10px;"><span style="color:var(--success); font-weight:bold;">✅ SUCCESS!</span><br><small style="color:#94a3b8; word-break:break-all;">Hash: ${result.rootHash}</small></div>`;
+                showToast("Secured on 0G Storage!", "success");
+            } catch (err) { status.innerHTML = `<span style="color:var(--error)">❌ Upload failed: ${err.message}</span>`; }
         }
 
-        function handleFileUpload(files) { if (files.length > 0) prepareAuthForAction('UPLOAD', "0.0001", files[0]); }
-        
+        function handleFileUpload(files) { if (state.fullWalletAddress && files.length > 0) prepareAuthForAction('UPLOAD', "0.0001", files[0]); else if (!state.fullWalletAddress) showToast("Login first!", "error"); }
         function setupDragAndDrop() {
             const dropZone = document.getElementById('drop-zone');
-            if(!dropZone) return;
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, (ev) => { ev.preventDefault(); ev.stopPropagation(); }, false));
             ['dragenter', 'dragover'].forEach(e => dropZone.addEventListener(e, () => dropZone.style.background = 'rgba(0, 245, 255, 0.15)', false));
             ['dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, () => dropZone.style.background = 'rgba(0, 245, 255, 0.05)', false));
@@ -602,7 +598,7 @@
 
         async function openProfile() {
             if (!state.fullWalletAddress) return showToast("Login first!", "error");
-            document.getElementById('prof-email').innerText = state.currentUser ? state.currentUser.email : "MetaMask User";
+            document.getElementById('prof-email').innerText = state.currentUser ? state.currentUser.email : "MetaMask";
             document.getElementById('prof-wallet').innerText = state.fullWalletAddress;
             database.ref('orders/').once('value', snap => {
                 const data = snap.val(); const list = document.getElementById('my-orders-history'); list.innerHTML = "";
@@ -614,12 +610,13 @@
         function openSecurity() { document.getElementById('security-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
         function openPay() { document.getElementById('pay-deposit-addr').innerText = state.fullWalletAddress || "Not Connected"; document.getElementById('pay-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
         function openCloudModal() { document.getElementById('cloud-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
-        function openTransferModal() { document.getElementById('transfer-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
         async function copyDepositAddr() { if(state.fullWalletAddress) { await navigator.clipboard.writeText(state.fullWalletAddress); showToast("Copied!", "success"); } }
         function listenOrders() { database.ref('orders/').on('value', snap => { const d = snap.val(); if (d) { state.allOrders = Object.values(d).reverse(); renderLedger(); } }); }
-        function renderLedger() { const start = (state.currentPage - 1) * state.itemsPerPage; const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(start, start + state.itemsPerPage).map(o => `<tr><td style="color:var(--cyan); font-family:monospace;">${o.wallet.substring(0,6)}...</td><td>${o.item.substring(0,12)}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join(''); renderPagination(); }
+        function renderLedger() { const start = (state.currentPage - 1) * state.itemsPerPage; const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(start, start + state.itemsPerPage).map(o => `<tr><td style="color:var(--cyan); font-family:monospace;">${o.wallet.substring(0,6)}...</td><td>${o.item.substring(0,15)}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join(''); renderPagination(); }
         function renderPagination() { const total = Math.ceil(state.allOrders.length / state.itemsPerPage); const container = document.getElementById('pagination'); container.innerHTML = ""; if (total <= 1) return; for (let i = 1; i <= total; i++) { const btn = document.createElement('button'); btn.innerText = i; btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`; btn.onclick = () => { state.currentPage = i; renderLedger(); }; container.appendChild(btn); } }
-        function closeModals() { state.pendingAction = null; document.querySelectorAll('[id$="-modal"], #modal-overlay').forEach(el => el.style.display = 'none'); }
+        function openOrderModal(item) { document.getElementById('order-item').value = item; document.getElementById('order-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
+        function openTransferModal() { document.getElementById('transfer-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
+        function closeModals() { state.pendingAction = null; document.querySelectorAll('#order-modal, #profile-modal, #security-modal, #pay-modal, #transfer-modal, #auth-action-modal, #cloud-modal, #modal-overlay').forEach(el => el.style.display = 'none'); }
         function logout() { auth.signOut().then(() => location.reload()); }
         window.onload = initApp;
     </script>
