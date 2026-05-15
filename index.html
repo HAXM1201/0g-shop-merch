@@ -10,7 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/@0glabs/0g-storage-js@0.2.1/dist/index.umd.js"></script>
 
     <style>
@@ -25,6 +24,7 @@
             display: inline-block;
         }
 
+        /* NEON BORDER CARD */
         .card {
             position: relative;
             background: var(--card);
@@ -40,7 +40,7 @@
             transition: 0.3s;
         }
 
-        /* HEADER OPTIMIZED - PILL STYLE & BLUR */
+        /* HEADER PILL STYLE - MOBILE OPTIMIZED */
         header { 
             position: sticky; top: 0; z-index: 2000; 
             background: rgba(10, 12, 20, 0.8); 
@@ -49,24 +49,22 @@
             padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; 
         }
         .logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(90deg, #00f5ff, #c026d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
-        
         .slogan { font-size: 1.1rem; font-weight: 900; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; border-left: 3px solid var(--cyan); padding-left: 15px; }
 
         .auth-buttons { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .btn-auth { 
-            padding: 8px 18px; border-radius: 99px; /* Pill Shape */
+            padding: 8px 18px; border-radius: 99px;
             font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 0.8rem; border: none; height: 40px; display: flex; align-items: center; justify-content: center; gap: 8px; 
         }
         #google-login-btn { background: #fff; color: #000; box-shadow: 0 4px 15px rgba(255,255,255,0.1); }
         #connect-btn { background: transparent; border: 1.5px solid var(--cyan); color: var(--cyan); }
 
-        /* SIDEBAR - HIGH CONTRAST & ICONS */
+        /* SIDEBAR - HIGH CONTRAST */
         .sidebar { position: fixed; left: 0; top: 70px; bottom: 0; width: 220px; background: rgba(10, 12, 20, 0.95); border-right: 1px solid rgba(0, 245, 255, 0.15); padding: 25px 15px; transition: 0.3s; z-index: 1000; }
         .nav-item { 
             display: flex; align-items: center; gap: 12px; 
             padding: 14px 15px; border-radius: 12px; margin-bottom: 8px; 
-            color: #fff; /* White text for clarity */
-            cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: 0.2s; 
+            color: #fff; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: 0.2s; 
         }
         .nav-item i { font-style: normal; font-size: 1.2rem; }
         .nav-item:hover, .nav-item.active { background: rgba(0,245,255,0.1); color: var(--cyan); }
@@ -74,50 +72,59 @@
         .main { margin-left: 220px; padding: 25px; transition: 0.3s; }
         .dashboard-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 24px; align-items: start; }
         
-        /* WALLET BOX */
         .wallet-info-box { margin-top: 10px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px dashed rgba(0,245,255,0.2); }
         .balance-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
         .balance-val { font-size: 2.2rem; font-weight: 800; }
         .address-val { font-family: monospace; font-size: 0.75rem; word-break: break-all; margin-top: 8px; opacity: 0.8; }
-
         .transfer-btn { background: var(--yellow); color: #000; font-weight: 900; padding: 10px 20px; border-radius: 12px; font-size: 0.85rem; border: none; cursor: pointer; }
 
-        /* PRODUCT GRID */
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
-        .product-card { background: rgba(15, 23, 42, 0.7); border-radius: 15px; overflow: hidden; border: 1px solid rgba(148, 163, 184, 0.1); }
+        .product-card { background: rgba(15, 23, 42, 0.7); border-radius: 15px; overflow: hidden; border: 1px solid rgba(148, 163, 184, 0.1); transition: 0.3s; }
+        .product-card:hover { transform: translateY(-5px); border-color: var(--cyan); }
         .product-img { width: 100%; height: 180px; object-fit: cover; }
         .btn-buy { width: 100%; padding: 12px; background: linear-gradient(90deg, var(--cyan), #67e8f9); color: #000; font-weight: 900; border: none; border-radius: 10px; cursor: pointer; }
 
-        /* LEDGER */
         .ledger-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         .ledger-table th { text-align: left; padding: 10px; color: var(--yellow); border-bottom: 1px solid rgba(0,245,255,0.1); }
         .ledger-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        /* RESPONSIVE - MOBILE OPTIMIZATION */
+        /* CLOUD STORAGE UI */
+        .cloud-container { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; margin-top: 20px; }
+        .upload-zone { 
+            border: 2px dashed var(--cyan); border-radius: 20px; padding: 40px 20px; 
+            text-align: center; background: rgba(0, 245, 255, 0.05); transition: 0.3s;
+            cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .upload-zone:hover { background: rgba(0, 245, 255, 0.1); }
+        .comparison-table { width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .comp-header { display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: bold; background: #1e2937; padding: 10px 0; }
+        .comp-row { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid rgba(255,255,255,0.1); padding: 10px 0; }
+        .comp-item { text-align: center; font-size: 0.85rem; }
+
+        /* MOBILE OPTIMIZATION */
         @media (max-width: 992px) {
             .sidebar { width: 70px; padding: 20px 5px; }
-            .sidebar span { display: none; } /* Hide text, show only icons on mobile */
+            .sidebar span { display: none; }
             .nav-item { justify-content: center; padding: 18px 0; }
             .main { margin-left: 70px; padding: 15px; }
             .dashboard-grid { grid-template-columns: 1fr; }
             header { padding: 10px 15px; }
             .slogan { display: none; } 
-            .balance-val { font-size: 1.8rem; }
-            .logo { font-size: 1.2rem; }
         }
 
         /* MODALS */
         [id$="-modal"] { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: #0f172a; border: 2px solid var(--cyan); padding: 20px; border-radius: 20px; 
+            background: #0f172a; border: 2px solid var(--cyan); padding: 25px; border-radius: 20px; 
             width: 90%; max-width: 800px; z-index: 3000; max-height: 85vh; overflow-y: auto;
         }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2999; backdrop-filter: blur(5px); }
-        input, textarea { width: 100%; padding: 12px; background: #1e2937; border: 1px solid #334155; color: white; border-radius: 10px; margin-bottom: 12px; }
 
-        /* TOAST */
+        /* TOAST SYSTEM */
         #toast-container { position: fixed; bottom: 20px; right: 20px; left: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { padding: 12px 20px; border-radius: 10px; color: white; font-weight: 600; font-size: 0.85rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: toastIn 0.3s ease forwards; }
+        .toast { padding: 12px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: toastIn 0.3s ease forwards; text-align: center; }
+        .toast.success { background: #064e3b; border-left: 4px solid var(--success); }
+        .toast.info { background: #1e1b4b; border-left: 4px solid var(--cyan); }
         @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
@@ -187,7 +194,7 @@
                             <tbody id="order-history-list"></tbody>
                         </table>
                     </div>
-                    <div class="pagination" id="pagination" style="margin-top:10px; display:flex; gap:5px; justify-content:center;"></div>
+                    <div class="pagination" id="pagination"></div>
                 </div>
             </div>
         </div>
@@ -196,33 +203,52 @@
     <div class="modal-overlay" id="modal-overlay" onclick="closeModals()"></div>
 
     <div id="security-modal">
-        <h2 class="gradient-text" style="font-size: 1.3rem; margin-bottom:15px;">🛡️ Ogshop Tech & Security</h2>
+        <h2 class="gradient-text" style="font-size: 1.5rem; margin-bottom:20px;">🛡️ Ogshop Tech & Security</h2>
+        <div class="security-point">
+            <strong style="color: var(--yellow);">Web2-to-Web3 Seamless Gateway:</strong> 
+            We utilize <strong>Embedded Hidden Wallet</strong> technology. Your Gmail account acts as an intelligent key, making Web3 as simple as traditional e-commerce.
+        </div>
+        <div class="security-point">
+            <strong style="color: var(--yellow);">Self-Custody Ownership:</strong> 
+            Wallets are generated via secure Keccak256 hashing of your Email and Password. <strong>Ogshop never stores your keys.</strong>
+        </div>
         <div class="security-point">
             <strong style="color: var(--yellow);">0G Distributed Storage System:</strong> 
-            Data is encrypted and distributed across the global 0G Storage network.
+            Order data is encrypted and distributed across the global <strong>0G Storage</strong> network for permanent privacy.
             <div style="background: rgba(240, 185, 11, 0.1); border: 1px solid var(--yellow); padding: 10px; border-radius: 12px; margin-top: 10px; font-size: 0.75rem;">
-                <strong style="color: var(--yellow);">⚠️ DEVELOPMENT NOTICE:</strong> 
-                0G Private Cloud is in <strong>Alpha stage</strong>. Direct upload to SIC Miner nodes is operational.
+                <strong style="color: var(--yellow);">⚠️ ALPHA NOTICE:</strong> 0G Private Cloud direct upload is operational.
             </div>
         </div>
-        <button onclick="closeModals()" class="btn-buy" style="margin-top: 15px;">CLOSE</button>
+        <button onclick="closeModals()" class="btn-buy" style="margin-top: 15px;">EXPLORE NOW</button>
     </div>
 
     <div id="cloud-modal">
-        <h2 class="gradient-text" style="font-size: 1.3rem; margin-bottom:10px;">☁️ 0G Private Cloud</h2>
-        <div style="border: 2px dashed var(--cyan); padding: 30px; text-align: center; border-radius: 15px; cursor: pointer;" id="drop-zone" onclick="document.getElementById('file-input').click()">
-            <span style="font-size: 2rem;">📤</span>
-            <p style="margin-top: 10px; font-size: 0.9rem; font-weight:bold;">Tap to Upload to 0G Storage</p>
-            <input type="file" id="file-input" style="display: none;" onchange="handleFileUpload(this.files)">
+        <h2 class="gradient-text" style="font-size: 1.5rem; margin-bottom:10px;">☁️ 0G Private Cloud</h2>
+        <div class="cloud-container">
+            <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                <span style="font-size: 2.5rem;">📤</span>
+                <p style="margin-top: 10px; font-weight:bold;">Tap to Upload to 0G Storage</p>
+                <input type="file" id="file-input" style="display: none;" onchange="handleFileUpload(this.files)">
+            </div>
+            <div class="comparison-table">
+                <div class="comp-header"><div>Centralized</div><div style="color:var(--yellow)">0G Decentralized</div></div>
+                <div class="comp-row"><div>Monthly Rent</div><div>One-time Pay</div></div>
+                <div class="comp-row"><div>Privacy Risk</div><div>TEE Protected</div></div>
+            </div>
         </div>
-        <div id="upload-status" style="margin-top:10px; font-size:0.8rem; text-align:center; color:var(--cyan);"></div>
+        <div id="upload-status" style="margin-top:15px; font-size:0.8rem; text-align:center; color:var(--cyan);"></div>
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 15px;">CLOSE</button>
     </div>
 
     <div id="auth-action-modal">
-        <h2 class="gradient-text" style="font-size: 1.2rem; margin-bottom:10px;">🔐 Verify Wallet</h2>
-        <input type="password" id="action-pw" placeholder="Enter Password">
-        <button id="btn-confirm-action" class="btn-buy">SIGN & EXECUTE</button>
+        <h2 id="auth-title" class="gradient-text" style="font-size: 1.2rem; margin-bottom:10px;">🔐 Verify Wallet</h2>
+        <p id="auth-desc" style="font-size:0.8rem; opacity:0.8; margin-bottom:15px;"></p>
+        <div class="pw-container">
+            <input type="password" id="action-pw" placeholder="Enter Password">
+            <span class="pw-toggle" onclick="togglePwVisibility(event, 'action-pw')">SHOW</span>
+        </div>
+        <button id="btn-confirm-action" class="btn-buy" style="margin-top:10px;">SIGN & EXECUTE</button>
+        <button onclick="closeModals()" style="background:none; border:none; color:#94a3b8; width:100%; margin-top:10px; cursor:pointer; font-size:0.8rem;">Cancel</button>
     </div>
 
     <div id="transfer-modal">
@@ -244,15 +270,16 @@
 
     <div id="profile-modal">
         <h2 class="gradient-text" style="font-size: 1.3rem;">👤 Profile</h2>
-        <div id="prof-email" style="font-size:0.85rem; margin:10px 0;"></div>
-        <div id="prof-wallet" style="font-size:0.7rem; font-family:monospace; color:var(--cyan); word-break:break-all;"></div>
-        <button onclick="closeModals()" class="btn-buy" style="margin-top:15px;">CLOSE</button>
+        <div id="prof-email" style="margin:15px 0;"></div>
+        <div id="prof-wallet" style="font-size:0.75rem; font-family:monospace; color:var(--cyan); word-break:break-all; background:rgba(0,0,0,0.2); padding:10px; border-radius:10px;"></div>
+        <div class="my-orders-list" id="my-orders-history"></div>
+        <button onclick="closeModals()" class="btn-buy" style="margin-top:20px;">CLOSE</button>
     </div>
 
     <div id="pay-modal">
-        <h2 class="gradient-text" style="font-size: 1.3rem;">⚡ 0G Pay</h2>
-        <div id="pay-deposit-addr" style="font-size:0.7rem; font-family:monospace; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; word-break:break-all;"></div>
-        <button onclick="copyDepositAddr()" class="btn-buy" style="margin-top:10px;">COPY ADDRESS</button>
+        <h2 class="gradient-text" style="font-size: 1.3rem; margin-bottom:15px;">⚡ 0G Pay</h2>
+        <div id="pay-deposit-addr" style="font-size:0.75rem; font-family:monospace; background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; word-break:break-all; border: 1px dashed var(--cyan);"></div>
+        <button onclick="copyDepositAddr()" class="btn-buy" style="margin-top:15px;">COPY ADDRESS</button>
     </div>
 
     <script>
@@ -273,22 +300,10 @@
 
         let state = { fullWalletAddress: "", currentUser: null, isGmailLogin: false, currentPurchasedItem: "", lastTxHash: "", allOrders: [], currentPage: 1, itemsPerPage: 10, pendingAction: null };
 
-        const products = [
-            {name: "0G PANDA T-SHIRT", price: "0.04", img: "ao-0g.jpg"},
-            {name: "0G SNAPBACK", price: "0.03", img: "mu-0g.jpg"},
-            {name: "0G DEAI DESKMAT", price: "0.02", img: "lot-chuot-0g.jpg"},
-            {name: "0G TUMBLER", price: "0.05", img: "binh-nuoc.jpg"},
-            {name: "0G NOTEBOOK", price: "0.01", img: "sotay.jpg"},
-            {name: "0G PANDA NEON", price: "0.03", img: "panda.jpg"},
-            {name: "0G HOODIE", price: "0.05", img: "hoodie.jpg"},
-            {name: "0G COMBO FANS", price: "0.1", img: "0gcombo.jpg"}
-        ];
-
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type === 'success' ? 'success' : 'info'}`;
-            toast.style.background = type === 'success' ? '#064e3b' : '#1e1b4b';
             toast.innerText = message;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
@@ -296,7 +311,21 @@
 
         function initApp() { renderProducts(); listenOrders(); setupDragAndDrop(); }
 
+        function derivePrivKey(email, password) {
+            return ethers.utils.id(email.toLowerCase() + "|" + password + "|SIC-0G-v3");
+        }
+
         function renderProducts() {
+            const products = [
+                {name: "0G PANDA T-SHIRT", price: "0.04", img: "ao-0g.jpg"},
+                {name: "0G SNAPBACK", price: "0.03", img: "mu-0g.jpg"},
+                {name: "0G DEAI DESKMAT", price: "0.02", img: "lot-chuot-0g.jpg"},
+                {name: "0G TUMBLER", price: "0.05", img: "binh-nuoc.jpg"},
+                {name: "0G NOTEBOOK", price: "0.01", img: "sotay.jpg"},
+                {name: "0G PANDA NEON", price: "0.03", img: "panda.jpg"},
+                {name: "0G HOODIE", price: "0.05", img: "hoodie.jpg"},
+                {name: "0G COMBO FANS", price: "0.1", img: "0gcombo.jpg"}
+            ];
             document.getElementById('product-grid').innerHTML = products.map(p => `
                 <div class="product-card">
                     <img src="${p.img}" class="product-img">
@@ -307,10 +336,6 @@
                     </div>
                 </div>`).join('');
         }
-
-        document.getElementById('google-login-btn').addEventListener('click', () => {
-            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-        });
 
         auth.onAuthStateChanged(async (user) => {
             if (user) {
@@ -330,10 +355,11 @@
 
         window.createHiddenWallet = async function() {
             const pw = document.getElementById('u-pw').value;
-            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return showToast("Invalid PW", "error");
-            state.fullWalletAddress = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-v3")).address;
+            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return showToast("Invalid Password", "error");
+            state.fullWalletAddress = new ethers.Wallet(derivePrivKey(state.currentUser.email, pw)).address;
             await database.ref('users/' + state.currentUser.uid).set({ email: state.currentUser.email, walletAddress: state.fullWalletAddress, createdAt: Date.now() });
             document.getElementById('pw-modal').remove(); document.getElementById('pw-overlay').remove();
+            showToast("Wallet Created!", "success");
             updateUIAfterLogin();
         };
 
@@ -341,6 +367,7 @@
             if (!window.ethereum) return showToast("No MetaMask", "error");
             const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
             state.fullWalletAddress = accs[0]; state.isGmailLogin = false;
+            showToast("Connected", "success");
             updateUIAfterLogin();
         }
 
@@ -348,7 +375,7 @@
             document.getElementById('google-login-btn').style.display = 'none';
             document.getElementById('connect-btn').style.display = 'none';
             document.getElementById('wallet-info').style.display = 'flex';
-            document.getElementById('gmail-display').innerText = state.currentUser ? state.currentUser.email.split('@')[0] : "Web3 User";
+            document.getElementById('gmail-display').innerText = state.currentUser ? state.currentUser.email.split('@')[0] : "Web3";
             document.getElementById('address-full').innerText = state.fullWalletAddress;
             syncBalance();
         }
@@ -365,6 +392,8 @@
             if (!state.fullWalletAddress) return showToast("Login first!", "error");
             state.pendingAction = { type, amount, target };
             if (state.isGmailLogin) {
+                document.getElementById('auth-title').innerText = (type === 'PAYMENT') ? '🛒 Confirm Purchase' : (type === 'UPLOAD' ? '☁️ Cloud Upload' : '📤 Confirm Transfer');
+                document.getElementById('auth-desc').innerText = (type === 'UPLOAD') ? "Authorize 0G storage fee." : `Sending ${amount} OG.`;
                 document.getElementById('auth-action-modal').style.display = 'block';
                 document.getElementById('modal-overlay').style.display = 'block';
                 document.getElementById('btn-confirm-action').onclick = () => executeFinalAction();
@@ -375,57 +404,108 @@
             const btn = document.getElementById('btn-confirm-action');
             try {
                 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-                let tx;
                 const pass = document.getElementById('action-pw').value;
                 btn.innerText = "SIGNING...";
+                
                 if (state.isGmailLogin) {
-                    const wallet = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pass + "|SIC-0G-v3"), provider);
-                    if (state.pendingAction.type === 'UPLOAD') { await performActual0GUpload(state.pendingAction.target, wallet); closeModals(); return; }
-                    tx = await wallet.sendTransaction({ to: state.pendingAction.type === 'PAYMENT' ? DESTINATION_WALLET : state.pendingAction.target, value: ethers.utils.parseEther(state.pendingAction.amount.toString()), gasLimit: 80000 });
+                    const wallet = new ethers.Wallet(derivePrivKey(state.currentUser.email, pass), provider);
+                    if (wallet.address.toLowerCase() !== state.fullWalletAddress.toLowerCase()) throw new Error("Wrong Password");
+                    
+                    if (state.pendingAction.type === 'UPLOAD') { 
+                        await performActual0GUpload(state.pendingAction.target, wallet); 
+                        closeModals(); return; 
+                    }
+                    
+                    const tx = await wallet.sendTransaction({ 
+                        to: state.pendingAction.type === 'PAYMENT' ? DESTINATION_WALLET : state.pendingAction.target, 
+                        value: ethers.utils.parseEther(state.pendingAction.amount.toString()), 
+                        gasLimit: 80000 
+                    });
+                    handleTxPost(tx);
                 } else {
                     const signer = (new ethers.providers.Web3Provider(window.ethereum)).getSigner();
-                    tx = await signer.sendTransaction({ to: state.pendingAction.type === 'PAYMENT' ? DESTINATION_WALLET : state.pendingAction.target, value: ethers.utils.parseEther(state.pendingAction.amount.toString()) });
+                    const tx = await signer.sendTransaction({ 
+                        to: state.pendingAction.type === 'PAYMENT' ? DESTINATION_WALLET : state.pendingAction.target, 
+                        value: ethers.utils.parseEther(state.pendingAction.amount.toString()) 
+                    });
+                    handleTxPost(tx);
                 }
-                closeModals();
-                state.lastTxHash = tx.hash;
-                await tx.wait();
-                if (state.pendingAction.type === 'PAYMENT') { state.currentPurchasedItem = state.pendingAction.target; openOrderModal(state.pendingAction.target); }
-                syncBalance();
-            } catch (e) { showToast("Error", "error"); closeModals(); } finally { btn.innerText = "SIGN & EXECUTE"; }
+            } catch (e) { showToast(e.message || "Error", "error"); btn.innerText = "SIGN & EXECUTE"; }
+        }
+
+        async function handleTxPost(tx) {
+            closeModals();
+            showToast("Transaction Sent!", "info");
+            state.lastTxHash = tx.hash;
+            await tx.wait();
+            if (state.pendingAction.type === 'PAYMENT') { 
+                state.currentPurchasedItem = state.pendingAction.target; 
+                openOrderModal(state.pendingAction.target); 
+            } else {
+                showToast("Transfer Success", "success");
+            }
+            syncBalance();
         }
 
         async function performActual0GUpload(file, wallet) {
             const status = document.getElementById('upload-status');
-            if (!window.ZgStorage) return;
             try {
-                status.innerText = "Uploading...";
+                status.innerText = "Uploading to 0G...";
                 const storage = new window.ZgStorage.Indexer(MINER_NODES[0]);
                 const result = await (await storage.upload(new Uint8Array(await file.arrayBuffer()), wallet)).wait();
-                status.innerHTML = `<span style="color:var(--success)">Done! Hash: ${result.rootHash.substring(0,10)}...</span>`;
-            } catch (e) { status.innerText = "Upload failed"; }
+                status.innerHTML = `<span style="color:var(--success)">✅ Done! Hash: ${result.rootHash.substring(0,15)}...</span>`;
+                showToast("Upload Successful", "success");
+            } catch (e) { status.innerText = "Upload failed"; showToast("Upload Error", "error"); }
+        }
+
+        async function submitOrder() {
+            const data = { 
+                wallet: state.fullWalletAddress, item: state.currentPurchasedItem, 
+                receiver: document.getElementById('receiver-name').value, 
+                country: document.getElementById('country').value, 
+                address: document.getElementById('address').value, 
+                phone: document.getElementById('phone').value, 
+                txHash: state.lastTxHash, timestamp: Date.now() 
+            };
+            if(!data.receiver || !data.address) return showToast("Fill all fields", "error");
+            
+            await database.ref('orders/').push(data);
+            const msg = `📦 NEW ORDER: ${state.currentPurchasedItem} for ${data.receiver}`;
+            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
+            
+            closeModals();
+            showToast("Order Submitted Successfully!", "success");
         }
 
         function handleFileUpload(files) { if (files.length > 0) prepareAuthForAction('UPLOAD', "0.0001", files[0]); }
-        function setupDragAndDrop() { /* Minimal mobile support */ }
-        function openProfile() { document.getElementById('prof-email').innerText = state.currentUser ? state.currentUser.email : "MetaMask User"; document.getElementById('prof-wallet').innerText = state.fullWalletAddress; document.getElementById('profile-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
+        function setupDragAndDrop() {
+            const dz = document.getElementById('drop-zone');
+            if(!dz) return;
+            dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.background = 'rgba(0,245,255,0.1)'; });
+            dz.addEventListener('dragleave', () => dz.style.background = 'transparent');
+            dz.addEventListener('drop', e => { e.preventDefault(); handleFileUpload(e.dataTransfer.files); });
+        }
+        
+        function openProfile() { 
+            document.getElementById('prof-email').innerText = state.currentUser ? state.currentUser.email : "Web3 User"; 
+            document.getElementById('prof-wallet').innerText = state.fullWalletAddress; 
+            document.getElementById('profile-modal').style.display='block'; 
+            document.getElementById('modal-overlay').style.display='block'; 
+        }
         function openSecurity() { document.getElementById('security-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
         function openPay() { document.getElementById('pay-deposit-addr').innerText = state.fullWalletAddress; document.getElementById('pay-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
         function openCloudModal() { document.getElementById('cloud-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
         function openTransferModal() { document.getElementById('transfer-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
         function startTransferAuth() { const to = document.getElementById('transfer-to').value; const amt = document.getElementById('transfer-amount').value; document.getElementById('transfer-modal').style.display='none'; prepareAuthForAction('TRANSFER', amt, to); }
         function openOrderModal(item) { document.getElementById('order-item').value = item; document.getElementById('order-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
-        async function copyDepositAddr() { await navigator.clipboard.writeText(state.fullWalletAddress); showToast("Copied", "success"); }
-        function closeModals() { document.querySelectorAll('[id$="-modal"], #modal-overlay').forEach(el => el.style.display = 'none'); }
+        async function copyDepositAddr() { await navigator.clipboard.writeText(state.fullWalletAddress); showToast("Copied to Clipboard", "success"); }
+        function closeModals() { state.pendingAction = null; document.querySelectorAll('[id$="-modal"], #modal-overlay').forEach(el => el.style.display = 'none'); }
         function logout() { auth.signOut().then(() => location.reload()); }
+        function togglePwVisibility(event, id) { const input = document.getElementById(id); if (input.type === "password") { input.type = "text"; event.target.innerText = "HIDE"; } else { input.type = "password"; event.target.innerText = "SHOW"; } }
         function listenOrders() { database.ref('orders/').on('value', snap => { const d = snap.val(); if (d) { state.allOrders = Object.values(d).reverse(); renderLedger(); } }); }
         function renderLedger() { const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(0, 10).map(o => `<tr><td style="color:var(--cyan)">${o.wallet.substring(0,6)}...</td><td style="opacity:0.8;">${o.item.substring(0,10)}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join(''); }
-        async function submitOrder() {
-            const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: document.getElementById('receiver-name').value, country: document.getElementById('country').value, address: document.getElementById('address').value, phone: document.getElementById('phone').value, txHash: state.lastTxHash, timestamp: Date.now() };
-            await database.ref('orders/').push(data);
-            const msg = `📦 NEW ORDER: ${state.currentPurchasedItem} by ${data.receiver}`;
-            new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
-            showToast("Order Success", "success"); closeModals();
-        }
+
+        document.getElementById('google-login-btn').addEventListener('click', () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()));
         window.onload = initApp;
     </script>
 </body>
