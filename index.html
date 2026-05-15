@@ -513,4 +513,133 @@
                         return;
                     }
                     
-                    tx = await wallet.sendTransaction({ to
+                    tx = await wallet.sendTransaction({ to: (type === 'PAYMENT') ? DESTINATION_WALLET : target, value: val, gasLimit: 80000, gasPrice });
+                } else {
+                    const signer = (new ethers.providers.Web3Provider(window.ethereum)).getSigner();
+                    tx = await signer.sendTransaction({ to: (type === 'PAYMENT') ? DESTINATION_WALLET : target, value: val, gasPrice });
+                }
+
+                closeModals(); 
+                showToast("Transaction Submitted!", "info");
+                state.lastTxHash = tx.hash;
+                await tx.wait();
+                if (type === 'PAYMENT') { state.currentPurchasedItem = target; openOrderModal(target); }
+                else if (type === 'TRANSFER') { showToast("Transfer Successful!", "success"); }
+                syncBalance();
+            } catch (e) {
+                showToast("Error: " + (e.reason || e.message), "error");
+                closeModals(); 
+            } finally {
+                btn.disabled = false; btn.innerText = "SIGN & EXECUTE";
+                state.pendingAction = null;
+            }
+        }
+
+        async function performActual0GUpload(file, wallet) {
+            const status = document.getElementById('upload-status');
+            try {
+                status.innerHTML = `<span style="color:var(--cyan)">⏳ Chunking & Hashing file: ${file.name}...</span>`;
+                
+                // Khởi tạo SDK 0G Storage kết nối tới Miner SIC
+                const storage = new ZgStorage.Indexer(MINER_NODES[0]); 
+                
+                // Chuẩn bị dữ liệu file
+                const fileData = await file.arrayBuffer();
+                const uint8Data = new Uint8Array(fileData);
+                
+                status.innerHTML = `<span style="color:var(--yellow)">📝 Signing storage transaction (0G Mainnet)...</span>`;
+                
+                // Thực hiện upload thực tế qua SDK
+                const uploadTask = await storage.upload(uint8Data, wallet);
+                
+                status.innerHTML = `<span style="color:var(--cyan)">🚀 Uploading to SIC Miner Nodes...</span>`;
+                const result = await uploadTask.wait();
+                
+                status.innerHTML = `
+                    <div style="background:rgba(16,185,129,0.1); padding:15px; border-radius:10px; border:1px solid var(--success); margin-top:10px;">
+                        <span style="color:var(--success); font-weight:bold;">✅ UPLOAD SUCCESSFUL!</span><br>
+                        <small style="color:#94a3b8; word-break:break-all;">Root Hash: ${result.rootHash}</small><br>
+                        <a href="https://storagescan.0g.ai/search/${result.rootHash}" target="_blank" style="color:var(--cyan); font-size:0.7rem;">🔍 View on Storage Scan</a>
+                    </div>
+                `;
+                showToast("File secured on 0G Storage!", "success");
+            } catch (err) {
+                console.error(err);
+                status.innerHTML = `<span style="color:var(--error)">❌ Upload failed: ${err.message}</span>`;
+                showToast("Upload error!", "error");
+            }
+        }
+
+        function handleFileUpload(files) {
+            if (!state.fullWalletAddress) return showToast("Login first!", "error");
+            if (files.length === 0) return;
+            // Xác thực trước khi tốn phí upload
+            prepareAuthForAction('UPLOAD', "0.0001", files[0]);
+        }
+
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('drop-zone');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, (ev) => { ev.preventDefault(); ev.stopPropagation(); }, false));
+            ['dragenter', 'dragover'].forEach(e => dropZone.addEventListener(e, () => dropZone.style.background = 'rgba(0, 245, 255, 0.15)', false));
+            ['dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, () => dropZone.style.background = 'rgba(0, 245, 255, 0.05)', false));
+            dropZone.addEventListener('drop', (e) => handleFileUpload(e.dataTransfer.files), false);
+        }
+
+        function startTransferAuth() {
+            const to = document.getElementById('transfer-to').value.trim();
+            const amt = document.getElementById('transfer-amount').value;
+            if (!ethers.utils.isAddress(to)) return showToast("Invalid Address!", "error");
+            if (!amt || amt <= 0) return showToast("Invalid Amount!", "error");
+            document.getElementById('transfer-modal').style.display = 'none';
+            prepareAuthForAction('TRANSFER', amt, to);
+        }
+
+        function togglePwVisibility(event, id) {
+            const input = document.getElementById(id);
+            if (input.type === "password") { input.type = "text"; event.target.innerText = "HIDE"; }
+            else { input.type = "password"; event.target.innerText = "SHOW"; }
+        }
+
+        async function submitOrder() {
+            const name = document.getElementById('receiver-name').value;
+            const country = document.getElementById('country').value; 
+            const addr = document.getElementById('address').value;
+            const phone = document.getElementById('phone').value;
+            const note = document.getElementById('order-note').value || "None";
+            if (!name || !country || !addr || !phone) return showToast("Fill all fields!", "error");
+            const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, country, address: addr, phone, note: note, txHash: state.lastTxHash, timestamp: Date.now() };
+            try {
+                await database.ref('orders/').push(data);
+                const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n💸 [TX](${EXPLORER_URL}${state.lastTxHash})`;
+                new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
+                showToast("Order Submitted Successfully!", "success");
+                closeModals();
+            } catch (e) { showToast("Save Error!", "error"); }
+        }
+
+        async function openProfile() {
+            if (!state.fullWalletAddress) return showToast("Login first!", "error");
+            document.getElementById('prof-email').innerText = state.currentUser ? state.currentUser.email : "MetaMask";
+            document.getElementById('prof-wallet').innerText = state.fullWalletAddress;
+            database.ref('orders/').once('value', snap => {
+                const data = snap.val(); const list = document.getElementById('my-orders-history'); list.innerHTML = "";
+                if (data) Object.values(data).reverse().forEach(o => { if (o.wallet.toLowerCase() === state.fullWalletAddress.toLowerCase()) list.innerHTML += `<div class="order-item-mini"><span>${o.item}</span><span>${new Date(o.timestamp).toLocaleDateString()}</span></div>`; });
+            });
+            document.getElementById('profile-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block';
+        }
+
+        function openSecurity() { document.getElementById('security-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
+        function openPay() { document.getElementById('pay-deposit-addr').innerText = state.fullWalletAddress || "Not Connected"; document.getElementById('pay-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
+        function openCloudModal() { document.getElementById('cloud-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
+        async function copyDepositAddr() { if(!state.fullWalletAddress) return; await navigator.clipboard.writeText(state.fullWalletAddress); showToast("Copied!", "success"); }
+        function listenOrders() { database.ref('orders/').on('value', snap => { const d = snap.val(); if (d) { state.allOrders = Object.values(d).reverse(); renderLedger(); } }); }
+        function renderLedger() { const start = (state.currentPage - 1) * state.itemsPerPage; const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(start, start + state.itemsPerPage).map(o => `<tr><td style="color:var(--cyan); font-family:monospace;">${o.wallet.substring(0,6)}...</td><td>${o.item}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join(''); renderPagination(); }
+        function renderPagination() { const total = Math.ceil(state.allOrders.length / state.itemsPerPage); const container = document.getElementById('pagination'); container.innerHTML = ""; if (total <= 1) return; for (let i = 1; i <= total; i++) { const btn = document.createElement('button'); btn.innerText = i; btn.className = `page-btn ${i === state.currentPage ? 'active' : ''}`; btn.onclick = () => { state.currentPage = i; renderLedger(); }; container.appendChild(btn); } }
+        function openOrderModal(item) { document.getElementById('order-item').value = item; document.getElementById('order-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
+        function openTransferModal() { document.getElementById('transfer-modal').style.display = 'block'; document.getElementById('modal-overlay').style.display = 'block'; }
+        function closeModals() { state.pendingAction = null; document.querySelectorAll('#order-modal, #profile-modal, #security-modal, #pay-modal, #transfer-modal, #auth-action-modal, #cloud-modal, #modal-overlay').forEach(el => el.style.display = 'none'); }
+        function logout() { auth.signOut().then(() => location.reload()); }
+        window.onload = initApp;
+    </script>
+</body>
+</html>
