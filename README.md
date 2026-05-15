@@ -68,4 +68,7 @@ We are proud operators of the **SIC Validator** and dedicated infrastructure con
 * **Verified Storage Miner Nodes:**  Ensuring 24/7 uptime for the 0G Storage network.
   * [**SIC Miner 01**](https://storagescan.0g.ai/miner/0x3cF588f1d8987635e18C34A78FDCf52ba21bC8D0)
   * [**SIC Miner 02**](https://storagescan.0g.ai/miner/0xDD7548148A3dC74334e0DD89b05a2c4C411eDDFa)
+
+---
+
 **Developed with Passion by HALN & SIC Community for 0G APAC Hackathon 2026.**
