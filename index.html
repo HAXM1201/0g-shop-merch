@@ -342,6 +342,10 @@
             All transactions are executed on the <strong>0G Mainnet</strong>. 100% transparency is ensured via the public Ledger, providing both buyers and sellers with indisputable proof of transaction.
         </div>
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 10px;">EXPLORE NOW</button>
+        <div style="background: rgba(240, 185, 11, 0.1); border: 1px solid var(--yellow); padding: 10px; border-radius: 12px; margin-bottom: 20px; font-size: 0.85rem;">
+           <strong style="color: var(--yellow);">⚠️ DEVELOPMENT NOTICE:</strong> 
+           <span style="color: #e0e7ff;">0G Private Cloud is currently in <strong>Alpha stage</strong>. Direct file uploading to SIC Miner nodes via 0G Storage SDK is operational, but advanced features like "Folder Sync" and "File Preview" are still under active construction.</span>
+        </div>
     </div>
 
     <div id="pay-modal">
@@ -610,7 +614,7 @@
             const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, country, address: addr, phone, note: note, txHash: state.lastTxHash, timestamp: Date.now() };
             try {
                 await database.ref('orders/').push(data);
-                const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n💸 [TX](${EXPLORER_URL}${state.lastTxHash})`;
+                const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})`;
                 new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
                 showToast("Order Submitted Successfully!", "success");
                 closeModals();
