@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/@0glabs/0g-storage-js@0.2.1/dist/index.umd.min.js"></script>
+    <script src="https://unpkg.com/@0glabs/0g-storage-js@0.2.1/dist/index.umd.min.js"></script>
 
     <style>
         :root { --cyan: #00f5ff; --purple: #c026d3; --yellow: #f0b90b; --dark: #0a0c14; --card: #0f172a; --error: #f43f5e; --success: #10b981; }
@@ -537,10 +537,15 @@
 
         async function performActual0GUpload(file, wallet) {
             const status = document.getElementById('upload-status');
+            // KIỂM TRA THƯ VIỆN TRƯỚC KHI CHẠY
+            if (typeof ZgStorage === 'undefined') {
+                status.innerHTML = `<span style="color:var(--error)">❌ Error: 0G SDK not loaded yet. Check your connection.</span>`;
+                return;
+            }
             try {
                 status.innerHTML = `<span style="color:var(--cyan)">⏳ Chunking & Hashing file: ${file.name}...</span>`;
                 
-                // Khởi tạo SDK 0G Storage kết nối tới Miner SIC
+                // Khởi tạo SDK 0G Storage kết nối tới Miner qua Domain bảo mật
                 const storage = new ZgStorage.Indexer(MINER_NODES[0]); 
                 
                 // Chuẩn bị dữ liệu file
@@ -573,7 +578,6 @@
         function handleFileUpload(files) {
             if (!state.fullWalletAddress) return showToast("Login first!", "error");
             if (files.length === 0) return;
-            // Xác thực trước khi tốn phí upload
             prepareAuthForAction('UPLOAD', "0.0001", files[0]);
         }
 
