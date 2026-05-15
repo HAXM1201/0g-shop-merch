@@ -1,48 +1,55 @@
-The Seamless Web3 Commerce Protocol.
+# 📦 Ogshop.online - The DeAI Merch Hub
 
-Watch our 3-min demo to see the future of Web3 Shopping
-https://x.com/haxmln/status/2054851721634238713?s=20
+> **0G - Bridging the Digital and Physical Ecosystem.** > *The first decentralized E-commerce platform on 0G Mainnet using Hidden Wallet technology.*
 
+---
 
-🚀 SIC-0G Gateway: Bridging the Digital and Physical
-SIC-0G Gateway is a high-performance, decentralized e-commerce protocol designed for the 0G Ecosystem. We eliminate the complexity of Web3 onboarding by allowing anyone to own and trade physical merchandise (Merch) using only a Gmail account, powered by our proprietary Embedded Hidden Wallet technology.
+## 📺 Project Demo Video
+**[Click to Watch our 3-min Pitch & Demo]**
+[*(Sếp dán link video X hoặc Youtube của sếp vào đây)*](https://x.com/haxmln/status/2054851721634238713?s=20)
 
-🌟 Executive Summary
-Built for the Smart Investor Community (SIC) and the 0G APAC Hackathon, this project serves as a premier gateway for non-crypto natives to enter the DeAI era. By leveraging the 0G Network, we provide a secure, instant, and transparent bridge between digital tokens and real-world assets (RWA).
+---
 
-🛠️ Cutting-Edge Features
-1. 🔐 Embedded Hidden Wallet (Gmail-to-Web3)
-Zero-Friction Onboarding: Users can generate a secure, non-custodial wallet instantly using their Gmail account and a personal password.
+## 🚀 Why Ogshop?
+Ogshop is a private eligibility firewall and a seamless gateway for the **SIC Community** to experience the power of **0G Labs**. We remove all barriers between Web2 and Web3.
 
-No Seed Phrases Required: Eliminates the risk of losing 12-word phrases, making it perfect for new users.
+### ⚡ Key Tech & Security Features
 
-2. ⚡ Dual-Wallet Bridge System (0G Pay)
-Interoperability: A dedicated interface connecting the official 0G Portal with the SIC Shopping Wallet.
+* **🛡️ Seamless Web2-to-Web3 Gateway** Utilizing **Embedded Hidden Wallet** technology. No complex Seed Phrases or Private Keys. Your **Gmail** is the intelligent key, making Web3 shopping as simple as traditional e-commerce.
+    
+* **🔐 Self-Custody Ownership** Wallets are generated via secure hashing (Email + Password). **Ogshop never stores your keys.** You have 100% control over your assets.
+    
+* **🌐 0G Distributed Storage** Order data is encrypted and distributed across the **0G Storage network**. No centralized servers, no hacking risks. Absolute privacy and data immortality.
+    
+* **📜 On-chain Transparency** All transactions are executed on **0G Mainnet**. Real-time public Ledger ensures 100% transparency for both buyers and sellers.
 
-Simplified Liquidity: Users can easily top up their primary account and transfer funds to their shopping wallet with one click.
+---
 
-3. 🛡️ Trust-First Architecture
-Secure Infrastructure: Order metadata and transaction histories are tracked on-chain, ensuring data integrity.
+## 🛠️ Tech Stack
+| Component | Technology |
+| :--- | :--- |
+| **Network** | 0G Mainnet (EVM) |
+| **Storage** | 0G Storage (Decentralized) |
+| **Library** | Ethers.js v5 |
+| **Auth** | Firebase Auth (Google) |
+| **Notifications** | Telegram Bot API |
 
-Transparency: Real-time On-chain Order Ledger with 15-item pagination for full transparency of all community transactions.
+---
 
-4. 📝 Personalized DeAI Merch
-Customization: Integrated support for buyer notes (size, color, special requests) delivered instantly via automated Telegram Alerts to the fulfillment team.
+## 🛒 Experience the Future
+1.  **Onboard:** Login with Gmail and setup your SIC Hidden Wallet.
+2.  **Top up:** Get OG tokens from the 0G Portal.
+3.  **Mint:** Choose your DeAI Merch and checkout in one click.
 
-🏗️ Tech Stack
-Network: 0G Mainnet (Aristotle Testnet for testing).
+**🔗 Live Website:** https://0gshop.online/
+---
 
-Authentication: Firebase Auth (Google OAuth) + Ethers.js Private Key Derivation.
-
-Real-time Engine: Firebase Realtime Database for instant order synchronization.
-
-Blockchain Logic: Ethers.js for secure on-chain transaction execution and balance monitoring.
-
-Notification: Webhook-based Telegram API for real-time order tracking.
-
-🔗 Project Ecosystem
-Live Demo: Ogshop.online
-
-Official 0G Portal: pc.0g.ai
-
+## 👥 Built by the SIC Community
+**We currently own a SIC validator and two storage devices.** 
+**0x3cF588f1d8987635e18C34A78FDCf52ba21bC8D0**
+**0xDD7548148A3dC74334e0DD89b05a2c4C411eDDFa**
 Validator Community: https://explorer.0g.ai/mainnet/validators/0x52523d99643ca0dc99c98034543380dff2250339/delegators
+---
+*Developed by HALN & SIC Community for 0G APAC Hackathon 2026.*
+
+
