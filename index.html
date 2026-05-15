@@ -10,100 +10,115 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@0glabs/0g-storage-js@0.2.1/dist/index.umd.js"></script>
 
     <style>
-        :root { --cyan: #00f5ff; --purple: #c026d3; --yellow: #f0b90b; --dark: #06070a; --card: #0f172a; --error: #f43f5e; --success: #10b981; }
+        :root { --cyan: #00f5ff; --purple: #c026d3; --yellow: #f0b90b; --dark: #0a0c14; --card: #0f172a; --error: #f43f5e; --success: #10b981; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--dark); color: #e0e7ff; min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0a0c14 0%, #1a1428 100%); color: #e0e7ff; min-height: 100vh; overflow-x: hidden; }
         
         .gradient-text {
             background: linear-gradient(90deg, #00f5ff, #c026d3);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            display: inline-block;
         }
 
-        /* HEADER HIỆN ĐẠI - KHÔNG CÒN KHUNG VUÔNG THÔ */
+        .card {
+            position: relative;
+            background: var(--card);
+            padding: 20px;
+            backdrop-filter: blur(12px);
+            border-radius: 24px !important;
+            border: 3px solid transparent !important;
+            background-image: linear-gradient(var(--card), var(--card)), 
+                              linear-gradient(135deg, var(--cyan), var(--purple));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;       
+            box-shadow: inset 0 0 15px rgba(0, 245, 255, 0.1), 0 0 25px rgba(0, 245, 255, 0.2) !important;
+            transition: 0.3s;
+        }
+
+        /* HEADER OPTIMIZED - PILL STYLE & BLUR */
         header { 
             position: sticky; top: 0; z-index: 2000; 
-            background: rgba(6, 7, 10, 0.8); 
-            backdrop-filter: blur(15px); 
-            padding: 12px 20px; 
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+            background: rgba(10, 12, 20, 0.8); 
+            backdrop-filter: blur(20px); 
+            border-bottom: 1px solid rgba(0, 245, 255, 0.15); 
+            padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; 
         }
-        .logo { font-size: 1.3rem; font-weight: 900; cursor: pointer; letter-spacing: -0.5px; }
+        .logo { font-size: 1.5rem; font-weight: 900; background: linear-gradient(90deg, #00f5ff, #c026d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
         
-        .auth-buttons { display: flex; gap: 8px; align-items: center; }
+        .slogan { font-size: 1.1rem; font-weight: 900; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; border-left: 3px solid var(--cyan); padding-left: 15px; }
+
+        .auth-buttons { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .btn-auth { 
-            padding: 8px 14px; border-radius: 99px; /* Pill shape */
-            font-weight: 700; cursor: pointer; transition: 0.3s; 
-            font-size: 0.75rem; border: none; height: 36px;
-            display: flex; align-items: center; gap: 6px;
+            padding: 8px 18px; border-radius: 99px; /* Pill Shape */
+            font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 0.8rem; border: none; height: 40px; display: flex; align-items: center; justify-content: center; gap: 8px; 
         }
         #google-login-btn { background: #fff; color: #000; box-shadow: 0 4px 15px rgba(255,255,255,0.1); }
-        #connect-btn { background: transparent; border: 1px solid var(--cyan); color: var(--cyan); }
+        #connect-btn { background: transparent; border: 1.5px solid var(--cyan); color: var(--cyan); }
 
-        /* SIDEBAR - CHỮ ĐẬM, CÓ ICON, KHÔNG MỜ */
-        .sidebar { 
-            position: fixed; left: 0; top: 62px; bottom: 0; width: 220px; 
-            background: rgba(6, 7, 10, 0.95); 
-            border-right: 1px solid rgba(0, 245, 255, 0.05); 
-            padding: 25px 15px; z-index: 1000; 
-        }
+        /* SIDEBAR - HIGH CONTRAST & ICONS */
+        .sidebar { position: fixed; left: 0; top: 70px; bottom: 0; width: 220px; background: rgba(10, 12, 20, 0.95); border-right: 1px solid rgba(0, 245, 255, 0.15); padding: 25px 15px; transition: 0.3s; z-index: 1000; }
         .nav-item { 
             display: flex; align-items: center; gap: 12px; 
             padding: 14px 15px; border-radius: 12px; margin-bottom: 8px; 
-            color: #fff; /* Chữ trắng rõ nét */
-            cursor: pointer; font-size: 0.9rem; font-weight: 600; 
-            transition: 0.2s;
+            color: #fff; /* White text for clarity */
+            cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: 0.2s; 
         }
-        .nav-item i { font-style: normal; font-size: 1.1rem; }
+        .nav-item i { font-style: normal; font-size: 1.2rem; }
         .nav-item:hover, .nav-item.active { background: rgba(0,245,255,0.1); color: var(--cyan); }
 
-        .main { margin-left: 220px; padding: 20px; transition: 0.3s; }
-        .dashboard-grid { display: grid; grid-template-columns: 2fr 1.2fr; gap: 20px; }
+        .main { margin-left: 220px; padding: 25px; transition: 0.3s; }
+        .dashboard-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 24px; align-items: start; }
         
-        .card {
-            background: var(--card); padding: 20px; border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .wallet-info-box { 
-            margin-top: 10px; padding: 20px; background: rgba(0,0,0,0.2); 
-            border-radius: 15px; border: 1px dashed rgba(0,245,255,0.2); 
-        }
+        /* WALLET BOX */
+        .wallet-info-box { margin-top: 10px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px dashed rgba(0,245,255,0.2); }
+        .balance-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
         .balance-val { font-size: 2.2rem; font-weight: 800; }
-        .transfer-btn { background: var(--yellow); color: #000; font-weight: 800; padding: 10px 20px; border-radius: 12px; border: none; cursor: pointer; }
+        .address-val { font-family: monospace; font-size: 0.75rem; word-break: break-all; margin-top: 8px; opacity: 0.8; }
+
+        .transfer-btn { background: var(--yellow); color: #000; font-weight: 900; padding: 10px 20px; border-radius: 12px; font-size: 0.85rem; border: none; cursor: pointer; }
 
         /* PRODUCT GRID */
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
-        .product-card { background: #1e293b; border-radius: 15px; overflow: hidden; }
-        .product-img { width: 100%; height: 160px; object-fit: cover; }
-        .btn-buy { width: 100%; padding: 10px; background: var(--cyan); color: #000; font-weight: 800; border: none; cursor: pointer; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+        .product-card { background: rgba(15, 23, 42, 0.7); border-radius: 15px; overflow: hidden; border: 1px solid rgba(148, 163, 184, 0.1); }
+        .product-img { width: 100%; height: 180px; object-fit: cover; }
+        .btn-buy { width: 100%; padding: 12px; background: linear-gradient(90deg, var(--cyan), #67e8f9); color: #000; font-weight: 900; border: none; border-radius: 10px; cursor: pointer; }
 
-        /* RESPONSIVE MOBILE - CỰC QUAN TRỌNG */
-        @media (max-width: 900px) {
-            .sidebar { width: 70px; padding: 20px 5px; align-items: center; }
-            .nav-item span { display: none; } /* Ẩn chữ chỉ hiện Icon trên Mobile để gọn */
-            .nav-item { justify-content: center; padding: 15px 0; }
+        /* LEDGER */
+        .ledger-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .ledger-table th { text-align: left; padding: 10px; color: var(--yellow); border-bottom: 1px solid rgba(0,245,255,0.1); }
+        .ledger-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        /* RESPONSIVE - MOBILE OPTIMIZATION */
+        @media (max-width: 992px) {
+            .sidebar { width: 70px; padding: 20px 5px; }
+            .sidebar span { display: none; } /* Hide text, show only icons on mobile */
+            .nav-item { justify-content: center; padding: 18px 0; }
             .main { margin-left: 70px; padding: 15px; }
             .dashboard-grid { grid-template-columns: 1fr; }
+            header { padding: 10px 15px; }
+            .slogan { display: none; } 
             .balance-val { font-size: 1.8rem; }
+            .logo { font-size: 1.2rem; }
         }
 
         /* MODALS */
         [id$="-modal"] { 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: #0f172a; border: 1px solid var(--cyan); padding: 20px; border-radius: 20px; 
-            width: 90%; z-index: 3000; max-height: 80vh; overflow-y: auto;
+            background: #0f172a; border: 2px solid var(--cyan); padding: 20px; border-radius: 20px; 
+            width: 90%; max-width: 800px; z-index: 3000; max-height: 85vh; overflow-y: auto;
         }
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2999; backdrop-filter: blur(5px); }
-        input { width: 100%; padding: 12px; background: #1e2937; border: 1px solid #334155; color: #fff; border-radius: 10px; margin-bottom: 10px; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2999; backdrop-filter: blur(5px); }
+        input, textarea { width: 100%; padding: 12px; background: #1e2937; border: 1px solid #334155; color: white; border-radius: 10px; margin-bottom: 12px; }
 
-        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; }
-        .toast { background: #1e1b4b; color: #fff; padding: 12px; border-radius: 10px; text-align: center; margin-top: 10px; font-size: 0.8rem; border-left: 4px solid var(--cyan); }
+        /* TOAST */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; left: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { padding: 12px 20px; border-radius: 10px; color: white; font-weight: 600; font-size: 0.85rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: toastIn 0.3s ease forwards; }
+        @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -112,22 +127,25 @@
 
     <header>
         <div class="logo gradient-text" onclick="location.reload()">Ogshop.online</div>
+        <div class="slogan gradient-text">0G - BRIDGING THE DIGITAL AND PHYSICAL</div>
+
         <div class="auth-buttons">
             <button id="google-login-btn" class="btn-auth">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="14"> Login
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="14"> <span>Login</span>
             </button>
             <button id="connect-btn" class="btn-auth" onclick="handleConnect()">Wallet</button>
-            <div id="wallet-info" style="display:none; align-items:center; gap:8px;">
-                <div id="gmail-display" style="font-size:0.7rem; background:rgba(0,245,255,0.1); padding:5px 10px; border-radius:15px; color:var(--cyan); font-weight:700;"></div>
-                <button onclick="logout()" style="color:#f43f5e; background:none; border:none; font-size:0.6rem; font-weight:bold; cursor:pointer;">OUT</button>
+            
+            <div id="wallet-info" style="display:none; align-items:center; gap:10px;">
+                <div id="gmail-display" style="font-size:0.75rem; background:rgba(0,245,255,0.1); padding:6px 12px; border-radius:20px; color:var(--cyan); font-weight: bold;"></div>
+                <button onclick="logout()" style="border:none; color:#f43f5e; background:none; font-size:0.65rem; font-weight:bold; cursor:pointer;">OUT</button>
             </div>
         </div>
     </header>
 
     <div class="sidebar">
         <div class="nav-item active" onclick="location.reload()"><i>🏠</i> <span>Dashboard</span></div>
-        <div class="nav-item" onclick="openCloudModal()"><i>☁️</i> <span>0G Cloud</span></div>
-        <div class="nav-item" onclick="openProfile()"><i>👤</i> <span>Profile</span></div>
+        <div class="nav-item" onclick="openCloudModal()"><i>☁️</i> <span>0G Private Cloud</span></div>
+        <div class="nav-item" onclick="openProfile()"><i>👤</i> <span>My Profile</span></div>
         <div class="nav-item" onclick="openSecurity()"><i>🛡️</i> <span>Security</span></div>
         <div class="nav-item" onclick="openPay()"><i>⚡</i> <span>0G Pay</span></div>
     </div>
@@ -135,35 +153,41 @@
     <div class="main">
         <div class="dashboard-grid">
             <div class="left-col">
-                <div class="card" style="margin-bottom: 15px;">
-                    <div style="color:var(--cyan); font-weight:bold; font-size:0.75rem; margin-bottom:10px;">💎 SIC Embedded Wallet</div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="color:var(--cyan); font-weight:bold; font-size:0.8rem;">💎 Embedded Wallet (0G Mainnet)</div>
                     <div class="wallet-info-box">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                            <div class="balance-val gradient-text" id="balance-og">0.0000 OG</div>
-                            <button onclick="openTransferModal()" class="transfer-btn">TRANSFER</button>
+                        <div class="balance-row">
+                            <div>
+                                <div style="color:#94a3b8; font-size:0.75rem;">Balance</div>
+                                <div class="balance-val gradient-text" id="balance-og">0.0000 OG</div>
+                            </div>
+                            <button onclick="openTransferModal()" class="transfer-btn">📤 TRANSFER</button>
                         </div>
-                        <div style="font-family:monospace; font-size:0.65rem; color:#94a3b8; margin-top:10px; word-break:break-all;" id="address-full">Not Connected</div>
+                        <div class="address-val" id="address-full">Not Connected</div>
                     </div>
                 </div>
 
                 <div class="card">
-                    <div style="color:var(--cyan); margin-bottom:15px; font-weight:bold; font-size:0.85rem;">🛒 Marketplace</div>
+                    <div style="color:var(--cyan); margin-bottom:15px; font-weight:bold;">🛒 Marketplace</div>
                     <div class="product-grid" id="product-grid"></div>
                 </div>
             </div>
 
             <div class="right-col">
-                <div class="card" style="background: rgba(240, 185, 11, 0.05); border: 1px solid rgba(240, 185, 11, 0.2); margin-bottom: 15px;">
-                    <strong style="color:var(--yellow); font-size:0.8rem;">NOTICE:</strong>
-                    <p style="font-size:0.75rem; color:#e0e7ff; margin-top:5px; line-height:1.4;">Experimental Mainnet. Powered by SIC Community Nodes.</p>
+                <div class="card" style="background: rgba(240, 185, 11, 0.05); border-color: rgba(240, 185, 11, 0.2); margin-bottom: 20px;">
+                    <div style="color:var(--yellow); font-weight:bold; font-size:1rem; margin-bottom: 8px;">NOTICE:</div>
+                    <p style="font-size:0.85rem; color:var(--cyan); line-height:1.4;">Experimental project by SIC community. 0G Mainnet testing.</p>
                 </div>
                 
                 <div class="card">
-                    <div style="color:var(--cyan); margin-bottom:10px; font-weight:bold; font-size:0.8rem;">📜 Order Ledger</div>
-                    <table style="width:100%; border-collapse:collapse; font-size:0.7rem;">
-                        <thead><tr style="color:var(--yellow); text-align:left;"><th>Wallet</th><th>Item</th><th>Link</th></tr></thead>
-                        <tbody id="order-history-list"></tbody>
-                    </table>
+                    <div style="color:var(--cyan); margin-bottom:15px; font-weight:bold; font-size:0.9rem;">📜 Order Ledger</div>
+                    <div style="overflow-x: auto;">
+                        <table class="ledger-table">
+                            <thead><tr><th>Wallet</th><th>Item</th><th>Action</th></tr></thead>
+                            <tbody id="order-history-list"></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="pagination" style="margin-top:10px; display:flex; gap:5px; justify-content:center;"></div>
                 </div>
             </div>
         </div>
@@ -172,51 +196,63 @@
     <div class="modal-overlay" id="modal-overlay" onclick="closeModals()"></div>
 
     <div id="security-modal">
-        <h2 class="gradient-text" style="font-size: 1.1rem; margin-bottom:15px;">🛡️ Tech & Security</h2>
-        <div style="font-size: 0.75rem; line-height:1.5;">
-            <p style="margin-bottom:10px;"><strong style="color:var(--yellow);">0G Storage:</strong> Data encrypted & distributed globally.</p>
-            <div style="background:rgba(240,185,11,0.1); border:1px solid var(--yellow); padding:10px; border-radius:10px;">
-                <strong style="color:var(--yellow);">⚠️ ALPHA NOTICE:</strong> 0G Cloud is in testing. Upload to SIC Miner nodes is live.
+        <h2 class="gradient-text" style="font-size: 1.3rem; margin-bottom:15px;">🛡️ Ogshop Tech & Security</h2>
+        <div class="security-point">
+            <strong style="color: var(--yellow);">0G Distributed Storage System:</strong> 
+            Data is encrypted and distributed across the global 0G Storage network.
+            <div style="background: rgba(240, 185, 11, 0.1); border: 1px solid var(--yellow); padding: 10px; border-radius: 12px; margin-top: 10px; font-size: 0.75rem;">
+                <strong style="color: var(--yellow);">⚠️ DEVELOPMENT NOTICE:</strong> 
+                0G Private Cloud is in <strong>Alpha stage</strong>. Direct upload to SIC Miner nodes is operational.
             </div>
         </div>
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 15px;">CLOSE</button>
     </div>
 
     <div id="cloud-modal">
-        <h2 class="gradient-text" style="font-size: 1.1rem; margin-bottom:10px;">☁️ 0G Private Cloud</h2>
-        <div style="border: 2px dashed var(--cyan); padding: 30px; text-align: center; border-radius: 15px; cursor: pointer;" onclick="document.getElementById('file-input').click()">
-            <span style="font-size: 1.5rem;">📤</span>
-            <p style="margin-top: 8px; font-size: 0.8rem; font-weight:bold;">Tap to Upload to 0G</p>
+        <h2 class="gradient-text" style="font-size: 1.3rem; margin-bottom:10px;">☁️ 0G Private Cloud</h2>
+        <div style="border: 2px dashed var(--cyan); padding: 30px; text-align: center; border-radius: 15px; cursor: pointer;" id="drop-zone" onclick="document.getElementById('file-input').click()">
+            <span style="font-size: 2rem;">📤</span>
+            <p style="margin-top: 10px; font-size: 0.9rem; font-weight:bold;">Tap to Upload to 0G Storage</p>
             <input type="file" id="file-input" style="display: none;" onchange="handleFileUpload(this.files)">
         </div>
-        <div id="upload-status" style="margin-top:10px; font-size:0.75rem; text-align:center; color:var(--cyan);"></div>
+        <div id="upload-status" style="margin-top:10px; font-size:0.8rem; text-align:center; color:var(--cyan);"></div>
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 15px;">CLOSE</button>
     </div>
 
     <div id="auth-action-modal">
-        <h2 class="gradient-text" style="font-size: 1.1rem; margin-bottom:10px;">🔐 Verify Wallet</h2>
+        <h2 class="gradient-text" style="font-size: 1.2rem; margin-bottom:10px;">🔐 Verify Wallet</h2>
         <input type="password" id="action-pw" placeholder="Enter Password">
         <button id="btn-confirm-action" class="btn-buy">SIGN & EXECUTE</button>
     </div>
 
     <div id="transfer-modal">
-        <h2 class="gradient-text" style="font-size: 1.1rem; margin-bottom:10px;">📤 Transfer</h2>
+        <h2 class="gradient-text" style="font-size: 1.2rem; margin-bottom:10px;">📤 Transfer</h2>
         <input type="text" id="transfer-to" placeholder="Address (0x...)">
         <input type="number" id="transfer-amount" step="0.0001" placeholder="Amount OG">
         <button onclick="startTransferAuth()" class="btn-buy">CONFIRM</button>
     </div>
 
+    <div id="order-modal">
+        <h2 style="color:var(--cyan); margin-bottom:10px;">📦 Order Details</h2>
+        <input type="text" id="order-item" readonly style="color:var(--yellow); font-weight:bold;">
+        <input type="text" id="receiver-name" placeholder="Full Name">
+        <input type="text" id="country" placeholder="Country">
+        <textarea id="address" rows="2" placeholder="Full Address"></textarea>
+        <input type="tel" id="phone" placeholder="Phone">
+        <button onclick="submitOrder()" class="btn-buy">COMPLETE ORDER</button>
+    </div>
+
     <div id="profile-modal">
-        <h2 class="gradient-text" style="font-size: 1.1rem;">👤 Profile</h2>
-        <div id="prof-email" style="font-size:0.8rem; margin:10px 0;"></div>
-        <div id="prof-wallet" style="font-size:0.65rem; font-family:monospace; color:var(--cyan); word-break:break-all;"></div>
+        <h2 class="gradient-text" style="font-size: 1.3rem;">👤 Profile</h2>
+        <div id="prof-email" style="font-size:0.85rem; margin:10px 0;"></div>
+        <div id="prof-wallet" style="font-size:0.7rem; font-family:monospace; color:var(--cyan); word-break:break-all;"></div>
         <button onclick="closeModals()" class="btn-buy" style="margin-top:15px;">CLOSE</button>
     </div>
 
     <div id="pay-modal">
-        <h2 class="gradient-text" style="font-size: 1.1rem;">⚡ 0G Pay</h2>
-        <div id="pay-deposit-addr" style="font-size:0.65rem; font-family:monospace; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; word-break:break-all; margin:15px 0;"></div>
-        <button onclick="copyDepositAddr()" class="btn-buy">COPY ADDRESS</button>
+        <h2 class="gradient-text" style="font-size: 1.3rem;">⚡ 0G Pay</h2>
+        <div id="pay-deposit-addr" style="font-size:0.7rem; font-family:monospace; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; word-break:break-all;"></div>
+        <button onclick="copyDepositAddr()" class="btn-buy" style="margin-top:10px;">COPY ADDRESS</button>
     </div>
 
     <script>
@@ -248,25 +284,26 @@
             {name: "0G COMBO FANS", price: "0.1", img: "0gcombo.jpg"}
         ];
 
-        function showToast(message) {
+        function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = 'toast';
+            toast.className = `toast ${type === 'success' ? 'success' : 'info'}`;
+            toast.style.background = type === 'success' ? '#064e3b' : '#1e1b4b';
             toast.innerText = message;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
         }
 
-        function initApp() { renderProducts(); listenOrders(); }
+        function initApp() { renderProducts(); listenOrders(); setupDragAndDrop(); }
 
         function renderProducts() {
             document.getElementById('product-grid').innerHTML = products.map(p => `
                 <div class="product-card">
                     <img src="${p.img}" class="product-img">
-                    <div style="padding:10px;">
-                        <h3 style="font-size:0.75rem; font-weight:800;">${p.name}</h3>
-                        <div style="color:var(--cyan); font-weight:bold; margin:5px 0; font-size:0.8rem;">${p.price} OG</div>
-                        <button class="btn-buy" onclick="prepareAuthForAction('PAYMENT', ${p.price}, '${p.name}')">MINT</button>
+                    <div style="padding:12px;">
+                        <h3 style="font-size:0.8rem; font-weight:800;">${p.name}</h3>
+                        <div style="color:var(--cyan); font-weight:bold; margin:5px 0;">${p.price} OG</div>
+                        <button class="btn-buy" onclick="prepareAuthForAction('PAYMENT', ${p.price}, '${p.name}')">MINT NOW</button>
                     </div>
                 </div>`).join('');
         }
@@ -287,13 +324,13 @@
         });
 
         function showPasswordSetupModal(email) {
-            const html = `<div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:1px solid #00f5ff;padding:25px;border-radius:20px;z-index:4000;width:85%;max-width:320px;text-align:center;"><h3 style="color:#00f5ff;margin-bottom:15px;font-size:0.9rem;">🔐 Setup Wallet</h3><input type="password" id="u-pw" placeholder="Password"><input type="password" id="u-pw-c" placeholder="Confirm"><button onclick="createHiddenWallet()" style="width:100%;padding:12px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;">CREATE</button></div><div id="pw-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:3999;"></div>`;
+            const html = `<div id="pw-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0b0e11;border:2px solid #00f5ff;padding:25px;border-radius:20px;z-index:4000;width:85%;max-width:350px;text-align:center;"><h3 style="color:#00f5ff;margin-bottom:15px;font-size:1rem;">🔐 Setup Wallet</h3><input type="password" id="u-pw" placeholder="Password (min 8 chars)" style="width:100%;margin-bottom:10px;"><input type="password" id="u-pw-c" placeholder="Confirm" style="width:100%;margin-bottom:15px;"><button onclick="createHiddenWallet()" style="width:100%;padding:12px;background:#00f5ff;color:#000;font-weight:bold;border:none;border-radius:10px;">CREATE</button></div><div id="pw-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:3999;"></div>`;
             document.body.insertAdjacentHTML('beforeend', html);
         }
 
         window.createHiddenWallet = async function() {
             const pw = document.getElementById('u-pw').value;
-            if (pw.length < 8) return showToast("Min 8 chars");
+            if (pw.length < 8 || pw !== document.getElementById('u-pw-c').value) return showToast("Invalid PW", "error");
             state.fullWalletAddress = new ethers.Wallet(ethers.utils.id(state.currentUser.email.toLowerCase() + "|" + pw + "|SIC-0G-v3")).address;
             await database.ref('users/' + state.currentUser.uid).set({ email: state.currentUser.email, walletAddress: state.fullWalletAddress, createdAt: Date.now() });
             document.getElementById('pw-modal').remove(); document.getElementById('pw-overlay').remove();
@@ -301,7 +338,7 @@
         };
 
         async function handleConnect() {
-            if (!window.ethereum) return showToast("No MetaMask");
+            if (!window.ethereum) return showToast("No MetaMask", "error");
             const accs = await window.ethereum.request({ method: 'eth_requestAccounts' });
             state.fullWalletAddress = accs[0]; state.isGmailLogin = false;
             updateUIAfterLogin();
@@ -311,7 +348,7 @@
             document.getElementById('google-login-btn').style.display = 'none';
             document.getElementById('connect-btn').style.display = 'none';
             document.getElementById('wallet-info').style.display = 'flex';
-            document.getElementById('gmail-display').innerText = state.currentUser ? state.currentUser.email.split('@')[0] : "Web3";
+            document.getElementById('gmail-display').innerText = state.currentUser ? state.currentUser.email.split('@')[0] : "Web3 User";
             document.getElementById('address-full').innerText = state.fullWalletAddress;
             syncBalance();
         }
@@ -325,7 +362,7 @@
         }
 
         function prepareAuthForAction(type, amount, target) {
-            if (!state.fullWalletAddress) return showToast("Login first");
+            if (!state.fullWalletAddress) return showToast("Login first!", "error");
             state.pendingAction = { type, amount, target };
             if (state.isGmailLogin) {
                 document.getElementById('auth-action-modal').style.display = 'block';
@@ -354,7 +391,7 @@
                 await tx.wait();
                 if (state.pendingAction.type === 'PAYMENT') { state.currentPurchasedItem = state.pendingAction.target; openOrderModal(state.pendingAction.target); }
                 syncBalance();
-            } catch (e) { showToast("Error"); closeModals(); } finally { btn.innerText = "SIGN & EXECUTE"; }
+            } catch (e) { showToast("Error", "error"); closeModals(); } finally { btn.innerText = "SIGN & EXECUTE"; }
         }
 
         async function performActual0GUpload(file, wallet) {
@@ -364,29 +401,30 @@
                 status.innerText = "Uploading...";
                 const storage = new window.ZgStorage.Indexer(MINER_NODES[0]);
                 const result = await (await storage.upload(new Uint8Array(await file.arrayBuffer()), wallet)).wait();
-                status.innerHTML = `<span style="color:var(--success)">Hash: ${result.rootHash.substring(0,10)}...</span>`;
-            } catch (e) { status.innerText = "Failed"; }
+                status.innerHTML = `<span style="color:var(--success)">Done! Hash: ${result.rootHash.substring(0,10)}...</span>`;
+            } catch (e) { status.innerText = "Upload failed"; }
         }
 
         function handleFileUpload(files) { if (files.length > 0) prepareAuthForAction('UPLOAD', "0.0001", files[0]); }
-        function openProfile() { document.getElementById('prof-email').innerText = state.currentUser ? state.currentUser.email : "MetaMask"; document.getElementById('prof-wallet').innerText = state.fullWalletAddress; document.getElementById('profile-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
+        function setupDragAndDrop() { /* Minimal mobile support */ }
+        function openProfile() { document.getElementById('prof-email').innerText = state.currentUser ? state.currentUser.email : "MetaMask User"; document.getElementById('prof-wallet').innerText = state.fullWalletAddress; document.getElementById('profile-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
         function openSecurity() { document.getElementById('security-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
         function openPay() { document.getElementById('pay-deposit-addr').innerText = state.fullWalletAddress; document.getElementById('pay-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
         function openCloudModal() { document.getElementById('cloud-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
         function openTransferModal() { document.getElementById('transfer-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
         function startTransferAuth() { const to = document.getElementById('transfer-to').value; const amt = document.getElementById('transfer-amount').value; document.getElementById('transfer-modal').style.display='none'; prepareAuthForAction('TRANSFER', amt, to); }
         function openOrderModal(item) { document.getElementById('order-item').value = item; document.getElementById('order-modal').style.display='block'; document.getElementById('modal-overlay').style.display='block'; }
-        async function copyDepositAddr() { await navigator.clipboard.writeText(state.fullWalletAddress); showToast("Copied"); }
+        async function copyDepositAddr() { await navigator.clipboard.writeText(state.fullWalletAddress); showToast("Copied", "success"); }
         function closeModals() { document.querySelectorAll('[id$="-modal"], #modal-overlay').forEach(el => el.style.display = 'none'); }
         function logout() { auth.signOut().then(() => location.reload()); }
         function listenOrders() { database.ref('orders/').on('value', snap => { const d = snap.val(); if (d) { state.allOrders = Object.values(d).reverse(); renderLedger(); } }); }
-        function renderLedger() { const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(0, 8).map(o => `<tr><td style="color:var(--cyan)">${o.wallet.substring(0,4)}...</td><td style="opacity:0.8;">${o.item.substring(0,8)}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">Link</a></td></tr>`).join(''); }
+        function renderLedger() { const list = document.getElementById('order-history-list'); list.innerHTML = state.allOrders.slice(0, 10).map(o => `<tr><td style="color:var(--cyan)">${o.wallet.substring(0,6)}...</td><td style="opacity:0.8;">${o.item.substring(0,10)}</td><td><a href="${EXPLORER_URL}${o.txHash}" target="_blank" style="color:#64748b">View</a></td></tr>`).join(''); }
         async function submitOrder() {
             const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: document.getElementById('receiver-name').value, country: document.getElementById('country').value, address: document.getElementById('address').value, phone: document.getElementById('phone').value, txHash: state.lastTxHash, timestamp: Date.now() };
             await database.ref('orders/').push(data);
-            const msg = `📦 ORDER: ${state.currentPurchasedItem}`;
+            const msg = `📦 NEW ORDER: ${state.currentPurchasedItem} by ${data.receiver}`;
             new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
-            showToast("Success"); closeModals();
+            showToast("Order Success", "success"); closeModals();
         }
         window.onload = initApp;
     </script>
