@@ -186,7 +186,7 @@
             
             <div id="wallet-info" style="display:none; align-items:center; gap:10px;">
                 <div id="gmail-display" style="font-size:0.75rem; background:rgba(0,245,255,0.1); padding:8px 15px; border-radius:9999px; color:var(--cyan); font-weight: bold;"></div>
-                <button onclick="logout()" style="border:none; color:#f43f5e; background:none; font-size:0.65rem; font-weight:bold; cursor:pointer;">OUT</button>
+                <button onclick="logout()" style="border:none; color:#f43f5e; background:none; font-size:0.75rem; font-weight:bold; cursor:pointer;">Sign Out</button>
             </div>
         </div>
     </header>
@@ -311,22 +311,23 @@
         <h2 class="gradient-text" style="font-size: 1.5rem; margin-bottom:20px;">🛡️ Ogshop Tech & Security</h2>
         <div class="security-point">
             <strong style="color: var(--yellow);">Web2-to-Web3 Seamless Gateway:</strong> 
-            We utilize <strong>Embedded Hidden Wallet</strong> technology. Your Gmail account acts as an intelligent key.
+            We utilize <strong>Embedded Hidden Wallet</strong> technology. Users do not need complex knowledge of Seed Phrases or Private Keys. Your Gmail account acts as an intelligent key, making the Web3 shopping experience as simple as traditional e-commerce.
         </div>
         <div class="security-point">
             <strong style="color: var(--yellow);">Self-Custody Ownership:</strong> 
-            Every wallet is generated through a secure hashing algorithm. <strong>Ogshop strictly does not store your keys.</strong>
+            Every wallet is generated through a secure hashing algorithm combining your Email and personal Password. <strong>Ogshop strictly does not store your keys.</strong> You have full control over your assets, ensuring maximum security and non-custodial access.
         </div>
         <div class="security-point">
             <strong style="color: var(--yellow);">0G Distributed Storage System:</strong> 
-            Order data is encrypted and distributed across the global <strong>0G Storage</strong> network. 
+            Order data is not stored on hackable centralized servers. We encrypt and distribute data across the global <strong>0G Storage</strong> network. This guarantees absolute privacy and permanent accessibility.
             <div style="background: rgba(240, 185, 11, 0.1); border: 1px solid var(--yellow); padding: 12px; border-radius: 12px; margin-top: 10px; font-size: 0.8rem; line-height: 1.4;">
                 <strong style="color: var(--yellow);">⚠️ DEVELOPMENT NOTICE:</strong> 
-                <span style="color: #e0e7ff;">0G Private Cloud is currently in <strong>Alpha stage</strong>. Direct file uploading to SIC Miner nodes via 0G Storage SDK is operational, but advanced features like "Folder Sync" are under construction.</span>
+                <span style="color: #e0e7ff;">0G Private Cloud is currently in <strong>Alpha stage</strong>. Direct file uploading to SIC Miner nodes via 0G Storage SDK is operational, but advanced features like "Folder Sync" and "File Preview" are still under active construction.</span>
             </div>
         </div>
         <div class="security-point">
-            <strong style="color: var(--yellow);">On-chain Transparency:</strong> 100% execution on the <strong>0G Mainnet</strong>.
+            <strong style="color: var(--yellow);">On-chain Transparency:</strong> 
+            All transactions are executed on the <strong>0G Mainnet</strong>. 100% transparency is ensured via the public Ledger, providing both buyers and sellers with indisputable proof of transaction.
         </div>
         <button onclick="closeModals()" class="btn-buy" style="margin-top: 10px;">EXPLORE NOW</button>
     </div>
@@ -371,9 +372,16 @@
 
     <div id="pay-modal">
         <h2 class="gradient-text" style="font-size: 1.4rem; margin-bottom:20px;">⚡ 0G Pay Center</h2>
-        <div id="pay-deposit-addr" style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px dashed var(--cyan); font-family:monospace; font-size:0.75rem; word-break:break-all; margin:15px 0;">Not Connected</div>
-        <button onclick="copyDepositAddr()" class="btn-buy" style="margin-top:10px;">📋 Copy Shopping Address</button>
-        <button onclick="closeModals()" class="btn-buy" style="margin-top:10px; background:none; border:1px solid #334155; color:#fff;">CLOSE CENTER</button>
+        <div class="pay-step">
+            <div style="color:var(--cyan); font-weight:bold; margin-bottom:5px;">Step 1: Top up Primary Wallet</div>
+            <a href="https://pc.0g.ai/dashboard/overview" target="_blank" style="display:inline-block; background:var(--cyan); color:#000; padding:8px 15px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:0.8rem;">🌐 Go to 0G Portal</a>
+        </div>
+        <div class="pay-step" style="border:none;">
+            <div style="color:var(--yellow); font-weight:bold; margin-bottom:5px;">Step 2: Transfer to Shopping Wallet</div>
+            <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px dashed var(--cyan); font-family:monospace; font-size:0.75rem; word-break:break-all;" id="pay-deposit-addr">Not Connected</div>
+            <button onclick="copyDepositAddr()" style="margin-top:10px; background:none; border:1px solid var(--cyan); color:var(--cyan); padding:5px 12px; border-radius:5px; font-size:0.7rem; cursor:pointer;">📋 Copy Shopping Address</button>
+        </div>
+        <button onclick="closeModals()" class="btn-buy" style="margin-top:10px;">CLOSE CENTER</button>
     </div>
 
     <script>
@@ -572,7 +580,7 @@
             const data = { wallet: state.fullWalletAddress, item: state.currentPurchasedItem, receiver: name, country, address: addr, phone, note: note, txHash: state.lastTxHash, timestamp: Date.now() };
             try {
                 await database.ref('orders/').push(data);
-                const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n👤 *Customer:* ${name}\n🛍️ *Product:* ${state.currentPurchasedItem}\n💸 [TX](${EXPLORER_URL}${state.lastTxHash})`;
+                const msg = `📦 *NEW ORDER - SIC-0G SHOP*\n----------------------------------\n👤 *Customer:* ${name}\n🌍 *Country:* ${country}\n📱 *Phone:* ${phone}\n🏠 *Address:* ${addr}\n🛍️ *Product:* ${state.currentPurchasedItem}\n📝 *Note:* ${note}\n💸 [View Transaction](${EXPLORER_URL}${state.lastTxHash})`;
                 new Image().src = `${PROXY_URL}?message=${encodeURIComponent(msg)}`;
                 showToast("Order Submitted!", "success"); closeModals();
             } catch (e) { showToast("Save Error!", "error"); }
