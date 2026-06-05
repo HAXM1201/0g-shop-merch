@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com;">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://www.gstatic.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ogshop.online - DeAI Merch Hub</title>
     <link rel="icon" type="image/png" href="favicon.png">
@@ -12,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/@0glabs/0g-storage-js-browser@0.1.3/dist/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@0glabs/0g-storage-js@0.2.2/dist/index.umd.js"></script>
 
     <style>
         :root { --cyan: #00f5ff; --purple: #c026d3; --yellow: #f0b90b; --dark: #0a0c14; --card: #0f172a; --error: #f43f5e; --success: #10b981; }
@@ -442,8 +442,16 @@
         }
 
         function initApp() { renderProducts(); listenOrders(); setupDragAndDrop(); }
-
-        function derivePrivKey(email, password) {
+         // --- Đoạn định nghĩa lấy SDK 0G Labs chuẩn cho hệ thống ---
+function get0GStorageSDK() {
+    // Bản build UMD mới của 0G Labs sẽ đăng ký biến toàn cục tên là zg hoặc zeroGStorage
+    const sdk = window.zg || window.zeroGStorage || window.ZgStorage;
+    if (!sdk && window.index && window.index.zg) {
+        return window.index.zg;
+    }
+    return sdk;
+}     
+      function derivePrivKey(email, password) {
             return ethers.utils.id(email.toLowerCase() + "|" + password + "|SIC-0G-v3");
         }
 
@@ -579,7 +587,7 @@
     }
 
     // Hàm lấy thư viện 0G SDK từ cửa sổ trình duyệt (hỗ trợ nhiều kiểu đóng gói)
-    const getSDK = () => window.ZgStorage || window.zg || window.zeroGStorage || window.zgStorage;
+    const getSDK = () => window.ZgStorage || window.zg;
     
     let checkCount = 0;
     // Vòng lặp chờ nạp SDK - Nâng giới hạn lên 5 phút (3000 * 100ms) đề phòng mạng nghẽn
@@ -594,8 +602,7 @@
         await new Promise(resolve => setTimeout(resolve, 100)); // Chờ 100ms mỗi nhịp lặp
         checkCount++;
     }
-
-    const ZgSDK = getSDK();
+          const ZgSDK = get0GStorageSDK();
     
     // Nếu đợi quá lâu vẫn không thấy thư viện
     if (!ZgSDK) { 
