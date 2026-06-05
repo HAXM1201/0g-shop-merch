@@ -566,32 +566,44 @@
         }
 
         async function performActual0GUpload(file, wallet) {
-            const status = document.getElementById('upload-status');
+    const status = document.getElementById('upload-status');
     
-            // SỬA TẠI ĐÂY: Thử lấy biến 'zg' (hoặc 'zeroGStorage') từ cửa sổ window toàn cục
-            const ZgSDK = window.zg || window.zeroGStorage; 
+    // 1. Tạo một hàm lặp để kiểm tra xem SDK đã xuất hiện trên window chưa (Thử cả 2 biến)
+    let checkCount = 0;
+    const getSDK = () => window.zg || window.zeroGStorage || (window.ZgStorage);
     
-            if (!ZgSDK) { 
-                 status.innerHTML = `<span style="color:var(--error)">❌ SDK Error: Thư viện 0G Storage chưa được tải thành công.</span>`; 
-                 return; 
-            }
+    // Đợi tối đa 5 giây cho thư viện tải xong
+    while (!getSDK() && checkCount < 50) {
+        status.innerHTML = `<span style="color:var(--cyan)">⏳ Đang đồng bộ thư viện 0G Storage SDK... (${checkCount/10}s)</span>`;
+        await new Promise(resolve => setTimeout(resolve, 100)); // Chờ 100ms mỗi lần lặp
+        checkCount++;
+    }
+
+    const ZgSDK = getSDK();
     
-            try {
-                 status.innerHTML = `<span style="color:var(--cyan)">⏳ Uploading file: ${file.name}...</span>`;
+    // 2. Nếu sau 5 giây vẫn không thấy thư viện đâu thì mới báo lỗi
+    if (!ZgSDK) { 
+        status.innerHTML = `<span style="color:var(--error)">❌ SDK Error: Không thể khởi tạo thư viện 0G. Vui lòng tắt các ví Extension (Razor/MetaMask) đang bị xung đột dòng lệnh và tải lại trang.</span>`; 
+        return; 
+    }
+    
+    // 3. Toàn bộ logic upload phía dưới giữ nguyên
+    try {
+        status.innerHTML = `<span style="color:var(--cyan)">⏳ 0G Storage đang xử lý file: ${file.name}...</span>`;
         
-                 // Khởi tạo Indexer kết nối đến Miner Node
-                 const storage = new ZgSDK.Indexer(MINER_NODES[0]); 
-                 const uint8Data = new Uint8Array(await file.arrayBuffer());
+        // Khởi tạo kết nối đến Miner Node 
+        const storage = new ZgSDK.Indexer(MINER_NODES[0]); 
+        const uint8Data = new Uint8Array(await file.arrayBuffer());
         
-                 // Tiến hành đẩy dữ liệu trực tiếp lên mạng lưới bằng ví
-                 const result = await (await storage.upload(uint8Data, wallet)).wait();
+        // Ký giao dịch và đẩy file lên két sắt 0G
+        const result = await (await storage.upload(uint8Data, wallet)).wait();
         
-                 status.innerHTML = `<div style="background:rgba(16,185,129,0.1); padding:15px; border-radius:10px; border:1px solid var(--success); margin-top:10px;"><span style="color:var(--success); font-weight:bold;">✅ SUCCESS!</span><br><small style="color:#94a3b8; word-break:break-all;">Hash: ${result.rootHash.substring(0,20)}...</small></div>`;
-                 showToast("File secured on 0G!", "success");
-            } catch (err) { 
-                status.innerHTML = `<span style="color:var(--error)">❌ Failed: ${err.message}</span>`; 
-            }
-        }
+        status.innerHTML = `<div style="background:rgba(16,185,129,0.1); padding:15px; border-radius:10px; border:1px solid var(--success); margin-top:10px;"><span style="color:var(--success); font-weight:bold;">✅ UPLOAD THÀNH CÔNG!</span><br><small style="color:#94a3b8; word-break:break-all;">Root Hash: ${result.rootHash}</small></div>`;
+        showToast("File secured on 0G!", "success");
+    } catch (err) { 
+        status.innerHTML = `<span style="color:var(--error)">❌ Lỗi Upload: ${err.message}</span>`; 
+    }
+}
 
         function handleFileUpload(files) { if (files.length > 0) prepareAuthForAction('UPLOAD', "0.0001", files[0]); }
 
