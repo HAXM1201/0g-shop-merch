@@ -578,7 +578,7 @@
     }
 
     // Hàm lấy thư viện 0G SDK từ cửa sổ trình duyệt (hỗ trợ nhiều kiểu đóng gói)
-    const getSDK = () => window.zg || window.zeroGStorage || window.ZgStorage || (window.index ? window.index.zg : null);
+    const getSDK = () => window.ZgStorage || window.zg || window.zeroGStorage;
     
     let checkCount = 0;
     // Vòng lặp chờ nạp SDK - Nâng giới hạn lên 5 phút (3000 * 100ms) đề phòng mạng nghẽn
