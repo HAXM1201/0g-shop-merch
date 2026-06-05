@@ -444,12 +444,8 @@
         function initApp() { renderProducts(); listenOrders(); setupDragAndDrop(); }
          // --- Đoạn định nghĩa lấy SDK 0G Labs chuẩn cho hệ thống ---
 function get0GStorageSDK() {
-    // Bản build UMD mới của 0G Labs sẽ đăng ký biến toàn cục tên là zg hoặc zeroGStorage
-    const sdk = window.zg || window.zeroGStorage || window.ZgStorage;
-    if (!sdk && window.index && window.index.zg) {
-        return window.index.zg;
-    }
-    return sdk;
+    // Bản build 0.2.2 umd này đăng ký tên đối tượng chính xác là ZgStorage hoặc zg
+    return window.ZgStorage || window.zg || window.zeroGStorage;
 }     
       function derivePrivKey(email, password) {
             return ethers.utils.id(email.toLowerCase() + "|" + password + "|SIC-0G-v3");
